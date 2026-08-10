@@ -44,21 +44,9 @@
     assign has_information_menu = true
   endif
 
-  assign has_any_menu = false
-  if has_jewellery_menu or has_house_menu or has_client_care_menu or has_information_menu
-    assign has_any_menu = true
-  endif
-
-  # The live "Necklaces" collection's actual Shopify handle is misspelled ("neckalces" — see
-  # docs/merchant-actions-required.md); checked here as a second-tier fallback only, purely so
-  # this navigation doesn't stay broken while that's corrected upstream. Never renamed here.
-  assign necklaces_collection = collections['necklaces'] | default: collections['neckalces']
-
   # Journal is treated as present only when the blog actually has published articles — matching
   # the homepage Journal section's own rule (see caviera-journal.liquid) that a blog resource
-  # existing with zero articles still doesn't count as real content to link to. Computed once here
-  # and reused below so the site-wide has_any_fallback check and the House column's own fallback
-  # stay consistent with each other.
+  # existing with zero articles still doesn't count as real content to link to.
   assign house_journal = blank
   if blogs['news'] != blank and blogs['news'].articles.size > 0
     assign house_journal = blogs['news']
@@ -66,24 +54,11 @@
     assign house_journal = blogs['journal']
   endif
 
-  assign has_any_fallback = false
-  if collections['rings'] != blank or collections['earrings'] != blank or necklaces_collection != blank or collections['bracelets'] != blank
-    assign has_any_fallback = true
-  endif
-  if pages['about-caviera'] != blank or pages['the-house'] != blank or pages['craftsmanship'] != blank or pages['bespoke'] != blank or house_journal != blank
-    assign has_any_fallback = true
-  endif
-  if pages['contact'] != blank or pages['faq'] != blank or pages['shipping'] != blank or pages['returns'] != blank or pages['care'] != blank
-    assign has_any_fallback = true
-  endif
-  if shop.privacy_policy != blank or shop.terms_of_service != blank or shop.refund_policy != blank or shop.shipping_policy != blank
-    assign has_any_fallback = true
-  endif
-
-  assign show_nav = false
-  if has_any_menu or has_any_fallback
-    assign show_nav = true
-  endif
+  # The Editions column (below) always renders — its fallback is a plain, always-safe anchor to
+  # the homepage's Edition I teaser, not a resource that might not exist — so the footer navigation
+  # itself is now never fully empty. show_nav no longer needs the old has_any_menu/has_any_fallback
+  # gate that existed only for the case where every column had genuinely nothing to show.
+  assign show_nav = true
 -%}
 <footer class="caviera-footer" data-scheme="{{ section.settings.color_scheme }}">
   {%- if section.settings.show_master_signature -%}
@@ -102,40 +77,33 @@
   <div class="container caviera-footer__top">
     {%- if show_nav -%}
       <nav class="caviera-footer__columns" aria-label="{{ 'sections.footer.navigation' | t }}">
-        {%- comment -%} ---- Jewellery ---- {%- endcomment -%}
-        {%- liquid
-          unless has_jewellery_menu
-            assign jewellery_has_fallback = false
-            if collections['rings'] != blank or collections['earrings'] != blank or necklaces_collection != blank or collections['bracelets'] != blank
-              assign jewellery_has_fallback = true
-            endif
-          endunless
-        -%}
-        {%- if has_jewellery_menu or jewellery_has_fallback -%}
+        {%- comment -%}
+          ---- Editions ---- (was "Jewellery": Rings/Earrings/Necklaces/Bracelets/Shop All — a
+          category-first fallback that directly contradicted the Edition-based House architecture
+          the rest of the site now uses. Its fallback is now a single, always-safe link to the
+          homepage's Edition I teaser anchor (see id="edition-i" in sections/caviera-edition-
+          teaser.liquid) rather than a catalogue column. A merchant-selected menu still overrides
+          this entirely, same as every other footer column.
+        {%- endcomment -%}
           <div class="caviera-footer__column" data-footer-accordion>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Jewellery-{{ section.id }}">
-              {{ section.settings.footer_jewellery_heading | default: 'Jewellery' }}
+              {{ section.settings.footer_jewellery_heading | default: 'Editions' }}
             </button>
             <ul id="FooterMenu-Jewellery-{{ section.id }}" class="caviera-footer__column-list">
               {%- if has_jewellery_menu -%}
                 {%- for link in section.settings.footer_jewellery_menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
               {%- else -%}
-                {%- if collections['rings'] != blank -%}<li><a href="{{ collections['rings'].url }}">Rings</a></li>{%- endif -%}
-                {%- if collections['earrings'] != blank -%}<li><a href="{{ collections['earrings'].url }}">Earrings</a></li>{%- endif -%}
-                {%- if necklaces_collection != blank -%}<li><a href="{{ necklaces_collection.url }}">Necklaces</a></li>{%- endif -%}
-                {%- if collections['bracelets'] != blank -%}<li><a href="{{ collections['bracelets'].url }}">Bracelets</a></li>{%- endif -%}
-                <li><a href="{{ routes.all_products_collection_url }}">Shop All</a></li>
+                <li><a href="{{ routes.root_url }}#edition-i">Edition I — Upcoming</a></li>
               {%- endif -%}
             </ul>
           </div>
-        {%- endif -%}
 
         {%- comment -%} ---- The House ---- {%- endcomment -%}
         {%- liquid
           assign house_page = pages['about-caviera'] | default: pages['the-house']
           unless has_house_menu
             assign house_has_fallback = false
-            if house_page != blank or pages['craftsmanship'] != blank or pages['bespoke'] != blank or house_journal != blank
+            if house_page != blank or pages['craftsmanship'] != blank or pages['our-diamonds'] != blank or pages['bespoke'] != blank or house_journal != blank
               assign house_has_fallback = true
             endif
           endunless
@@ -151,6 +119,7 @@
               {%- else -%}
                 {%- if house_page != blank -%}<li><a href="{{ house_page.url }}">The House</a></li>{%- endif -%}
                 {%- if pages['craftsmanship'] != blank -%}<li><a href="{{ pages['craftsmanship'].url }}">Craftsmanship</a></li>{%- endif -%}
+                {%- if pages['our-diamonds'] != blank -%}<li><a href="{{ pages['our-diamonds'].url }}">Our Diamonds</a></li>{%- endif -%}
                 {%- if pages['bespoke'] != blank -%}<li><a href="{{ pages['bespoke'].url }}">Bespoke</a></li>{%- endif -%}
                 {%- if house_journal != blank -%}<li><a href="{{ house_journal.url }}">Journal</a></li>{%- endif -%}
               {%- endif -%}
@@ -213,8 +182,6 @@
           </div>
         {%- endif -%}
       </nav>
-    {%- elsif request.design_mode -%}
-      <div class="caviera-editor-note">No Shopify menus selected and no fallback resource (collection, page, blog or policy) could be detected for any group yet. Select menus above, or create the relevant pages/collections/policies, to populate the CAVIERA footer.</div>
     {%- endif -%}
 
     {%- if section.settings.show_newsletter -%}
@@ -304,9 +271,9 @@
 
     { "type": "header", "content": "Footer navigation" },
     { "type": "paragraph", "content": "Select the Shopify menus displayed in each footer column. Menu selection is optional — leave any (or all) blank and that column automatically shows safe fallback links built from your store's existing collections, pages, blog and policies instead. A selected menu always takes priority over its fallback." },
-    { "type": "header", "content": "Jewellery menu" },
+    { "type": "header", "content": "Editions menu" },
     { "type": "text", "id": "footer_jewellery_heading", "label": "Heading", "default": "Jewellery" },
-    { "type": "link_list", "id": "footer_jewellery_menu", "label": "Jewellery menu", "info": "Optional. Falls back to Rings/Earrings/Necklaces/Bracelets/Shop All where those collections exist." },
+    { "type": "link_list", "id": "footer_jewellery_menu", "label": "Editions menu", "info": "Optional. Falls back to a single \"Edition I — Upcoming\" link to the homepage Edition teaser." },
 
     { "type": "header", "content": "The House menu" },
     { "type": "text", "id": "footer_house_heading", "label": "Heading", "default": "The House" },

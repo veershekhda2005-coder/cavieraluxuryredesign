@@ -58,6 +58,17 @@
       "block_order": ["ch-1", "ch-2", "ch-3"],
       "settings": {}
     },
+    "makers-mark": {
+      "type": "caviera-editorial-media",
+      "settings": {
+        "media_source": "house_seal",
+        "color_scheme": "obsidian",
+        "image_position": "left",
+        "eyebrow": "The Maker's Mark",
+        "heading": "Identity, Edition and ownership.",
+        "body": "<p>Every CAVIERA creation carries the House Seal — a permanent mark of authentication, not a decoration. In time, each piece will carry its own Edition record: CAVIERA No. ___ / ___, set once an Edition's true count is known.</p>"
+      }
+    },
     "craftsmanship": {
       "type": "caviera-craftsmanship",
       "blocks": {
@@ -103,13 +114,28 @@
       "block_order": ["svc-1", "svc-2", "svc-3"],
       "settings": {}
     },
+    "oryx-moment": {
+      "type": "caviera-editorial-media",
+      "settings": {
+        "media_source": "oryx",
+        "color_scheme": "cinnabar",
+        "image_position": "right",
+        "eyebrow": "The House",
+        "heading": "The Oryx walks first. The House follows.",
+        "body": "<p>A quiet emblem of arrival and discovery — the House's own way of marking a threshold.</p>"
+      }
+    },
     "journal": {
       "type": "caviera-journal",
       "settings": {}
     },
     "newsletter": {
       "type": "caviera-newsletter",
-      "settings": {}
+      "settings": {
+        "color_scheme": "obsidian",
+        "heading": "Private Notice",
+        "body": "Receive word of the next Edition, House stories and private releases."
+      }
     },
     "signature": {
       "type": "caviera-house-signature",
@@ -125,10 +151,12 @@
     "signature-products",
     "object-focus",
     "craftsmanship",
+    "makers-mark",
     "packaging-ritual",
     "featured-collection",
     "bespoke-banner",
     "services",
+    "oryx-moment",
     "journal",
     "newsletter",
     "signature"
