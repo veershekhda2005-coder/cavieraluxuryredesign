@@ -1,0 +1,125 @@
+{%- comment -%}
+  Edition I teaser — replaces "category-reveal" (a Rings/Earrings/Necklaces/Bracelets catalogue
+  grid) in the homepage's third slot. CAVIERA is Edition-based, not a permanent catalogue, so this
+  introduces the commercial model without a product grid, fake product cards, or a link to
+  /collections/all. Informational by design while Edition I has no dedicated page yet — cta_text/
+  cta_url are both blank by default; the teaser reads as complete with no action at all.
+
+  Images: edition_image_1 is the primary/larger image; edition_image_2 is optional and secondary
+  (offset, slightly smaller — a restrained, still composition rather than Toasted-Buns-style
+  scroll choreography, translated to CAVIERA per brief: slower, fewer images, more precision).
+  image_1 falls back to the same bundled default used by the hero (assets/15_oryx_necklace_on_
+  model.png — the only jewellery/object photograph that exists anywhere in this theme; see
+  docs/required-brand-assets.md) when no merchant image is set. image_2 has NO bundled fallback —
+  no second suitable asset exists, so it's simply omitted rather than showing something irrelevant.
+  Both are ordinary image_picker settings, so a merchant can replace or add to them at any time
+  without a code change once real Edition I campaign imagery exists.
+{%- endcomment -%}
+{%- liquid
+  assign img1 = section.settings.edition_image_1
+  assign img2 = section.settings.edition_image_2
+  assign bundled_file = '15_oryx_necklace_on_model.png'
+  assign use_bundled = false
+  if img1 == blank
+    assign use_bundled = true
+  endif
+  assign has_meta = false
+  if section.settings.edition_number != blank or section.settings.edition_status != blank
+    assign has_meta = true
+  endif
+-%}
+<section class="caviera-section caviera-edition-teaser" data-scheme="{{ section.settings.color_scheme | default: 'obsidian' }}">
+  <div class="container caviera-edition-teaser__inner">
+    <div class="caviera-edition-teaser__copy" data-reveal>
+      {%- if has_meta -%}
+        <span class="caviera-edition-teaser__meta label" aria-hidden="true">
+          {{- section.settings.edition_number -}}
+          {%- if section.settings.edition_number != blank and section.settings.edition_status != blank %} / {% endif -%}
+          {{- section.settings.edition_status -}}
+        </span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="caviera-edition-teaser__heading">
+          {{ section.settings.heading }}
+          {%- if section.settings.year_label != blank -%}
+            <span class="caviera-edition-teaser__year">{{ section.settings.year_label }}</span>
+          {%- endif -%}
+        </h2>
+      {%- endif -%}
+      {%- if section.settings.body != blank -%}
+        <p class="body-text caviera-edition-teaser__body">{{ section.settings.body }}</p>
+      {%- endif -%}
+      {%- if section.settings.cta_text != blank and section.settings.cta_url != blank -%}
+        <a href="{{ section.settings.cta_url }}" class="link-underline caviera-edition-teaser__cta">{{ section.settings.cta_text }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="caviera-edition-teaser__media">
+      <div class="caviera-edition-teaser__media-primary" data-reveal data-reveal-style="crop">
+        {%- if img1 != blank -%}
+          <img
+            src="{{ img1 | image_url: width: 1000 }}"
+            srcset="{{ img1 | image_url: width: 600 }} 600w, {{ img1 | image_url: width: 1000 }} 1000w, {{ img1 | image_url: width: 1400 }} 1400w"
+            sizes="(min-width: 900px) 42vw, 84vw"
+            width="{{ img1.width }}"
+            height="{{ img1.height }}"
+            alt="{{ img1.alt | default: '' | escape }}"
+            loading="lazy"
+          >
+        {%- elsif use_bundled -%}
+          <img
+            src="{{ bundled_file | asset_url }}"
+            width="521" height="358"
+            alt=""
+            loading="lazy"
+          >
+        {%- endif -%}
+      </div>
+      {%- if img2 != blank -%}
+        <div class="caviera-edition-teaser__media-secondary" data-reveal data-reveal-style="mask" style="transition-delay: 140ms;">
+          <img
+            src="{{ img2 | image_url: width: 700 }}"
+            srcset="{{ img2 | image_url: width: 400 }} 400w, {{ img2 | image_url: width: 700 }} 700w, {{ img2 | image_url: width: 1000 }} 1000w"
+            sizes="(min-width: 900px) 22vw, 56vw"
+            width="{{ img2.width }}"
+            height="{{ img2.height }}"
+            alt="{{ img2.alt | default: '' | escape }}"
+            loading="lazy"
+          >
+        </div>
+      {%- elsif request.design_mode -%}
+        <div class="caviera-editor-note caviera-edition-teaser__note">Optional: add a second image above for the full two-image composition — restrained by design, this section works with just one.</div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Edition I teaser",
+  "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
+      "options": [
+        { "value": "obsidian", "label": "Obsidian" },
+        { "value": "cinnabar", "label": "Cinnabar" }
+      ]
+    },
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "edition_number", "label": "Number", "default": "01" },
+    { "type": "text", "id": "edition_status", "label": "Status", "default": "Upcoming", "info": "Quiet metadata, not a sale badge — avoid hype language (\"Limited drop\", \"Only X left\", \"Coming soon!!!\")." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "EDITION I" },
+    { "type": "text", "id": "year_label", "label": "Year", "default": "2026" },
+    { "type": "textarea", "id": "body", "label": "Supporting line", "default": "The first CAVIERA Edition is in preparation." },
+    { "type": "text", "id": "cta_text", "label": "Action text (optional)", "info": "Leave blank to keep the teaser purely informational — appropriate while Edition I has no dedicated page yet. Avoid \"Add to Bag\"/\"Shop Edition\"/\"Buy Now\"." },
+    { "type": "url", "id": "cta_url", "label": "Action link (optional)", "info": "Only shown when Action text above is also set. Never point this at /collections/all." },
+    { "type": "header", "content": "Images" },
+    { "type": "image_picker", "id": "edition_image_1", "label": "Primary image", "info": "Gender-neutral jewellery/object imagery preferred — this House is for both men and women. Falls back to a bundled default when left blank." },
+    { "type": "image_picker", "id": "edition_image_2", "label": "Secondary image (optional)", "info": "A smaller, offset second image for a restrained two-image composition. Left empty by default — no bundled fallback exists for this one." }
+  ],
+  "presets": [{ "name": "Edition I teaser" }],
+  "enabled_on": {
+    "templates": ["index"]
+  }
+}
+{% endschema %}

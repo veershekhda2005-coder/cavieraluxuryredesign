@@ -11,14 +11,23 @@
   "sections": {
     "hero": {
       "type": "caviera-hero",
-      "settings": {}
+      "settings": {
+        "primary_cta_text": "Discover the House",
+        "primary_cta_url": "/pages/about-caviera"
+      }
     },
     "statement": {
       "type": "caviera-house-statement",
-      "settings": { "content_layout": "features" }
+      "settings": {
+        "content_layout": "features",
+        "show_features": false,
+        "discover_label": "",
+        "category_transition_heading": ""
+      }
     },
     "category-reveal": {
       "type": "caviera-category-reveal",
+      "disabled": true,
       "blocks": {
         "cat-1": { "type": "category", "settings": { "title": "Rings", "collection": "rings" } },
         "cat-2": { "type": "category", "settings": { "title": "Earrings", "collection": "earrings" } },
@@ -30,6 +39,10 @@
         "eyebrow": "",
         "heading": ""
       }
+    },
+    "edition-teaser": {
+      "type": "caviera-edition-teaser",
+      "settings": {}
     },
     "signature-products": {
       "type": "caviera-signature-products",
@@ -107,6 +120,7 @@
   "order": [
     "hero",
     "statement",
+    "edition-teaser",
     "category-reveal",
     "signature-products",
     "object-focus",

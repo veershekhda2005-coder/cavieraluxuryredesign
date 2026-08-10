@@ -1,7 +1,11 @@
 {%- comment -%}
-  Cinematic hero — architectural asymmetric split, not a centred headline over a full-bleed image.
-  One large jewellery media field + one Cinnabar/Obsidian editorial field, joined by a thin
-  Rhodium hinge line. Official wordmark lives in the header, not here (see show_wordmark below).
+  Cinematic hero. Controlled-visual-test revision: this used to be an architectural asymmetric
+  split (media ~52% / a solid Cinnabar editorial column ~48%) — now media fills the entire section
+  near-full-viewport (Amber-inspired), with the editorial content as a transparent overlay near the
+  lower third, legible via a soft directional scrim (assets/caviera-home.css) rather than a hard
+  colour block, so the jewellery/object stays the dominant visual. This is a CSS re-skin only — all
+  markup and media-fallback logic below is unchanged from before. Official wordmark lives in the
+  header, not here (see show_wordmark below).
 
   Media priority per breakpoint: 1) dedicated Theme Editor image/video (image_desktop / image_mobile
   / video_url / video_url_mobile) — always wins outright, 2) the bundled default first-screen image
@@ -240,7 +244,10 @@
     { "type": "header", "content": "Content" },
     { "type": "text", "id": "heading", "label": "Headline", "default": "Objects of rare composure." },
     { "type": "textarea", "id": "subheading", "label": "Supporting line", "default": "Jewellery shaped by light, precision and enduring form." },
-    { "type": "text", "id": "primary_cta_text", "label": "Primary CTA text", "default": "Discover the collection" },
+    {
+      "type": "text", "id": "primary_cta_text", "label": "Primary CTA text", "default": "Discover the House",
+      "info": "Avoid \"Shop Now\"/\"Shop All\"/\"Discover the Collection\" — CAVIERA is Edition-based, not a permanent catalogue."
+    },
     { "type": "url", "id": "primary_cta_url", "label": "Primary CTA link" },
     { "type": "text", "id": "secondary_cta_text", "label": "Secondary link text" },
     { "type": "url", "id": "secondary_cta_url", "label": "Secondary link" },

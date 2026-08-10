@@ -1,36 +1,22 @@
 /* CAVIERA Grand Theme 2026 — Homepage-only sections (loaded only on template.name == 'index') */
 
-/* ---- Hero — architectural asymmetric split, not a centred banner ---- */
+/* ---- Hero — cinematic near-full-viewport opening (Amber-inspired) ----
+   Controlled-visual-test revision: was an architectural asymmetric split (media ~52% / a solid
+   Cinnabar text column ~48%, capped at clamp(440px,53vw,515px) tall) — a considered composition,
+   but still read as a conventional split ecommerce hero rather than "entering the House". Media
+   now fills the entire section; the editorial field is a transparent overlay near the lower third,
+   legible via a directional scrim rather than a hard colour block, so the jewellery/object stays
+   the brightest, most dominant thing on screen. All markup/media-fallback logic in
+   sections/caviera-hero.liquid is UNCHANGED — this is a re-skin of the same structure, not a
+   rebuild, so the sophisticated media-priority handling there (dedicated image/video → bundled
+   default → considered placeholder, never a product/collection image) still applies untouched. */
 .caviera-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  /* Mobile: the selected hero image (assets/15_oryx_necklace_on_model.png) is landscape — a tall
-     portrait-shaped row would force a deep, over-zoomed crop to fill it. Sizing this row from
-     viewport WIDTH (not height) keeps it close to the image's own ~3:2 landscape proportions at
-     any phone width, matching the "landscape / controlled hero image" requirement instead of a
-     tall banner. Text row stays "auto" (sized to content) for the same reason as before — it
-     should never pad out into empty colour on short copy. */
-  grid-template-rows: clamp(200px, 74vw, 320px) auto;
+  min-height: clamp(560px, 92vh, 920px);
+  display: block;
+  overflow: hidden;
 }
-@media (min-width: 900px) {
-  .caviera-hero {
-    /* 1.08fr : 1fr resolves to ~51.9% / 48.1% — inside the approved 51–53% / 47–49% split
-       (near 50/50, not the earlier, more exaggerated ~53.5/46.5). */
-    grid-template-columns: 1.08fr 1fr;
-    grid-template-rows: none;
-    /* Compact landscape hero, matched to the approved reference — not a near-full-screen
-       cinematic banner. Nudged slightly taller than the previous clamp(430px, 52vw, 500px): at
-       common desktop widths the fixed image (521×358, ~1.46 landscape) was cropping more tightly
-       than intended once the panel's own aspect ratio drifted away from the image's — this closes
-       most of that gap without meaningfully reopening the earlier "too tall" problem. */
-    height: clamp(440px, 53vw, 515px);
-  }
-  .caviera-hero[data-media-position="right"] { grid-template-columns: 1fr 1.08fr; }
-  .caviera-hero[data-media-position="right"] .caviera-hero__media { order: 2; }
-  .caviera-hero[data-media-position="right"] .caviera-hero__field { order: 1; }
-}
-.caviera-hero__media { position: relative; overflow: hidden; background: var(--caviera-cinnabar); }
+.caviera-hero__media { position: absolute; inset: 0; overflow: hidden; background: var(--caviera-cinnabar); }
 .caviera-hero__media picture { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .caviera-hero__media-el {
   position: absolute; inset: 0; width: 100%; height: 100%;
@@ -43,6 +29,17 @@
   .caviera-hero__media-el--mobile { display: block; }
 }
 .caviera-hero__overlay { position: absolute; inset: 0; background: var(--caviera-obsidian); }
+/* Motion: a still hero should still feel cinematic. Image settles from a very slight scale, text
+   resolves after it — both pure CSS (animation-fill-mode: backwards holds the start frame until
+   play begins, so there's no flash of the end state before the animation runs), so this plays
+   correctly even if every script on the page fails to load. Reduced motion shows the final,
+   fully-resolved state immediately with no animation at all — not merely a faster version of it. */
+@media (prefers-reduced-motion: no-preference) {
+  .caviera-hero__media-el { animation: caviera-hero-settle 1.6s var(--ease-caviera) both; }
+  .caviera-hero__field-inner > * { animation: caviera-hero-resolve 1s var(--ease-caviera) both; animation-delay: 0.35s; }
+}
+@keyframes caviera-hero-settle { 0% { transform: scale(1.02); } 100% { transform: scale(1); } }
+@keyframes caviera-hero-resolve { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
 /* Architectural colour field shown when no dedicated hero media is configured — never a stand-in
    product photo (see the comment at the top of sections/caviera-hero.liquid). A flat single-colour
    fill read as a dead, empty panel; this keeps it a considered placeholder — a soft directional
@@ -79,91 +76,74 @@
   font-size: 0.6875rem; letter-spacing: 0.02em; padding: 8px 12px; max-width: 320px;
 }
 
+/* Editorial field: was a solid-colour ~48%-width column beside the media; now a transparent
+   overlay near the lower third of the full-bleed image, legible via a directional scrim (below)
+   rather than a hard colour block, so photography stays dominant. data-media-position (still the
+   same section setting) now controls which side the text column anchors to, rather than which
+   side a media panel sits on — a natural re-reading of the same setting, not a new one. */
 .caviera-hero__field {
-  position: relative;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
-  align-items: center;
-  /* Controlled asymmetry, not a centred landing-page block: content sits left, against the
-     architectural grid, with the media panel's width doing the work of "generous breathing room"
-     on its right. */
+  align-items: flex-end;
   justify-content: flex-start;
-  /* Reduced from the previous clamp(48px, 8vh, 96px) to fit comfortably inside the now much more
-     compact hero height (clamp(430px, 52vw, 500px) at desktop, see .caviera-hero above). */
-  padding-block: clamp(20px, 4vh, 36px);
+  padding-block-end: clamp(48px, 9vh, 96px);
   overflow: hidden;
 }
-/* Architectural linework — assets/26_oryx_palace_concept.png as a right-side backdrop on the
-   Cinnabar field, not a visible photograph. Restored multiply (removed in the previous round at
-   a much lower 5% opacity, where its own effect and the plain-opacity fallback were both close to
-   imperceptible) — multiply darkens the drawing's linework toward a deeper Cinnabar-maroon while
-   its pale cream background all but disappears into the field beneath it, which is what actually
-   makes arches/columns read as "linework embedded in Cinnabar" rather than either invisible or a
-   literal photo. Opacity raised to a level where that darkened linework is genuinely visible.
-   Widened slightly and the mask's fade zone shortened so more of the panel shows real detail —
-   still well clear of the text column on the left, so headline legibility is never in question. */
-.caviera-hero__architecture {
+.caviera-hero[data-media-position="right"] .caviera-hero__field { justify-content: flex-end; }
+/* Scrim — a soft directional gradient rising from the bottom edge, coloured to the section's own
+   scheme (Cinnabar/Obsidian/Bone) so text stays legible over any photograph without a hard block
+   covering nearly half the image the way the previous solid column did. */
+.caviera-hero__field::before {
+  content: "";
   position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: 58%;
-  background-repeat: no-repeat;
-  /* Right-biased crop — shows a fragment of the architecture (columns/obelisks), not the full
-     central medallion, reading as a passing detail rather than "a palace photo placed over red". */
-  background-position: center right;
-  background-size: cover;
-  opacity: 0.08;
-  mix-blend-mode: multiply;
-  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 25%, rgba(0, 0, 0, 0) 100%);
-  mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 25%, rgba(0, 0, 0, 0) 100%);
+  inset: 0;
+  background: linear-gradient(to top, color-mix(in srgb, var(--caviera-obsidian) 62%, transparent) 0%, transparent 62%);
   pointer-events: none;
 }
-@media (max-width: 899px) { .caviera-hero__architecture { display: none; } }
-.caviera-hero__field-inner {
-  padding-inline: var(--gutter-mobile);
-  /* The shared .container class (also applied on this element) centres via margin-inline: auto —
-     flexbox auto-margins consume free main-axis space before justify-content ever runs, which
-     would silently re-centre this box and defeat justify-content: flex-start above. Cancel it so
-     the content genuinely sits left, against the grid, as intended. */
-  margin-inline: 0;
-  /* Slightly above true vertical centre reads as composed rather than dead-centred; a small,
-     proportional nudge rather than a fixed offset so it holds up across content lengths. */
-  transform: translateY(-6%);
+[data-scheme="cinnabar"] .caviera-hero__field::before {
+  background: linear-gradient(to top, color-mix(in srgb, var(--caviera-cinnabar) 70%, transparent) 0%, transparent 62%);
 }
-@media (min-width: 900px) { .caviera-hero__field-inner { padding-inline: clamp(40px, 5vw, 72px); max-width: none; } }
+[data-scheme="bone"] .caviera-hero__field::before {
+  background: linear-gradient(to top, color-mix(in srgb, var(--caviera-bone) 78%, transparent) 0%, transparent 62%);
+}
+/* The faint architectural backdrop and the hinge line both belonged to the old split-panel
+   composition (a distinct Cinnabar "field" needing its own atmosphere, and a seam between two
+   panels) — neither applies once media fills the whole section, so both are retired from view.
+   Markup is untouched in sections/caviera-hero.liquid; only display is affected here. */
+.caviera-hero__architecture,
+.caviera-hero__hinge { display: none; }
 
-/* Rhodium hinge — thin hardware-like line at the seam between the media field and the editorial
-   field, like the hinge line of a presentation case. Full-height on desktop; a short tick mark
-   above the copy on mobile, where the fields stack instead of sitting side by side. */
-.caviera-hero__hinge {
-  position: absolute;
-  top: 0; bottom: 0; left: 0;
-  width: 1px;
-  background: var(--caviera-rhodium);
-  opacity: 0.45;
+.caviera-hero__field-inner {
+  position: relative;
+  padding-inline: var(--gutter-mobile);
+  margin-inline: 0;
+  max-width: 640px;
 }
-.caviera-hero[data-media-position="right"] .caviera-hero__hinge { left: auto; right: 0; }
-@media (max-width: 899px) {
-  .caviera-hero__hinge { position: static; top: auto; bottom: auto; width: 56px; height: 1px; margin: 0 auto 32px; }
-}
+[data-scheme="bone"] .caviera-hero__field-inner { color: var(--caviera-obsidian); }
+[data-scheme="cinnabar"] .caviera-hero__field-inner,
+[data-scheme="obsidian"] .caviera-hero__field-inner { color: var(--caviera-bone); }
+@media (min-width: 900px) { .caviera-hero__field-inner { padding-inline: clamp(40px, 6vw, 96px); } }
 
 .caviera-hero__wordmark { max-width: 200px; margin-bottom: clamp(28px, 5vh, 52px); }
-/* Deliberately smaller than the shared .heading-display token: that scale (up to 6rem/96px) is
-   tuned for full-width section headlines, not this editorial column, which is only ~40% of the
-   viewport on desktop. At the full display size the headline over-wraps into single words per
-   line; this clamp keeps 2–3 balanced lines instead (paired with text-wrap: balance below). */
+/* Larger than the old split-column version (which was capped to fit a ~40%-wide panel) — the
+   editorial field now has the full section width to work with, so the headline can use closer to
+   the shared .heading-display scale for real cinematic presence. */
 .caviera-hero__heading {
-  color: var(--text-primary);
+  color: inherit;
   text-wrap: balance;
-  max-width: 16ch;
-  font-size: calc(clamp(2.25rem, 1.5rem + 2.6vw, 4.25rem) * var(--heading-scale));
+  max-width: 20ch;
+  font-size: calc(clamp(2.5rem, 1.6rem + 4vw, 5.5rem) * var(--heading-scale));
   line-height: 1;
 }
-.caviera-hero__subheading { color: var(--text-primary); opacity: 0.86; margin-top: 20px; max-width: 400px; }
+.caviera-hero__subheading { color: inherit; opacity: 0.86; margin-top: 20px; max-width: 420px; }
 .caviera-hero__actions { display: flex; gap: 28px; align-items: center; margin-top: 36px; flex-wrap: wrap; }
 [data-scheme="cinnabar"] .caviera-hero__actions .btn--primary,
 [data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
-.caviera-hero__secondary { color: var(--text-primary); }
+.caviera-hero__secondary { color: inherit; }
 
-.caviera-hero__scroll-cue { position: absolute; bottom: max(28px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 1px; height: 40px; z-index: 1; }
+.caviera-hero__scroll-cue { position: absolute; z-index: 1; bottom: max(28px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 1px; height: 40px; }
 .caviera-hero__scroll-cue span { display: block; width: 1px; height: 100%; background: var(--caviera-rhodium); opacity: 0.8; animation: caviera-scroll-cue 1.8s var(--ease-caviera) infinite; }
 @keyframes caviera-scroll-cue { 0% { transform: scaleY(0); transform-origin: top; opacity: 0.9; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; opacity: 0.2; } }
 @media (prefers-reduced-motion: reduce) { .caviera-hero__scroll-cue span { animation: none; } }
@@ -396,6 +376,76 @@
   .caviera-statement__transition-heading { margin-left: auto; }
   .caviera-statement__transition-rule { flex: 1 1 100%; order: 3; }
 }
+
+/* ---- Edition I teaser (new) — occupies the homepage's third slot; see templates/index.json,
+   which now points "order" at "edition-teaser" instead of "category-reveal" (a Rings/Earrings/
+   Necklaces/Bracelets catalogue grid — left fully intact below, just no longer in the active
+   homepage order). Aerra/Bureau Nine restraint: one dominant image, one small offset second image
+   as a still, composed overlap rather than any scroll-linked choreography — translating Toasted
+   Buns' "unexpected placement" principle into something slower and more precise. Background/text
+   colour come from the shared [data-scheme="obsidian"|"cinnabar"] rules in caviera-base.css,
+   already applied via this section's own data-scheme attribute — nothing colour-related needed
+   here beyond that. */
+.caviera-edition-teaser__inner {
+  display: grid;
+  gap: clamp(48px, 8vw, 96px);
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .caviera-edition-teaser__inner { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); }
+}
+
+.caviera-edition-teaser__meta {
+  display: block;
+  color: var(--caviera-rhodium);
+  margin-bottom: 24px;
+}
+.caviera-edition-teaser__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: calc(clamp(2.5rem, 1.8rem + 4vw, 5rem) * var(--heading-scale));
+  line-height: 1;
+}
+.caviera-edition-teaser__year {
+  font-family: var(--font-body);
+  text-transform: none;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  opacity: 0.68;
+}
+.caviera-edition-teaser__body { margin-top: 28px; max-width: 42ch; opacity: 0.86; }
+.caviera-edition-teaser__cta { display: inline-block; margin-top: 28px; }
+
+/* Media: primary image at a considered portrait ratio; secondary (if configured) offsets over its
+   lower-right corner on wider viewports — a still, composed overlap, not motion. On narrow
+   viewports the overlap becomes a small, controlled vertical stack instead, so nothing extends
+   past the viewport edge (no horizontal overflow) and both images stay fully legible. */
+.caviera-edition-teaser__media { position: relative; }
+.caviera-edition-teaser__media-primary { aspect-ratio: 4 / 5; overflow: hidden; }
+.caviera-edition-teaser__media-primary img,
+.caviera-edition-teaser__media-secondary img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.caviera-edition-teaser__media-secondary {
+  margin: -12% auto 0;
+  width: 55%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(17, 16, 18, 0.32);
+}
+@media (min-width: 900px) {
+  .caviera-edition-teaser__media-secondary {
+    position: absolute;
+    right: -6%;
+    bottom: -9%;
+    width: 40%;
+    margin: 0;
+  }
+}
+.caviera-edition-teaser__note { margin-top: 16px; }
 
 /* ---- Category reveal: display-case panels, not a generic four-card grid ---- */
 /* Spacing-only correction: this section otherwise inherits the generic .caviera-section
