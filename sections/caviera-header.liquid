@@ -195,28 +195,99 @@
       {% render 'icon', name: 'close' %}
     </button>
   </div>
-  {%- if menu != blank -%}
-  <nav class="caviera-mobile-nav__nav container" aria-label="{{ 'sections.header.menu' | t }}">
-    <ul>
-      {%- for link in menu.links -%}
-        <li class="caviera-mobile-nav__item">
-          {%- if link.links != blank -%}
-            <button type="button" class="caviera-mobile-nav__toggle" aria-expanded="false">
-              {{ link.title }}
-              {% render 'icon', name: 'chevron-down' %}
-            </button>
-            <ul class="caviera-mobile-nav__submenu" hidden>
-              {%- for child in link.links -%}
-                <li><a href="{{ child.url }}">{{ child.title }}</a></li>
-              {%- endfor -%}
-            </ul>
-          {%- else -%}
-            <a href="{{ link.url }}">{{ link.title }}</a>
-          {%- endif -%}
-        </li>
+  {%- liquid
+    assign edition_blocks = section.blocks | where: 'type', 'edition_nav_item'
+    assign secondary_blocks = section.blocks | where: 'type', 'secondary_nav_item'
+  -%}
+  {%- comment -%}
+    CAVIERA is Edition-based, not a category catalogue — this primary navigation is deliberately
+    NOT the merchant's generic Shopify `main_menu` linklist (that setting still exists above for
+    the retired/hidden inline desktop nav only). It's built from "Primary navigation item" blocks
+    in the schema below, so the exact CURRENT EDITION / THE HOUSE / JOURNAL editorial structure the
+    brief asks for is real, merchant-editable content — not hardcoded text with no way to change
+    it later, and not a generic linklist that could drift toward a category-catalogue menu.
+  {%- endcomment -%}
+  {%- if edition_blocks.size > 0 -%}
+  <div class="caviera-mobile-nav__room">
+    <nav class="caviera-mobile-nav__nav container" aria-label="{{ 'sections.header.menu' | t }}">
+      <ol>
+        {%- for block in edition_blocks -%}
+          {%- liquid
+            assign index_label = forloop.index | prepend: '0' | slice: -2, 2
+          -%}
+          <li class="caviera-mobile-nav__item" data-primary-item="{{ forloop.index }}" {{ block.shopify_attributes }}>
+            <span class="caviera-mobile-nav__primary-index" aria-hidden="true">{{ index_label }}</span>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" class="caviera-mobile-nav__primary-link">{{ block.settings.title }}</a>
+            {%- else -%}
+              {%- comment -%}
+                No link configured — rendered as a quiet, honest "upcoming" entry rather than a
+                broken or placeholder URL (e.g. Edition I before it has a dedicated page). Still
+                focusable (tabindex 0, aria-disabled) so keyboard users can reach and read its
+                status exactly as a mouse user would see it, even though activating it does nothing.
+              {%- endcomment -%}
+              <span class="caviera-mobile-nav__primary-link caviera-mobile-nav__primary-link--upcoming" tabindex="0" aria-disabled="true">{{ block.settings.title }}</span>
+            {%- endif -%}
+            {%- if block.settings.status_label != blank -%}
+              <span class="caviera-mobile-nav__primary-status">{{ block.settings.status_label }}</span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ol>
+    </nav>
+
+    {%- comment -%}
+      Reserved visual field (~right third) — quiet/empty by default. On hover or keyboard focus of
+      a primary item (assets/caviera-header.css, `:has()`-based, no JS required) the matching image
+      fades in. Merchant-uploaded `preview_image` always wins; otherwise a suitable bundled theme
+      photo is used ONLY where one genuinely fits (Edition I → jewellery-on-model; The House →
+      Oryx/architectural); no image exists for Journal, so that item's slot is simply omitted
+      rather than showing an unrelated picture — the field just stays restrained for it, per brief.
+    {%- endcomment -%}
+    <div class="caviera-mobile-nav__preview" aria-hidden="true">
+      {%- for block in edition_blocks -%}
+        {%- liquid
+          assign preview = block.settings.preview_image
+          assign bundled_preview = blank
+          assign bundled_w = 0
+          assign bundled_h = 0
+          case forloop.index
+            when 1
+              assign bundled_preview = '15_oryx_necklace_on_model.png'
+              assign bundled_w = 521
+              assign bundled_h = 358
+            when 2
+              assign bundled_preview = '26_oryx_palace_concept.png'
+              assign bundled_w = 1672
+              assign bundled_h = 941
+          endcase
+        -%}
+        {%- if preview -%}
+          <img
+            class="caviera-mobile-nav__preview-image"
+            data-preview-item="{{ forloop.index }}"
+            src="{{ preview | image_url: width: 900 }}"
+            srcset="{{ preview | image_url: width: 600 }} 600w, {{ preview | image_url: width: 900 }} 900w, {{ preview | image_url: width: 1200 }} 1200w"
+            sizes="32vw"
+            width="{{ preview.width }}"
+            height="{{ preview.height }}"
+            alt=""
+            loading="lazy"
+          >
+        {%- elsif bundled_preview != blank -%}
+          <img
+            class="caviera-mobile-nav__preview-image"
+            data-preview-item="{{ forloop.index }}"
+            src="{{ bundled_preview | asset_url }}"
+            width="{{ bundled_w }}"
+            height="{{ bundled_h }}"
+            alt=""
+            loading="lazy"
+          >
+        {%- endif -%}
       {%- endfor -%}
-    </ul>
-  </nav>
+    </div>
+  </div>
   {%- endif -%}
 
   {%- liquid
@@ -233,17 +304,17 @@
       assign show_mobile_localization = true
     endif
     assign show_mobile_utility = false
-    if section.settings.mobile_secondary_menu != blank or has_social or show_mobile_localization
+    if secondary_blocks.size > 0 or has_social or show_mobile_localization
       assign show_mobile_utility = true
     endif
   -%}
   {%- if show_mobile_utility -%}
     <div class="caviera-mobile-nav__utility container">
-      {%- if section.settings.mobile_secondary_menu != blank -%}
+      {%- if secondary_blocks.size > 0 -%}
         <nav class="caviera-mobile-nav__secondary" aria-label="{{ 'sections.header.client_services' | t }}">
           <ul>
-            {%- for link in section.settings.mobile_secondary_menu.links -%}
-              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {%- for block in secondary_blocks -%}
+              <li {{ block.shopify_attributes }}><a href="{{ block.settings.link }}">{{ block.settings.title }}</a></li>
             {%- endfor -%}
           </ul>
         </nav>
@@ -306,8 +377,10 @@
     { "type": "checkbox", "id": "enable_country_selector", "label": "Show country/language selector", "default": false },
     { "type": "header", "content": "Mega menu" },
     { "type": "image_picker", "id": "megamenu_image", "label": "Default editorial image", "info": "Shown in every mega menu that has no matching \"Mega menu feature\" block below." },
-    { "type": "header", "content": "Full-screen menu" },
-    { "type": "link_list", "id": "mobile_secondary_menu", "label": "Secondary / Client services menu (optional)", "info": "A short secondary list shown below the main navigation in the full-screen menu — e.g. Craftsmanship, Our Diamonds, Bespoke, Client Care. Social links and the localization control (if enabled above) appear alongside it automatically when configured." }
+    { "type": "header", "content": "Full-screen menu — primary navigation" },
+    { "type": "paragraph", "content": "CAVIERA is Edition-based, not a category catalogue — add/reorder \"Primary navigation item\" blocks below rather than assigning a generic products/collections menu here. Numbering (01, 02, …) is automatic. Leave a block's Link blank to show it as a quiet \"upcoming\" entry with no click action, for content that doesn't exist yet (e.g. Edition I before it has a dedicated page)." },
+    { "type": "header", "content": "Full-screen menu — secondary navigation" },
+    { "type": "paragraph", "content": "Smaller secondary links (e.g. Craftsmanship, Our Diamonds, Bespoke, Client Care) — add \"Secondary navigation item\" blocks below. Social links and the localization control (if enabled above) appear alongside them automatically when configured." }
   ],
   "blocks": [
     {
@@ -328,7 +401,36 @@
         { "type": "article", "id": "article", "label": "Article (when feature type is Article)" },
         { "type": "image_picker", "id": "image", "label": "Image", "info": "Required for Custom image; optional override for Collection/Article (their own featured image is used otherwise)." }
       ]
+    },
+    {
+      "type": "edition_nav_item",
+      "name": "Primary navigation item",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "EDITION I" },
+        { "type": "text", "id": "status_label", "label": "Status label (optional)", "info": "Small, quiet metadata under the title — e.g. \"UPCOMING — 2026\". Leave blank once the destination is live." },
+        { "type": "url", "id": "link", "label": "Link", "info": "Leave blank to render this item as a non-navigating \"upcoming\" entry instead of a broken or placeholder link." },
+        { "type": "image_picker", "id": "preview_image", "label": "Preview image (optional)", "info": "Shown quietly in the reserved visual field when this item is hovered or keyboard-focused. Leave blank to fall back to a suitable bundled theme image where one genuinely fits, or to leave the field restrained where none does." }
+      ]
+    },
+    {
+      "type": "secondary_nav_item",
+      "name": "Secondary navigation item",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Craftsmanship" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
     }
-  ]
+  ],
+  "default": {
+    "blocks": [
+      { "type": "edition_nav_item", "settings": { "title": "EDITION I", "status_label": "UPCOMING — 2026", "link": "" } },
+      { "type": "edition_nav_item", "settings": { "title": "THE HOUSE", "status_label": "", "link": "/pages/about-caviera" } },
+      { "type": "edition_nav_item", "settings": { "title": "JOURNAL", "status_label": "", "link": "/blogs/news" } },
+      { "type": "secondary_nav_item", "settings": { "title": "Craftsmanship", "link": "/pages/craftsmanship" } },
+      { "type": "secondary_nav_item", "settings": { "title": "Our Diamonds", "link": "/pages/our-diamonds" } },
+      { "type": "secondary_nav_item", "settings": { "title": "Bespoke", "link": "/pages/contact" } },
+      { "type": "secondary_nav_item", "settings": { "title": "Client Care", "link": "/pages/contact" } }
+    ]
+  }
 }
 {% endschema %}

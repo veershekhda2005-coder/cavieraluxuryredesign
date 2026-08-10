@@ -203,11 +203,22 @@
   transition: transform var(--motion-base) var(--ease-caviera);
 }
 .caviera-mobile-nav:not([hidden]) { transform: translateX(0); }
+/* Real accessibility fix: the sitewide focus-ring token defaults to Cinnabar (caviera-base.css),
+   which is invisible against this panel's own Cinnabar background. Scoped to this panel only. */
+.caviera-mobile-nav :focus-visible { outline-color: var(--caviera-bone); }
 .caviera-mobile-nav__head { display: flex; align-items: center; justify-content: space-between; height: var(--header-height-compact); padding-top: env(safe-area-inset-top, 0px); }
 .caviera-mobile-nav__mark img { max-height: calc(var(--header-height-compact) - 16px); }
 .caviera-mobile-nav__close svg { width: 20px; height: 20px; }
+
+/* ---- Primary navigation + reserved visual field ("the room") ----
+   Mobile (<700px): plain single-column stack, no visual field at all — "does not require hover,
+   the menu should remain simple and usable" per brief. Wider viewports: two-column composition,
+   primary nav ~58% / visual field ~32%, gap making up the remainder. */
+.caviera-mobile-nav__room { display: block; }
 .caviera-mobile-nav__nav { padding-block: 8px; }
-.caviera-mobile-nav__nav ul { display: flex; flex-direction: column; }
+.caviera-mobile-nav__nav ul,
+.caviera-mobile-nav__nav ol { display: flex; flex-direction: column; }
+.caviera-mobile-nav__preview { display: none; }
 
 /* Small, controlled stagger as the room opens — each top-level item rises/fades in a beat after
    the last. Capped at eight explicit steps so a long merchant menu never drifts into a slow
@@ -229,31 +240,109 @@
 .caviera-mobile-nav__item:nth-child(6) { transition-delay: 260ms; }
 .caviera-mobile-nav__item:nth-child(n+7) { transition-delay: 300ms; }
 
-.caviera-mobile-nav__item { border-bottom: var(--border-width) solid var(--border-subtle-on-dark); }
-.caviera-mobile-nav__item > a,
-.caviera-mobile-nav__toggle {
-  display: flex; align-items: center; justify-content: space-between;
-  width: 100%; padding: 20px 0;
-  font-family: var(--font-display); font-weight: 300; font-size: 1.375rem;
+/* Primary item: index number + link (or, if unconfigured, a non-navigating "upcoming" span) +
+   optional status metadata — laid out as one baseline-aligned row so the status label can sit at
+   the far end without competing with the title for visual weight. `.caviera-mobile-nav__toggle`
+   (the old nested-submenu accordion trigger) is dormant/unused now that primary items never have
+   children, and is left in place harmlessly rather than deleted. */
+.caviera-mobile-nav__item {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  border-bottom: var(--border-width) solid var(--border-subtle-on-dark);
 }
+.caviera-mobile-nav__primary-index {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--caviera-rhodium);
+}
+.caviera-mobile-nav__primary-link {
+  display: inline-block;
+  padding: 20px 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.375rem;
+  border-bottom: var(--border-width) solid transparent;
+  transition: border-color var(--motion-base) var(--ease-caviera), opacity var(--motion-fast) var(--ease-caviera);
+}
+/* Quiet "upcoming" state — same type treatment as a real link (its own status label already says
+   why it isn't one), just not interactive-looking: no pointer cursor, no hover/focus rule reveal. */
+.caviera-mobile-nav__primary-link--upcoming { cursor: default; }
+@media (hover: hover) {
+  .caviera-mobile-nav__item:hover .caviera-mobile-nav__primary-link:not(.caviera-mobile-nav__primary-link--upcoming) {
+    border-bottom-color: currentColor;
+  }
+}
+.caviera-mobile-nav__item:focus-within .caviera-mobile-nav__primary-link:not(.caviera-mobile-nav__primary-link--upcoming) {
+  border-bottom-color: currentColor;
+}
+.caviera-mobile-nav__primary-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--caviera-rhodium);
+  white-space: nowrap;
+  align-self: center;
+}
+
 /* Large, editorial-scale navigation at tablet width and up — "feel like entering another room",
-   not a resized mobile list, and not a small block centred in a huge empty screen either: the nav
-   itself takes the confident central-lower portion of the viewport (flex:1 + justify-content:
-   center within the column layout set on .caviera-mobile-nav above), with the House Seal staying
-   put near the top and the secondary utility block staying near the bottom. --step-h1 is the same
-   clamp() token used for on-page H1 headings elsewhere in the theme — deliberately larger than the
-   --step-h2 used before, so primary items actually read as the visual focus of the room rather
-   than a slightly-enlarged list. */
+   not a resized mobile list, and not a small block centred in a huge empty screen either: the room
+   takes the confident central-lower portion of the viewport (flex:1 + justify-content: center
+   within the column layout set on .caviera-mobile-nav above), with the House Seal staying put near
+   the top and the secondary utility block staying near the bottom. --step-h1 is the same clamp()
+   token used for on-page H1 headings elsewhere in the theme, for real primary-navigation presence.
+   Suggested ~58/32 left/right split per brief, gap making up the remainder. */
 @media (min-width: 700px) {
-  .caviera-mobile-nav__nav {
+  .caviera-mobile-nav__room {
     flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 58%) minmax(0, 32%);
+    column-gap: clamp(24px, 6vw, 80px);
+    align-items: center;
+  }
+  .caviera-mobile-nav__nav {
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding-block: clamp(24px, 6vh, 64px);
   }
-  .caviera-mobile-nav__item > a,
-  .caviera-mobile-nav__toggle { padding-block: 20px; font-size: var(--step-h1); }
+  .caviera-mobile-nav__primary-link { padding-block: 20px; font-size: var(--step-h1); }
+
+  /* Reserved visual field — quiet/empty by default. See the ":has()" reveal rules below; on
+     browsers without :has() support this stays empty throughout, which is a fully acceptable
+     degradation for a purely decorative enhancement — the menu itself remains entirely usable. */
+  .caviera-mobile-nav__preview {
+    display: block;
+    position: relative;
+    height: min(60vh, 640px);
+    overflow: hidden;
+  }
+  .caviera-mobile-nav__preview-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.02);
+    transition: opacity var(--motion-base) var(--ease-caviera), transform var(--motion-base) var(--ease-caviera);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .caviera-mobile-nav__preview-image { transform: none; }
+  }
+  /* Hover OR keyboard-focus of primary item N reveals only preview image N. Explicit pairs kept to
+     six — matches the same reasonable cap used for the opening stagger above. */
+  .caviera-mobile-nav__room:has(.caviera-mobile-nav__item[data-primary-item="1"]:hover, .caviera-mobile-nav__item[data-primary-item="1"]:focus-within) .caviera-mobile-nav__preview-image[data-preview-item="1"],
+  .caviera-mobile-nav__room:has(.caviera-mobile-nav__item[data-primary-item="2"]:hover, .caviera-mobile-nav__item[data-primary-item="2"]:focus-within) .caviera-mobile-nav__preview-image[data-preview-item="2"],
+  .caviera-mobile-nav__room:has(.caviera-mobile-nav__item[data-primary-item="3"]:hover, .caviera-mobile-nav__item[data-primary-item="3"]:focus-within) .caviera-mobile-nav__preview-image[data-preview-item="3"],
+  .caviera-mobile-nav__room:has(.caviera-mobile-nav__item[data-primary-item="4"]:hover, .caviera-mobile-nav__item[data-primary-item="4"]:focus-within) .caviera-mobile-nav__preview-image[data-preview-item="4"],
+  .caviera-mobile-nav__room:has(.caviera-mobile-nav__item[data-primary-item="5"]:hover, .caviera-mobile-nav__item[data-primary-item="5"]:focus-within) .caviera-mobile-nav__preview-image[data-preview-item="5"],
+  .caviera-mobile-nav__room:has(.caviera-mobile-nav__item[data-primary-item="6"]:hover, .caviera-mobile-nav__item[data-primary-item="6"]:focus-within) .caviera-mobile-nav__preview-image[data-preview-item="6"] {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .caviera-mobile-nav__submenu { padding-bottom: 16px; }
 .caviera-mobile-nav__submenu a { display: block; padding: 10px 0; font-size: 1rem; color: var(--caviera-rhodium); }
