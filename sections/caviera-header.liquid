@@ -2,6 +2,14 @@
   Global header. Desktop: spacious, optionally transparent over a hero, compacts on scroll and may
   swap the full wordmark for the House Seal. Mobile: House Seal + full-screen drawer. Menu content
   is entirely merchant-driven via a Shopify linklist — nothing here is hardcoded.
+
+  Controlled-visual-test revision: architecture is now MENU / WORDMARK / SEARCH · BAG at every
+  breakpoint (Drkst-style restraint) — the inline desktop nav + hover mega menu below is retired
+  from view (kept in markup, permanently hidden via CSS in assets/caviera-header.css, so a
+  merchant's existing "Menu" linklist and any "Mega menu feature" blocks are never lost, only
+  unused for now). The single `data-caviera-menu-toggle` button opens the SAME full-screen
+  environment — previously mobile-only — at every breakpoint, so nothing about a merchant's
+  configured navigation actually changes: `main_menu` and `mobile_secondary_menu` still drive it.
 {%- endcomment -%}
 {%- liquid
   assign menu = section.settings.main_menu
@@ -19,8 +27,7 @@
 >
   <div class="caviera-header__bar container">
     <button type="button" class="caviera-header__menu-toggle" data-caviera-menu-toggle aria-expanded="false" aria-controls="caviera-mobile-nav">
-      {% render 'icon', name: 'menu' %}
-      <span class="visually-hidden">{{ 'sections.header.menu' | t }}</span>
+      <span class="caviera-header__menu-label">{{ 'sections.header.menu' | t }}</span>
     </button>
 
     <a href="{{ routes.root_url }}" class="caviera-header__logo" aria-label="{{ shop.name }} — {{ 'general.accessibility.home' | t }}">
@@ -175,7 +182,13 @@
 
 <div id="caviera-mobile-nav" class="caviera-mobile-nav" hidden>
   <div class="caviera-mobile-nav__head container">
-    <span class="caviera-mobile-nav__mark">{%- render 'caviera-house-seal', mode: 'light', width: 40, alt: '' -%}</span>
+    {%- comment -%}
+      mode: 'dark' is correct here (renders the Bone-coloured seal) — this panel's background is a
+      dark brand field (Cinnabar/Obsidian, see assets/caviera-header.css), never a light one. The
+      previous 'light' value was a real, pre-existing contrast bug: it rendered the dark/Obsidian
+      seal against an already-dark panel.
+    {%- endcomment -%}
+    <span class="caviera-mobile-nav__mark">{%- render 'caviera-house-seal', mode: 'dark', width: 40, alt: '' -%}</span>
     <button type="button" class="caviera-mobile-nav__close" data-caviera-menu-close aria-label="{{ 'general.accessibility.close_menu' | t }}">
       {% render 'icon', name: 'close' %}
     </button>
@@ -291,8 +304,8 @@
     { "type": "checkbox", "id": "enable_country_selector", "label": "Show country/language selector", "default": false },
     { "type": "header", "content": "Mega menu" },
     { "type": "image_picker", "id": "megamenu_image", "label": "Default editorial image", "info": "Shown in every mega menu that has no matching \"Mega menu feature\" block below." },
-    { "type": "header", "content": "Mobile menu" },
-    { "type": "link_list", "id": "mobile_secondary_menu", "label": "Client services menu (optional)", "info": "A short secondary list shown below the main mobile menu — e.g. Contact, FAQ, Bespoke. Social links and the localization control (if enabled above) appear alongside it automatically when configured." }
+    { "type": "header", "content": "Full-screen menu" },
+    { "type": "link_list", "id": "mobile_secondary_menu", "label": "Secondary / Client services menu (optional)", "info": "A short secondary list shown below the main navigation in the full-screen menu — e.g. Craftsmanship, Our Diamonds, Bespoke, Client Care. Social links and the localization control (if enabled above) appear alongside it automatically when configured." }
   ],
   "blocks": [
     {

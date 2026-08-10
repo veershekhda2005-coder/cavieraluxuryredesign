@@ -77,7 +77,20 @@
     if (dismissed) return;
     dismissed = true;
     unlockScroll();
-    loader.classList.add('is-dismissed');
+    // Two-step reveal: start the curtain-like sweep (assets/caviera-loader.css .is-leaving,
+    // transform only) immediately, then finalize to the fully inert .is-dismissed state once the
+    // sweep finishes. Prefers transitionend but never depends on it firing — the setTimeout below
+    // is a hard safety net (comfortably covers even the "slow" transition-speed setting's
+    // --motion-slow value), consistent with every other safety timeout in this file.
+    loader.classList.add('is-leaving');
+    var finalized = false;
+    function finalize() {
+      if (finalized) return;
+      finalized = true;
+      loader.classList.add('is-dismissed');
+    }
+    loader.addEventListener('transitionend', finalize, { once: true });
+    setTimeout(finalize, 900);
     if (loader._safety) { clearTimeout(loader._safety); loader._safety = null; }
   }
 

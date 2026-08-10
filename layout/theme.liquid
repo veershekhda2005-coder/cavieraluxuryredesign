@@ -91,11 +91,11 @@
       {%- else -%}
         {%- case settings.transition_speed -%}
           {%- when 'fast' -%}
-      --motion-fast: 160ms; --motion-base: 320ms; --motion-slow: 480ms; --motion-cinematic: 700ms;
+      --motion-fast: 160ms; --motion-base: 320ms; --motion-slow: 480ms; --motion-cinematic: 550ms;
           {%- when 'slow' -%}
-      --motion-fast: 320ms; --motion-base: 700ms; --motion-slow: 900ms; --motion-cinematic: 1100ms;
+      --motion-fast: 320ms; --motion-base: 700ms; --motion-slow: 900ms; --motion-cinematic: 900ms;
           {%- else -%}
-      --motion-fast: 240ms; --motion-base: 520ms; --motion-slow: 700ms; --motion-cinematic: 900ms;
+      --motion-fast: 240ms; --motion-base: 520ms; --motion-slow: 700ms; --motion-cinematic: 800ms;
         {%- endcase -%}
       {%- endif %}
     }

@@ -35,6 +35,22 @@
 }
 .caviera-transition__mark img { max-width: min(40px, 10vw); height: auto; }
 
+/* Departure: the current page's content recedes very slightly underneath the rising curtain —
+   "the current page begins to recede/fade" from the brief. Deliberately subtle (barely
+   perceptible scale/opacity change), applied to #main-content rather than <body> — a `transform`
+   on <body> would create a new containing block for every fixed-position child of <body>
+   (this overlay itself, cart-drawer, search-overlay, the full-screen menu), breaking their
+   "fixed to the viewport" positioning for the duration of the recede. Only ever applied to the
+   page being left — a fresh page load never carries this class. */
+#main-content.caviera-transition-departing {
+  opacity: 0.92;
+  transform: scale(0.995);
+  transition: opacity var(--motion-base) var(--ease-caviera), transform var(--motion-base) var(--ease-caviera);
+}
+@media (prefers-reduced-motion: reduce) {
+  #main-content.caviera-transition-departing { transition: none; opacity: 1; transform: none; }
+}
+
 /* Departure: curtain rises to cover the current page before real navigation fires. */
 .caviera-transition.is-covering {
   visibility: visible;

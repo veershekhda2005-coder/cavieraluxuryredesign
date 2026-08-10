@@ -53,11 +53,15 @@
 }
 .caviera-header.is-compact .caviera-header__bar { height: var(--header-height-compact); }
 
-.caviera-header__menu-toggle { display: none; align-items: center; }
-@media (max-width: 899px) {
-  .caviera-header__menu-toggle { display: inline-flex; }
+/* Controlled-visual-test revision: MENU is now a plain typographic trigger, visible at every
+   breakpoint (Drkst-style restraint — no hamburger icon, no icon-driven affordance at all). It
+   opens the same full-screen environment on desktop that used to be mobile-only. */
+.caviera-header__menu-toggle { display: inline-flex; align-items: center; min-height: 44px; }
+.caviera-header__menu-label {
+  font-size: 0.8125rem;
+  letter-spacing: var(--nav-tracking);
+  text-transform: uppercase;
 }
-.caviera-header__menu-toggle svg { width: 22px; height: 22px; }
 
 .caviera-header__logo { display: block; line-height: 0; margin-right: auto; }
 .caviera-header__logo-compact { display: none; }
@@ -78,11 +82,12 @@
 .caviera-header[data-sticky-logo-mode="seal"].is-compact .caviera-header__logo-full { display: none; }
 .caviera-header[data-sticky-logo-mode="seal"].is-compact .caviera-header__logo-compact { display: block; }
 
+/* Controlled-visual-test revision: the inline desktop nav + hover mega menu is retired from view
+   at every breakpoint in favour of the single MENU trigger above, opening the full-screen
+   environment (see .caviera-mobile-nav below). Markup, its Shopify linklist, and any "Mega menu
+   feature" blocks are left completely intact underneath — only display is affected — so nothing
+   here is lost if a future pass wants it back. */
 .caviera-header__nav { display: none; }
-@media (min-width: 900px) {
-  .caviera-header__nav { display: block; }
-  .caviera-header__nav > ul { display: flex; gap: 36px; }
-}
 .caviera-header__nav-link {
   display: inline-flex;
   align-items: center;
@@ -148,7 +153,7 @@
    specificity, later in source order — actually win at this breakpoint. */
 @media (min-width: 900px) {
   .caviera-header__bar { display: grid; grid-template-columns: 1fr auto 1fr; column-gap: 24px; }
-  .caviera-header__nav { grid-column: 1; justify-self: start; min-width: 0; }
+  .caviera-header__menu-toggle { grid-column: 1; justify-self: start; min-width: 0; }
   .caviera-header__logo { grid-column: 2; justify-self: center; margin-right: 0; }
   .caviera-header__actions { grid-column: 3; justify-self: end; margin-left: 0; min-width: 0; }
 }
@@ -171,12 +176,16 @@
 
 .caviera-header__localization { padding-block: 8px; border-top: var(--border-width) solid var(--border-subtle); }
 
-/* ---- Mobile full-screen drawer ---- */
+/* ---- Full-screen menu — "another room", not a Shopify drawer ----
+   Controlled-visual-test revision: Cinnabar field (brief's preferred choice; Obsidian was the
+   documented fallback "if contrast/composition requires" — Cinnabar/Bone contrast is strong
+   enough here to use it directly), Warm Bone typography, large restrained navigation. Used at
+   every breakpoint now — see assets/caviera-header.css's retired inline nav, above. */
 .caviera-mobile-nav {
   position: fixed;
   inset: 0;
   z-index: var(--z-drawer);
-  background: var(--caviera-obsidian);
+  background: var(--caviera-cinnabar);
   color: var(--caviera-bone);
   overflow-y: auto;
   transform: translateX(-100%);
@@ -186,13 +195,44 @@
 .caviera-mobile-nav__head { display: flex; align-items: center; justify-content: space-between; height: var(--header-height-compact); padding-top: env(safe-area-inset-top, 0px); }
 .caviera-mobile-nav__mark img { max-height: calc(var(--header-height-compact) - 16px); }
 .caviera-mobile-nav__close svg { width: 20px; height: 20px; }
+.caviera-mobile-nav__nav { padding-block: 8px; }
 .caviera-mobile-nav__nav ul { display: flex; flex-direction: column; }
+
+/* Small, controlled stagger as the room opens — each top-level item rises/fades in a beat after
+   the last. Capped at eight explicit steps so a long merchant menu never drifts into a slow
+   letter-by-letter-style reveal; anything past the eighth item simply joins on the same beat as
+   the eighth. Uses the same `:not([hidden])` mechanism already proven by the panel's own slide-in
+   transform above, so it plays correctly the instant the drawer becomes visible. Reduced motion
+   forces --motion-base to 1ms globally (caviera-base.css) — this collapses to no visible stagger. */
+.caviera-mobile-nav__item {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--motion-base) var(--ease-caviera), transform var(--motion-base) var(--ease-caviera);
+}
+.caviera-mobile-nav:not([hidden]) .caviera-mobile-nav__item { opacity: 1; transform: none; }
+.caviera-mobile-nav__item:nth-child(1) { transition-delay: 60ms; }
+.caviera-mobile-nav__item:nth-child(2) { transition-delay: 100ms; }
+.caviera-mobile-nav__item:nth-child(3) { transition-delay: 140ms; }
+.caviera-mobile-nav__item:nth-child(4) { transition-delay: 180ms; }
+.caviera-mobile-nav__item:nth-child(5) { transition-delay: 220ms; }
+.caviera-mobile-nav__item:nth-child(6) { transition-delay: 260ms; }
+.caviera-mobile-nav__item:nth-child(n+7) { transition-delay: 300ms; }
+
 .caviera-mobile-nav__item { border-bottom: var(--border-width) solid var(--border-subtle-on-dark); }
 .caviera-mobile-nav__item > a,
 .caviera-mobile-nav__toggle {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; padding: 20px 0;
-  font-family: var(--font-display); font-size: 1.375rem;
+  font-family: var(--font-display); font-weight: 300; font-size: 1.375rem;
+}
+/* Large, editorial-scale navigation at tablet width and up — "feel like entering another room",
+   not a resized mobile list. --step-h2 is the same clamp() token used for on-page H2 headings
+   elsewhere in the theme, so this stays in step with the rest of the type system rather than
+   inventing a one-off size. */
+@media (min-width: 700px) {
+  .caviera-mobile-nav__nav { padding-block: clamp(24px, 6vh, 64px); }
+  .caviera-mobile-nav__item > a,
+  .caviera-mobile-nav__toggle { padding-block: 28px; font-size: var(--step-h2); }
 }
 .caviera-mobile-nav__submenu { padding-bottom: 16px; }
 .caviera-mobile-nav__submenu a { display: block; padding: 10px 0; font-size: 1rem; color: var(--caviera-rhodium); }

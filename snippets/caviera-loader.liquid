@@ -11,6 +11,12 @@
   do not recreate one). Rendered unconditionally via `{% render 'caviera-loader' %}` inside
   `{% if template.name == 'index' %}` in layout/theme.liquid.
 
+  Controlled-visual-test revision: base field is now Obsidian by default (was Cinnabar) — "OBSIDIAN
+  full-screen field → Oryx → House Seal → Master Signature → reveal". The exit is no longer a plain
+  opacity fade: assets/caviera-loader.css's `.is-leaving` sweeps the whole field away on a transform
+  (translateY), so the field itself reads as "a controlled curtain moving away", per brief. Default
+  total ceremony budget (data-duration 2200ms + the ~700ms sweep) targets the ~2–3s maximum.
+
   IMPORTANT — two independent layers of "always present":
     1. The root `[data-caviera-loader]` always renders on the homepage, regardless of
        settings.enable_loader, session state, or asset availability.
@@ -63,13 +69,13 @@
   data-caviera-loader
   data-enabled="{{ settings.enable_loader }}"
   data-once-per-session="{{ settings.loader_once_per_session }}"
-  data-duration="{{ settings.loader_duration | default: 2600 }}"
+  data-duration="{{ settings.loader_duration | default: 2200 }}"
   data-reduced-motion-behaviour="{{ settings.loader_reduced_motion | default: 'static_brief' }}"
   data-design-mode="{{ request.design_mode }}"
   data-has-oryx="{{ has_oryx }}"
   data-has-seal="{{ has_seal }}"
   data-has-signature="{{ has_signature }}"
-  style="--loader-bg: {{ settings.loader_background | default: '#8F261F' }};"
+  style="--loader-bg: {{ settings.loader_background | default: '#111012' }};"
   aria-hidden="true"
 >
   <div class="caviera-loader__stage caviera-loader__oryx" data-loader-oryx>

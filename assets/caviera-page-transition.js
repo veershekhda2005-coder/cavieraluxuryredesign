@@ -63,6 +63,12 @@
     var href = link.href;
     try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (err) { /* fail open below */ }
     el.classList.add('is-covering');
+    // Subtle recede on the departing page's own content only — deliberately NOT on <body>, whose
+    // fixed-position children (this very overlay, cart-drawer, search-overlay, the full-screen
+    // menu) would otherwise get a new transformed containing block the instant a `transform`
+    // lands on <body>, breaking their "fixed to the viewport" positioning.
+    var main = document.getElementById('main-content');
+    if (main) main.classList.add('caviera-transition-departing');
 
     var navigated = false;
     function go() {

@@ -31,17 +31,28 @@
   justify-content: center;
   overflow: hidden;
   z-index: var(--z-loader);
-  background: var(--loader-bg, var(--caviera-cinnabar));
+  background: var(--loader-bg, var(--caviera-obsidian));
   opacity: 1;
+  transform: translateY(0);
   pointer-events: auto;
-  transition: opacity var(--motion-slow) var(--ease-caviera), visibility 0s var(--motion-slow);
+  transition: opacity var(--motion-slow) var(--ease-caviera), transform var(--motion-slow) var(--ease-caviera), visibility 0s var(--motion-slow);
 }
 
-/* Terminal state — fades out, then becomes fully inert. The root element itself is never removed
-   from the DOM (see snippets/caviera-loader.liquid comment), only hidden this way, so
+/* Reveal — the field itself sweeps up and away like a controlled curtain (transform only, no
+   opacity change here) rather than simply fading out. Under prefers-reduced-motion, --motion-slow
+   collapses to 1ms (see caviera-base.css), so this becomes an effectively-instant reveal —
+   satisfying "if reduced motion is enabled, reveal immediately" with no separate code path. */
+.caviera-loader.is-leaving {
+  transform: translateY(-100%);
+}
+
+/* Terminal state — reached once the sweep finishes (see assets/caviera-loader.js dismiss()),
+   fully inert from here on. The root element itself is never removed from the DOM (see
+   snippets/caviera-loader.liquid comment), only hidden this way, so
    `document.querySelector('[data-caviera-loader]')` keeps resolving after dismissal too. */
 .caviera-loader.is-dismissed {
   opacity: 0;
+  transform: translateY(-100%);
   visibility: hidden;
   pointer-events: none;
 }

@@ -81,14 +81,15 @@
   /* ---- Motion ----
      Shared timing tokens — reference these, never a one-off ms value in a section file.
      micro interaction (--motion-fast): 180–300ms · normal reveal (--motion-base): 400–700ms ·
-     cinematic transition (--motion-cinematic): 700–1100ms maximum. --motion-slow sits at the
-     boundary between reveal and cinematic and is kept for existing consumers (header/drawer/cart
-     slides); new cinematic-only work (e.g. the page-transition curtain) should reach for
-     --motion-cinematic instead of inventing a new value. */
+     cinematic transition (--motion-cinematic): kept within the CAVIERA Curtain page-transition's
+     own ~500–900ms target. --motion-slow sits at the boundary between reveal and cinematic and is
+     kept for existing consumers (header/drawer/cart slides, the loader's curtain-sweep exit); new
+     cinematic-only work (the page-transition curtain) should reach for --motion-cinematic instead
+     of inventing a new value. */
   --motion-fast: 240ms;
   --motion-base: 520ms;
   --motion-slow: 700ms;
-  --motion-cinematic: 900ms;
+  --motion-cinematic: 800ms;
   --ease-caviera: cubic-bezier(0.22, 0.61, 0.15, 1);
 
   /* ---- Z-index scale ---- */
