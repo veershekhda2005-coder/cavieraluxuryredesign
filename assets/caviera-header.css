@@ -241,13 +241,16 @@
 .caviera-mobile-nav__item:nth-child(n+7) { transition-delay: 300ms; }
 
 /* Primary item: index number + link (or, if unconfigured, a non-navigating "upcoming" span) +
-   optional status metadata — laid out as one baseline-aligned row so the status label can sit at
-   the far end without competing with the title for visual weight. `.caviera-mobile-nav__toggle`
-   (the old nested-submenu accordion trigger) is dormant/unused now that primary items never have
-   children, and is left in place harmlessly rather than deleted. */
+   optional status metadata. `flex-wrap: wrap` lets the status label sit close after the title
+   when there's room (wide viewports) and drop to its own line directly under the title when
+   there isn't (narrow viewports) — either way it reads as attached to the title, never stranded
+   at the far edge of the row. `.caviera-mobile-nav__toggle` (the old nested-submenu accordion
+   trigger) is dormant/unused now that primary items never have children, and is left in place
+   harmlessly rather than deleted. */
 .caviera-mobile-nav__item {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 16px;
   border-bottom: var(--border-width) solid var(--border-subtle-on-dark);
 }
@@ -277,8 +280,10 @@
 .caviera-mobile-nav__item:focus-within .caviera-mobile-nav__primary-link:not(.caviera-mobile-nav__primary-link--upcoming) {
   border-bottom-color: currentColor;
 }
+/* Placed immediately after the title (was `margin-left: auto`, stranding it at the far edge of a
+   wide row, which read as detached from EDITION I rather than belonging to it) — still small,
+   quiet, plain text throughout: no badge background, no border-radius, no fill, no animation. */
 .caviera-mobile-nav__primary-status {
-  margin-left: auto;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -298,7 +303,10 @@
   .caviera-mobile-nav__room {
     flex: 1;
     display: grid;
-    grid-template-columns: minmax(0, 58%) minmax(0, 32%);
+    /* 55/35 (was 58/32) — a ~9% relative increase in the visual field's share, per the polish
+       pass, while staying within the brief's original "~55–60% / ~30–35%" range and keeping
+       navigation the dominant element. */
+    grid-template-columns: minmax(0, 55%) minmax(0, 35%);
     column-gap: clamp(24px, 6vw, 80px);
     align-items: center;
   }
@@ -316,7 +324,9 @@
   .caviera-mobile-nav__preview {
     display: block;
     position: relative;
-    height: min(60vh, 640px);
+    /* was min(60vh, 640px) — a ~8% increase on both the viewport-relative and pixel ceiling,
+       matching the column-width increase above. Still capped well short of dominating the room. */
+    height: min(64vh, 690px);
     overflow: hidden;
   }
   .caviera-mobile-nav__preview-image {
@@ -363,8 +373,18 @@
   flex-direction: column;
   gap: 20px;
 }
-.caviera-mobile-nav__secondary ul { display: flex; flex-direction: column; gap: 4px; }
-.caviera-mobile-nav__secondary a { display: block; padding: 8px 0; font-size: 0.875rem; color: var(--caviera-rhodium); }
+/* Legibility polish: font-size 0.875rem -> 0.9375rem (+~7%) plus the row's own vertical padding
+   (+2px) accounts for the requested "~10-15% larger" together with the increased gap below; colour
+   shifted from flat Rhodium to a translucent Warm Bone (clearly still quieter than the fully solid
+   Bone used by primary navigation, but noticeably easier to read against Cinnabar). Still plain
+   text — no background, no border-radius, no fill, matching "do not add boxes or buttons". */
+.caviera-mobile-nav__secondary ul { display: flex; flex-direction: column; gap: 8px; }
+.caviera-mobile-nav__secondary a {
+  display: block;
+  padding: 10px 0;
+  font-size: 0.9375rem;
+  color: color-mix(in srgb, var(--caviera-bone) 78%, transparent);
+}
 .caviera-mobile-nav__social { display: flex; gap: 20px; }
 .caviera-mobile-nav__social a { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; margin: -10px; }
 .caviera-mobile-nav__social svg { width: 18px; height: 18px; }
