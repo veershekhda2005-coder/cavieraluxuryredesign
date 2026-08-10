@@ -16,8 +16,17 @@
   top: 0; left: 0; right: 0;
   background: transparent;
   border-bottom-color: transparent;
-  color: var(--text-inverse);
 }
+/* Real bug fix: MENU/SEARCH/BAG (text + currentColor-stroke icons) must match whatever the
+   "Logo colour version" setting already says about the actual hero underneath — the wordmark
+   image's own colour is chosen by that same setting (data-logo-scheme), so the surrounding
+   controls have to follow it too, not a value hardcoded independently of it. Previously this was
+   a flat `color: var(--text-inverse)` regardless of logo_scheme — correct only when the hero is
+   genuinely dark, and invisible (light Bone text on a light hero) whenever a merchant had
+   correctly set "For light backgrounds" (logo_scheme: light, the schema default) to match an
+   actual light/bright hero image. */
+.caviera-header--transparent[data-logo-scheme="dark"] { color: var(--text-inverse); }
+.caviera-header--transparent[data-logo-scheme="light"] { color: var(--text-primary); }
 .caviera-header--transparent.is-scrolled {
   position: sticky;
   background: var(--caviera-bone);

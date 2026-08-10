@@ -17,12 +17,14 @@
   assign sticky = section.settings.sticky_header
   assign sticky_logo_mode = section.settings.sticky_logo_mode
   assign resolved_scheme = section.settings.resolved_scheme | default: 'bone'
+  assign logo_scheme = section.settings.logo_scheme | default: 'light'
 -%}
 <caviera-header
   class="caviera-header{% if transparent %} caviera-header--transparent{% endif %}"
   data-sticky="{{ sticky }}"
   data-sticky-logo-mode="{{ sticky_logo_mode }}"
   data-resolved-scheme="{{ resolved_scheme }}"
+  data-logo-scheme="{{ logo_scheme }}"
   role="banner"
 >
   <div class="caviera-header__bar container">
