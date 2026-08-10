@@ -1,0 +1,44 @@
+{%- comment -%}
+  The one restrained newsletter area for the homepage. Not a popup, no discount promise unless
+  explicitly configured by the merchant.
+{%- endcomment -%}
+<section class="caviera-section caviera-section--tight caviera-newsletter" data-scheme="{{ section.settings.color_scheme }}">
+  <div class="container container--narrow caviera-newsletter__inner" data-reveal>
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h3">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.body != blank -%}<p class="body-text">{{ section.settings.body }}</p>{%- endif -%}
+    {%- if section.settings.discount_text != blank -%}<p class="body-text caviera-newsletter__incentive">{{ section.settings.discount_text }}</p>{%- endif -%}
+
+    {%- form 'customer', class: 'caviera-newsletter-form' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <label class="visually-hidden" for="HomeNewsletterEmail">{{ 'general.newsletter.email_placeholder' | t }}</label>
+      <div class="caviera-newsletter-form__row">
+        <input type="email" id="HomeNewsletterEmail" name="contact[email]" required placeholder="{{ 'general.newsletter.email_placeholder' | t }}" autocomplete="email">
+        <button type="submit" class="btn btn--primary">{{ 'general.newsletter.submit' | t }}</button>
+      </div>
+      <p class="caviera-footer__consent">{{ 'general.newsletter.consent' | t }}</p>
+      {%- if form.posted_successfully? -%}
+        <p class="form-status" data-state="success">{{ 'general.newsletter.success' | t }}</p>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Be first to know" },
+    { "type": "textarea", "id": "body", "label": "Body", "default": "New pieces, quietly announced." },
+    { "type": "text", "id": "discount_text", "label": "Incentive line (optional)", "info": "Only shown if factually configured — leave blank otherwise." }
+  ],
+  "presets": [{ "name": "Newsletter" }]
+}
+{% endschema %}

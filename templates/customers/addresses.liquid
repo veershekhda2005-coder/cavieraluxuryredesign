@@ -1,0 +1,55 @@
+<div class="caviera-page container container--narrow">
+  <a href="{{ routes.account_url }}" class="link-underline">{{ 'customer.account.return' | t }}</a>
+  <h1 class="heading-h1 caviera-customer__meta">{{ 'customer.addresses.title' | t }}</h1>
+
+  <div class="caviera-address__list">
+    {%- for address in customer.addresses -%}
+      <div class="caviera-address__card">
+        <address class="body-text">{{ address | format_address }}</address>
+        {%- if address == customer.default_address -%}<span class="badge">{{ 'customer.addresses.default' | t }}</span>{%- endif -%}
+        <div class="caviera-address__card-actions">
+          <details class="caviera-address-edit">
+            <summary class="link-underline">{{ 'customer.addresses.edit' | t }}</summary>
+            {%- form 'customer_address', address, class: 'caviera-customer__form caviera-customer__form--left' -%}
+              <div class="field"><label for="AddressFirstName-{{ address.id }}">{{ 'customer.register.first_name' | t }}</label><input type="text" id="AddressFirstName-{{ address.id }}" name="address[first_name]" value="{{ address.first_name }}"></div>
+              <div class="field"><label for="AddressLastName-{{ address.id }}">{{ 'customer.register.last_name' | t }}</label><input type="text" id="AddressLastName-{{ address.id }}" name="address[last_name]" value="{{ address.last_name }}"></div>
+              <div class="field"><label for="AddressLine1-{{ address.id }}">Address</label><input type="text" id="AddressLine1-{{ address.id }}" name="address[address1]" value="{{ address.address1 }}" required></div>
+              <div class="field"><label for="AddressLine2-{{ address.id }}">Apartment, suite, etc. (optional)</label><input type="text" id="AddressLine2-{{ address.id }}" name="address[address2]" value="{{ address.address2 }}"></div>
+              <div class="field"><label for="AddressCity-{{ address.id }}">City</label><input type="text" id="AddressCity-{{ address.id }}" name="address[city]" value="{{ address.city }}" required></div>
+              <div class="field"><label for="AddressZip-{{ address.id }}">Postal/ZIP code</label><input type="text" id="AddressZip-{{ address.id }}" name="address[zip]" value="{{ address.zip }}"></div>
+              <div class="field">
+                <label for="AddressCountry-{{ address.id }}">Country</label>
+                <select id="AddressCountry-{{ address.id }}" name="address[country]" data-default="{{ address.country }}">{{ country_option_tags }}</select>
+              </div>
+              <div class="field"><label for="AddressPhone-{{ address.id }}">Phone (optional)</label><input type="tel" id="AddressPhone-{{ address.id }}" name="address[phone]" value="{{ address.phone }}"></div>
+              <label class="caviera-address__checkbox">
+                <input type="checkbox" name="address[default]" value="1" {% if address == customer.default_address %}checked{% endif %}>
+                {{ 'customer.addresses.default' | t }}
+              </label>
+              <button type="submit" class="btn btn--primary">{{ 'customer.addresses.save' | t }}</button>
+            {%- endform -%}
+          </details>
+          {%- form 'customer_address', address -%}
+            <button type="submit" name="_method" value="delete" class="link-underline" data-confirm="{{ 'customer.addresses.delete_confirm' | t }}">{{ 'customer.addresses.delete' | t }}</button>
+          {%- endform -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+
+  <details class="caviera-address__add">
+    <summary class="btn">{{ 'customer.addresses.add_new' | t }}</summary>
+    {%- form 'customer_address', customer.new_address, class: 'caviera-customer__form caviera-customer__form--left' -%}
+      <div class="field"><label for="NewAddressFirstName">{{ 'customer.register.first_name' | t }}</label><input type="text" id="NewAddressFirstName" name="address[first_name]"></div>
+      <div class="field"><label for="NewAddressLastName">{{ 'customer.register.last_name' | t }}</label><input type="text" id="NewAddressLastName" name="address[last_name]"></div>
+      <div class="field"><label for="NewAddressLine1">Address</label><input type="text" id="NewAddressLine1" name="address[address1]" required></div>
+      <div class="field"><label for="NewAddressCity">City</label><input type="text" id="NewAddressCity" name="address[city]" required></div>
+      <div class="field"><label for="NewAddressZip">Postal/ZIP code</label><input type="text" id="NewAddressZip" name="address[zip]"></div>
+      <div class="field">
+        <label for="NewAddressCountry">Country</label>
+        <select id="NewAddressCountry" name="address[country]">{{ country_option_tags }}</select>
+      </div>
+      <button type="submit" class="btn btn--primary">{{ 'customer.addresses.add_new' | t }}</button>
+    {%- endform -%}
+  </details>
+</div>

@@ -1,0 +1,254 @@
+{%- comment -%}
+  Cinematic hero — architectural asymmetric split, not a centred headline over a full-bleed image.
+  One large jewellery media field + one Cinnabar/Obsidian editorial field, joined by a thin
+  Rhodium hinge line. Official wordmark lives in the header, not here (see show_wordmark below).
+
+  Media priority per breakpoint: 1) dedicated Theme Editor image/video (image_desktop / image_mobile
+  / video_url / video_url_mobile) — always wins outright, 2) the bundled default first-screen image
+  (assets/15_oryx_necklace_on_model.png), used only where a breakpoint has neither of its own, 3) a
+  considered gradient/frame placeholder (see assets/caviera-home.css, .caviera-hero__field-fallback)
+  for the rare case neither exists (kept in the CSS/markup but effectively unreachable now that the
+  bundled image always fills the gap). There is still deliberately no fallback to any product or
+  collection image at any point — an unrelated catalogue photo (however good) reads as a stand-in,
+  not a campaign entrance, and risks surfacing whatever image happens to be first in the catalogue
+  (including one still carrying temporary/marketplace artwork). See
+  docs/homepage-media-requirements.md for the desktop/mobile hero image specification.
+
+  Desktop and mobile images share one <picture> element so the browser fetches only the variant
+  that actually matches the current viewport — never both. Desktop/mobile video (an optional,
+  advanced path) render as two separate <video> elements with preload="metadata" rather than a
+  full eager fetch, since a browser cannot conditionally skip fetching a hidden video element the
+  way <picture> lets it skip an unmatched <source>.
+{%- endcomment -%}
+{%- liquid
+  assign hero_image = section.settings.image_desktop
+  assign hero_image_mobile = section.settings.image_mobile | default: hero_image
+  assign hero_video = section.settings.video_url
+  assign hero_video_mobile = section.settings.video_url_mobile
+  assign focal = section.settings.focal_point | default: 'center'
+  assign focal_css = focal | replace: '_', ' '
+
+  assign has_desktop_media = false
+  if hero_video != blank or hero_image != blank
+    assign has_desktop_media = true
+  endif
+  assign has_mobile_media = false
+  if hero_video_mobile != blank or hero_image_mobile != blank
+    assign has_mobile_media = true
+  endif
+
+  assign use_bundled_desktop = false
+  unless has_desktop_media
+    assign use_bundled_desktop = true
+    assign has_desktop_media = true
+  endunless
+  assign use_bundled_mobile = false
+  unless has_mobile_media
+    assign use_bundled_mobile = true
+    assign has_mobile_media = true
+  endunless
+  assign bundled_hero_file = '15_oryx_necklace_on_model.png'
+-%}
+<section class="caviera-hero" data-scheme="{{ section.settings.text_mode }}" data-media-position="{{ section.settings.media_position }}">
+  <div
+    class="caviera-hero__media"
+    data-has-desktop-media="{{ has_desktop_media }}"
+    data-has-mobile-media="{{ has_mobile_media }}"
+    style="--hero-focal: {{ focal_css }};"
+  >
+    {%- comment -%}
+      Desktop media. When it's an image (no video), the <picture> below already covers the mobile
+      breakpoint too via its inner <source> — the browser fetches only the matching one, never
+      both — so no separate mobile image block is needed in that case.
+    {%- endcomment -%}
+    {%- if hero_video != blank -%}
+      <video
+        class="caviera-hero__media-el caviera-hero__media-el--desktop"
+        autoplay muted loop playsinline preload="metadata"
+        poster="{% if hero_image %}{{ hero_image | image_url: width: 1920 }}{% endif %}"
+      >
+        <source src="{{ hero_video }}" type="video/mp4">
+      </video>
+    {%- elsif hero_image != blank -%}
+      <picture>
+        {%- if hero_image_mobile != blank -%}
+          <source
+            media="(max-width: 749px)"
+            srcset="{{ hero_image_mobile | image_url: width: 600 }} 600w, {{ hero_image_mobile | image_url: width: 900 }} 900w, {{ hero_image_mobile | image_url: width: 1200 }} 1200w"
+            sizes="100vw"
+          >
+        {%- endif -%}
+        <img
+          class="caviera-hero__media-el"
+          src="{{ hero_image | image_url: width: 1600 }}"
+          srcset="{{ hero_image | image_url: width: 800 }} 800w, {{ hero_image | image_url: width: 1200 }} 1200w, {{ hero_image | image_url: width: 1600 }} 1600w, {{ hero_image | image_url: width: 2200 }} 2200w"
+          sizes="(min-width: 900px) 58vw, 100vw"
+          width="{{ hero_image.width }}"
+          height="{{ hero_image.height }}"
+          alt="{{ hero_image.alt | default: '' | escape }}"
+          loading="eager"
+          fetchpriority="high"
+        >
+      </picture>
+    {%- elsif use_bundled_desktop -%}
+      <picture>
+        {%- comment -%} A merchant may still have set only a mobile image with no desktop image/video — respect it here too, same as the branch above. {%- endcomment -%}
+        {%- if hero_image_mobile != blank -%}
+          <source
+            media="(max-width: 749px)"
+            srcset="{{ hero_image_mobile | image_url: width: 600 }} 600w, {{ hero_image_mobile | image_url: width: 900 }} 900w, {{ hero_image_mobile | image_url: width: 1200 }} 1200w"
+            sizes="100vw"
+          >
+        {%- endif -%}
+        {%- comment -%} object-position nudged up slightly from centre — shows a little more upper-chest context around the pendant rather than cropping tight on it, without moving the pendant itself out of frame. {%- endcomment -%}
+        <img
+          class="caviera-hero__media-el"
+          src="{{ bundled_hero_file | asset_url }}"
+          width="521" height="358"
+          alt=""
+          loading="eager"
+          fetchpriority="high"
+          style="object-position: center 38%;"
+        >
+      </picture>
+    {%- endif -%}
+
+    {%- comment -%}
+      Mobile media only needs its own explicit element when the desktop branch above rendered a
+      video — the <picture> path already serves mobile on its own. This also covers the case
+      where a desktop video is set but mobile only has a still image (no mobile video): mobile
+      then gets that static image rather than showing nothing.
+    {%- endcomment -%}
+    {%- if hero_video != blank -%}
+      {%- if hero_video_mobile != blank -%}
+        <video
+          class="caviera-hero__media-el caviera-hero__media-el--mobile"
+          autoplay muted loop playsinline preload="metadata"
+          poster="{% if hero_image_mobile %}{{ hero_image_mobile | image_url: width: 1200 }}{% endif %}"
+        >
+          <source src="{{ hero_video_mobile }}" type="video/mp4">
+        </video>
+      {%- elsif hero_image_mobile != blank -%}
+        <img
+          class="caviera-hero__media-el caviera-hero__media-el--mobile"
+          src="{{ hero_image_mobile | image_url: width: 900 }}"
+          srcset="{{ hero_image_mobile | image_url: width: 600 }} 600w, {{ hero_image_mobile | image_url: width: 900 }} 900w, {{ hero_image_mobile | image_url: width: 1200 }} 1200w"
+          sizes="100vw"
+          width="{{ hero_image_mobile.width }}"
+          height="{{ hero_image_mobile.height }}"
+          alt="{{ hero_image_mobile.alt | default: '' | escape }}"
+          loading="eager"
+          fetchpriority="high"
+        >
+      {%- elsif use_bundled_mobile -%}
+        <img
+          class="caviera-hero__media-el caviera-hero__media-el--mobile"
+          src="{{ bundled_hero_file | asset_url }}"
+          width="521" height="358"
+          alt=""
+          loading="eager"
+          fetchpriority="high"
+          style="object-position: center 38%;"
+        >
+      {%- endif -%}
+    {%- endif -%}
+    {%- if section.settings.overlay_opacity > 0 and has_desktop_media -%}
+      <div class="caviera-hero__overlay" style="opacity:{{ section.settings.overlay_opacity | divided_by: 100.0 }};"></div>
+    {%- endif -%}
+    <div class="caviera-hero__field-fallback" aria-hidden="true"></div>
+    {%- if request.design_mode and use_bundled_desktop or request.design_mode and use_bundled_mobile -%}
+      <div class="caviera-editor-note">Showing the bundled default campaign image ({% if use_bundled_desktop and use_bundled_mobile %}desktop and mobile{% elsif use_bundled_desktop %}desktop{% else %}mobile{% endif %}) — select dedicated media above to replace it with your own.</div>
+    {%- endif -%}
+  </div>
+
+  <div class="caviera-hero__field">
+    <span class="caviera-hero__hinge" aria-hidden="true"></span>
+    {%- comment -%}
+      Architectural linework — assets/26_oryx_palace_concept.png used only as a very faint (opacity
+      set in CSS, see .caviera-hero__architecture) architectural backdrop on the right of the
+      Cinnabar field, never a visible photograph. A plain background-image div, not an <img>: it
+      carries no content of its own, only atmosphere, so it needs neither alt text nor responsive
+      width variants.
+    {%- endcomment -%}
+    <div class="caviera-hero__architecture" style="background-image: url({{ '26_oryx_palace_concept.png' | asset_url }});" aria-hidden="true"></div>
+    <div class="caviera-hero__field-inner container container--narrow">
+      {%- if section.settings.show_wordmark -%}
+        <div class="caviera-hero__wordmark">
+          {%- render 'caviera-wordmark', mode: section.settings.text_mode, width: 200, loading: 'eager', fetchpriority: 'high' -%}
+        </div>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h1 class="heading-display caviera-hero__heading">{{ section.settings.heading }}</h1>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="body-text caviera-hero__subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+      <div class="caviera-hero__actions">
+        {%- if section.settings.primary_cta_text != blank -%}
+          <a href="{{ section.settings.primary_cta_url | default: '#' }}" class="btn btn--primary">{{ section.settings.primary_cta_text }}</a>
+        {%- endif -%}
+        {%- if section.settings.secondary_cta_text != blank -%}
+          <a href="{{ section.settings.secondary_cta_url | default: '#' }}" class="link-underline caviera-hero__secondary">{{ section.settings.secondary_cta_text }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+
+  {%- if section.settings.show_scroll_cue -%}
+    <button type="button" class="caviera-hero__scroll-cue" data-caviera-scroll-cue aria-label="Scroll to explore">
+      <span></span>
+    </button>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Cinematic hero",
+  "settings": [
+    { "type": "header", "content": "Media" },
+    { "type": "image_picker", "id": "image_desktop", "label": "Desktop image", "info": "Dedicated campaign image only — must not contain marketplace badges, review stars, \"Most Popular\" labels, seller graphics, promotional text, watermarks, baked-in pricing or third-party logos. No product image is ever substituted automatically." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Mobile image (falls back to desktop image)" },
+    {
+      "type": "select", "id": "focal_point", "label": "Image focal point", "default": "center",
+      "info": "Keeps the meaningful part of the image visible as it's cropped to fill the panel at different screen sizes.",
+      "options": [
+        { "value": "top_left", "label": "Top left" }, { "value": "top", "label": "Top" }, { "value": "top_right", "label": "Top right" },
+        { "value": "left", "label": "Left" }, { "value": "center", "label": "Centre" }, { "value": "right", "label": "Right" },
+        { "value": "bottom_left", "label": "Bottom left" }, { "value": "bottom", "label": "Bottom" }, { "value": "bottom_right", "label": "Bottom right" }
+      ]
+    },
+    { "type": "text", "id": "video_url", "label": "Desktop background video URL (MP4, muted, optional)", "info": "Takes priority over the desktop image when set; the image is still used as the video's poster frame." },
+    { "type": "text", "id": "video_url_mobile", "label": "Mobile background video URL (MP4, muted, optional)", "info": "Independent of the desktop video — set only if you want video specifically on mobile too. Falls back to the mobile (or desktop) image when left blank." },
+    { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 60, "step": 5, "default": 10, "unit": "%", "info": "Only applied when a real image or video is present — never over the placeholder field." },
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select", "id": "media_position", "label": "Media position", "default": "left",
+      "options": [
+        { "value": "left", "label": "Left (media), right (text)" },
+        { "value": "right", "label": "Right (media), left (text)" }
+      ]
+    },
+    {
+      "type": "select", "id": "text_mode", "label": "Editorial field colour", "default": "cinnabar",
+      "options": [
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" },
+        { "value": "bone", "label": "Warm Bone" }
+      ]
+    },
+    { "type": "checkbox", "id": "show_wordmark", "label": "Show official wordmark", "default": false, "info": "Off by default — the header above already carries the wordmark on every page, so repeating it here reads as cluttered. Turn on only if this section is ever used without the standard header (e.g. a standalone landing page)." },
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "heading", "label": "Headline", "default": "Objects of rare composure." },
+    { "type": "textarea", "id": "subheading", "label": "Supporting line", "default": "Jewellery shaped by light, precision and enduring form." },
+    { "type": "text", "id": "primary_cta_text", "label": "Primary CTA text", "default": "Discover the collection" },
+    { "type": "url", "id": "primary_cta_url", "label": "Primary CTA link" },
+    { "type": "text", "id": "secondary_cta_text", "label": "Secondary link text" },
+    { "type": "url", "id": "secondary_cta_url", "label": "Secondary link" },
+    { "type": "checkbox", "id": "show_scroll_cue", "label": "Show scroll cue", "default": true }
+  ],
+  "presets": [{ "name": "Cinematic hero" }],
+  "enabled_on": {
+    "templates": ["index"]
+  }
+}
+{% endschema %}

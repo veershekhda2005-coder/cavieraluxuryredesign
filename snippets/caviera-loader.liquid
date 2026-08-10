@@ -1,0 +1,85 @@
+{%- comment -%}
+  Ceremonial loader — signature brand moment.
+
+  Loader intentionally disabled pending approved walking Oryx animation and final House Seal
+  asset verification — see config/settings_data.json (enable_loader: false) and the header comment
+  in assets/caviera-loader.js. The markup, settings and cascade logic below are untouched and
+  remain fully ready; re-enable by flipping enable_loader back to true once real assets are
+  approved. (This comment is internal-only — it never reaches the public storefront.)
+
+  This is the ONLY loader implementation in the theme (no sections/caviera-loader.liquid exists —
+  do not recreate one). Rendered unconditionally via `{% render 'caviera-loader' %}` inside
+  `{% if template.name == 'index' %}` in layout/theme.liquid.
+
+  IMPORTANT — two independent layers of "always present":
+    1. The root `[data-caviera-loader]` always renders on the homepage, regardless of
+       settings.enable_loader, session state, or asset availability.
+    2. Both child stage wrappers, `[data-loader-oryx]` and `[data-loader-seal]`, ALSO always render
+       inside the root, regardless of asset availability. Only the actual `<img>` *inside* each
+       wrapper is conditional. This keeps "does the markup exist" (Liquid's job) fully separate
+       from "does it visibly run" (assets/caviera-loader.css hides it by default;
+       assets/caviera-loader.js decides at runtime whether to activate, and which stage(s) have
+       real artwork to show). `document.querySelector('[data-loader-oryx]')` /
+       `[data-loader-seal]` therefore always resolve on the homepage, even when a wrapper's image
+       is empty.
+
+  Asset cascade (see docs/required-brand-assets.md for the full policy):
+    1. Oryx (walk asset preferred, else the documented static-fallback progression) + House Seal
+       → full ceremonial sequence: oryx stage → crossfade to seal → fade into the hero.
+    2. Oryx only, no seal        → walk stage only, then fades straight into the hero.
+    3. House Seal only, no oryx → the seal alone, held briefly and static — never an unofficial
+       substitute mascot.
+    4. Neither approved          → both wrappers exist (empty) for inspection/dev tooling; the
+       loader stays inert on the public storefront. A Theme-Editor-only note (request.design_mode)
+       names the exact missing setting(s) — never shown to real visitors.
+{%- endcomment -%}
+{%- liquid
+  assign has_oryx = false
+  if settings.oryx_full or settings.oryx_walk
+    assign has_oryx = true
+  endif
+
+  assign seal_mode = blank
+  if settings.seal_on_dark
+    assign seal_mode = 'dark'
+  elsif settings.seal_on_light
+    assign seal_mode = 'light'
+  endif
+  assign has_seal = false
+  unless seal_mode == blank
+    assign has_seal = true
+  endunless
+-%}
+<div
+  class="caviera-loader"
+  data-caviera-loader
+  data-enabled="{{ settings.enable_loader }}"
+  data-once-per-session="{{ settings.loader_once_per_session }}"
+  data-duration="{{ settings.loader_duration | default: 2600 }}"
+  data-reduced-motion-behaviour="{{ settings.loader_reduced_motion | default: 'static_brief' }}"
+  data-design-mode="{{ request.design_mode }}"
+  data-has-oryx="{{ has_oryx }}"
+  data-has-seal="{{ has_seal }}"
+  style="--loader-bg: {{ settings.loader_background | default: '#8F261F' }};"
+  aria-hidden="true"
+>
+  <div class="caviera-loader__stage caviera-loader__oryx" data-loader-oryx>
+    {%- if has_oryx -%}
+      {%- render 'caviera-oryx', variant: 'walk', width: 220, loading: 'eager', fetchpriority: 'high' -%}
+    {%- endif -%}
+  </div>
+
+  <div class="caviera-loader__stage caviera-loader__seal" data-loader-seal>
+    {%- if has_seal -%}
+      {%- render 'caviera-house-seal', mode: seal_mode, width: 72, loading: 'eager', fetchpriority: 'high' -%}
+    {%- endif -%}
+  </div>
+
+  {%- if request.design_mode and has_oryx == false and has_seal == false -%}
+    <p class="caviera-loader__editor-note">
+      Ceremonial loader is wired but has nothing to show yet — upload a Full-body oryx or House
+      Seal under Theme settings → CAVIERA Identity. (Visible only here, inside the Theme Editor.)
+    </p>
+  {%- endif -%}
+</div>
+<script src="{{ 'caviera-loader.js' | asset_url }}" defer="defer"></script>

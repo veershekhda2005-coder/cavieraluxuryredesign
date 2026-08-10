@@ -1,0 +1,19 @@
+{%- comment -%}
+  Companion to sections/caviera-page-hero.liquid: renders a page's native title/content WITHOUT
+  its own <h1> — for templates that already get their H1 from a caviera-page-hero section placed
+  above this one on the same template. Using sections/main-page.liquid instead in that situation
+  would render page.title as a second <h1>, immediately duplicating the hero's heading.
+
+  Content itself is untouched real Shopify page.content — nothing here rewrites, trims or
+  paraphrases what a merchant has written; it only changes how the title is presented.
+{%- endcomment -%}
+<section class="caviera-page container container--narrow">
+  {%- render 'breadcrumbs' -%}
+  <div class="body-text--wide caviera-page__content">
+    {{ page.content }}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Page content" }
+{% endschema %}

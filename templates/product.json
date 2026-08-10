@@ -1,0 +1,31 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "row-1": { "type": "metafield_row", "settings": { "label": "Stone", "metafield_key": "diamond_type" } },
+        "row-2": { "type": "metafield_row", "settings": { "label": "Metal", "metafield_key": "metal_details" } },
+        "row-3": { "type": "metafield_row", "settings": { "label": "Dimensions", "metafield_key": "dimensions" } },
+        "row-4": { "type": "metafield_row", "settings": { "label": "Certification", "metafield_key": "certification" } },
+        "row-5": { "type": "metafield_row", "settings": { "label": "Care", "metafield_key": "care_instructions" } },
+        "row-6": { "type": "metafield_row", "settings": { "label": "Packaging", "metafield_key": "packaging" } }
+      },
+      "block_order": ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"],
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {}
+    }
+  },
+  "order": ["main", "recommendations"]
+}

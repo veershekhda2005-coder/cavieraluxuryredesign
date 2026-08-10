@@ -1,0 +1,94 @@
+{%- comment -%}
+  Journal index — real Shopify blog articles only. The page's H1 lives in the "Page hero" section
+  that precedes this one (see templates/blog.json) — blog.title renders here as a secondary
+  heading, never a second H1. Optional featured article (merchant-selected or defaults to the
+  latest) displays large above the regular grid; tags act as simple filter links when the blog
+  actually has any.
+{%- endcomment -%}
+{%- liquid
+  assign featured = blog.articles.first
+  if section.settings.featured_article != blank
+    assign featured = section.settings.featured_article
+  endif
+-%}
+<section class="caviera-section">
+  {%- if blog.title != blank -%}
+    <div class="container">
+      <h2 class="heading-h2 caviera-journal-index__title">{{ blog.title }}</h2>
+    </div>
+  {%- endif -%}
+
+  {%- if blog.all_tags.size > 0 -%}
+    <nav class="container caviera-journal-index__tags" aria-label="{{ 'templates.blog.filter_by_tag' | t }}">
+      <a href="{{ blog.url }}" class="link-underline{% if current_tags == blank %} is-active{% endif %}">{{ 'templates.blog.all_articles' | t }}</a>
+      {%- for tag in blog.all_tags -%}
+        <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="link-underline{% if current_tags contains tag %} is-active{% endif %}">{{ tag }}</a>
+      {%- endfor -%}
+    </nav>
+  {%- endif -%}
+
+  {%- paginate blog.articles by 12 -%}
+    {%- if blog.articles.size > 0 -%}
+      {%- if section.settings.show_featured and featured and current_tags == blank -%}
+        <a href="{{ featured.url }}" class="container caviera-journal-index__featured">
+          {%- if featured.image -%}
+            <img
+              src="{{ featured.image | image_url: width: 1600 }}"
+              srcset="{{ featured.image | image_url: width: 800 }} 800w, {{ featured.image | image_url: width: 1600 }} 1600w"
+              sizes="100vw"
+              width="{{ featured.image.width }}" height="{{ featured.image.height }}"
+              alt="{{ featured.image.alt | default: featured.title | escape }}"
+              loading="eager"
+            >
+          {%- endif -%}
+          <span class="caviera-journal-index__featured-copy">
+            <span class="caviera-journal__date">
+              {{ featured.published_at | date: '%B %Y' }}{% if section.settings.show_author and featured.author != blank %} &middot; {{ featured.author }}{% endif %}
+            </span>
+            <span class="heading-h2">{{ featured.title }}</span>
+          </span>
+        </a>
+      {%- endif -%}
+
+      <div class="container caviera-journal__grid">
+        {%- for article in blog.articles -%}
+          {%- unless section.settings.show_featured and article == featured and current_tags == blank -%}
+            <a href="{{ article.url }}" class="caviera-journal__card">
+              {%- if article.image -%}
+                <img
+                  src="{{ article.image | image_url: width: 700 }}"
+                  srcset="{{ article.image | image_url: width: 350 }} 350w, {{ article.image | image_url: width: 700 }} 700w"
+                  sizes="(min-width: 900px) 33vw, 100vw"
+                  width="{{ article.image.width }}" height="{{ article.image.height }}"
+                  alt="{{ article.image.alt | default: article.title | escape }}"
+                  loading="lazy"
+                >
+              {%- endif -%}
+              <span class="caviera-journal__date">
+                {{ article.published_at | date: '%B %Y' }}{% if section.settings.show_author and article.author != blank %} &middot; {{ article.author }}{% endif %}
+              </span>
+              <h3 class="heading-h3">{{ article.title }}</h3>
+              {%- if article.excerpt != blank -%}<p class="body-text">{{ article.excerpt | strip_html | truncate: 120 }}</p>{%- endif -%}
+            </a>
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+      <div class="container">{%- render 'pagination', paginate: paginate -%}</div>
+    {%- else -%}
+      <div class="container caviera-collection__empty">
+        <p class="body-text">{{ 'templates.blog.empty' | t }}</p>
+      </div>
+    {%- endif -%}
+  {%- endpaginate -%}
+</section>
+
+{% schema %}
+{
+  "name": "Journal index",
+  "settings": [
+    { "type": "checkbox", "id": "show_featured", "label": "Show featured article", "default": true, "info": "Uses the article selected below, or the latest article if none is selected." },
+    { "type": "article", "id": "featured_article", "label": "Featured article (optional)" },
+    { "type": "checkbox", "id": "show_author", "label": "Show author", "default": false }
+  ]
+}
+{% endschema %}

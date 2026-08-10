@@ -1,0 +1,45 @@
+{%- comment -%} Elegant, useful 404 recovery page. No jokes that break the brand voice, no cartoon mascot. {%- endcomment -%}
+<section class="caviera-section container container--narrow caviera-404">
+  <div class="caviera-404__inner">
+    {%- render 'caviera-house-seal', mode: 'light', width: 56 -%}
+    <h1 class="heading-h1 caviera-404__title">{{ 'templates.404.title' | t }}</h1>
+    <p class="body-text caviera-404__subtext">{{ 'templates.404.subtext' | t }}</p>
+    <p class="body-text">{{ 'templates.404.search_prompt' | t }}</p>
+
+    {%- if settings.predictive_search_enabled -%}
+      {%- comment -%}
+        Plain native search form — "predictive_search" is not a registered Shopify {% form %} tag
+        type (confirmed by a live Liquid error during hosted QA: the tag's own valid-type list does
+        not include it). Predictive search itself is a JS-driven fetch against
+        /search/suggest.json (see assets/caviera-search.js); this form is only the accessible,
+        JS-free fallback that submits a normal GET search — routes.search_url is the correct,
+        real Shopify route for that.
+      {%- endcomment -%}
+      <form action="{{ routes.search_url }}" method="get" role="search">
+        <div class="caviera-search-page__row caviera-404__search">
+          <label class="visually-hidden" for="NotFoundSearch">{{ 'general.search.search' | t }}</label>
+          <input type="search" id="NotFoundSearch" name="q" placeholder="{{ 'general.search.placeholder' | t }}">
+          <button type="submit" class="btn btn--primary">{{ 'general.search.submit' | t }}</button>
+        </div>
+      </form>
+    {%- endif -%}
+
+    <div class="caviera-404__actions">
+      <a href="{{ routes.root_url }}" class="link-underline">{{ 'templates.404.home_link' | t }}</a>
+      {%- if section.settings.suggested_collection != blank -%}
+        <a href="{{ section.settings.suggested_collection.url }}" class="link-underline">{{ section.settings.suggested_collection.title }}</a>
+      {%- else -%}
+        <a href="{{ routes.all_products_collection_url | default: routes.root_url }}" class="link-underline">{{ 'general.cart.empty_action' | t }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "404 page",
+  "settings": [
+    { "type": "collection", "id": "suggested_collection", "label": "Suggested collection (optional)", "info": "Shown instead of the full catalogue link. Leave blank to link to the full catalogue." }
+  ]
+}
+{% endschema %}

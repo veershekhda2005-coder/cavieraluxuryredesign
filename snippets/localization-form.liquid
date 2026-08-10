@@ -1,0 +1,39 @@
+{%- comment -%}
+  Native Shopify country/language selector — no hardcoded countries or currencies.
+  Params: context (optional string) — this snippet is now rendered in up to three places on the
+  same page (footer, desktop header, mobile nav), so every id below is scoped by context to avoid
+  duplicate-id collisions rather than reusing one static id everywhere.
+{%- endcomment -%}
+{%- liquid
+  assign scope_id = context | default: 'Default'
+  assign country_form_id = 'CavieraLocalizationForm-' | append: scope_id
+  assign language_form_id = 'CavieraLanguageForm-' | append: scope_id
+-%}
+<div class="caviera-localization">
+  {%- if localization.available_countries.size > 1 -%}
+    {%- form 'localization', id: country_form_id -%}
+      <label class="visually-hidden" for="CavieraCountrySelect-{{ scope_id }}">{{ 'general.localization.country_label' | t }}</label>
+      <select name="country_code" id="CavieraCountrySelect-{{ scope_id }}" onchange="this.form.submit()">
+        {%- for country in localization.available_countries -%}
+          <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>
+            {{ country.name }} ({{ country.currency.iso_code }})
+          </option>
+        {%- endfor -%}
+      </select>
+      <input type="hidden" name="return_to" value="{{ request.path }}">
+    {%- endform -%}
+  {%- endif -%}
+  {%- if localization.available_languages.size > 1 -%}
+    {%- form 'localization', id: language_form_id -%}
+      <label class="visually-hidden" for="CavieraLanguageSelect-{{ scope_id }}">{{ 'general.localization.language_label' | t }}</label>
+      <select name="locale_code" id="CavieraLanguageSelect-{{ scope_id }}" onchange="this.form.submit()">
+        {%- for language in localization.available_languages -%}
+          <option value="{{ language.iso_code }}" {% if language.iso_code == localization.language.iso_code %}selected{% endif %}>
+            {{ language.endonym_name | capitalize }}
+          </option>
+        {%- endfor -%}
+      </select>
+      <input type="hidden" name="return_to" value="{{ request.path }}">
+    {%- endform -%}
+  {%- endif -%}
+</div>

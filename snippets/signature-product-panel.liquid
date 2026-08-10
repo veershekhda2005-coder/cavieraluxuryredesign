@@ -1,0 +1,40 @@
+{%- comment -%}
+  One panel of the Signature Products focus rail — see sections/caviera-signature-products.liquid.
+  Params: product (required), index (0-based integer), is_first (bool)
+
+  Reuses the shared `product-card` snippet for the actual product display (Phase 25: one
+  product-card system, never a duplicate one per homepage section) — this snippet only adds the
+  thumbnail/tab chrome and the swap target around it.
+{%- endcomment -%}
+<a
+  href="{{ product.url }}"
+  class="caviera-signature-products__thumb{% if is_first %} is-active{% endif %}"
+  data-signature-thumb
+  role="tab"
+  id="CavieraSignatureTab-{{ index }}"
+  aria-selected="{% if is_first %}true{% else %}false{% endif %}"
+  aria-controls="CavieraSignatureFocus"
+  tabindex="{% if is_first %}0{% else %}-1{% endif %}"
+>
+  {%- if product.featured_image -%}
+    <img
+      src="{{ product.featured_image | image_url: width: 160 }}"
+      srcset="{{ product.featured_image | image_url: width: 80 }} 80w, {{ product.featured_image | image_url: width: 160 }} 160w"
+      sizes="80px"
+      width="{{ product.featured_image.width }}" height="{{ product.featured_image.height }}"
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+    >
+  {%- endif -%}
+  <span class="caviera-signature-products__thumb-title">{{ product.title }}</span>
+</a>
+{%- comment -%}
+  Every panel — including the first — gets a <template>, so data-signature-panel indices always
+  line up 1:1 with data-signature-thumb indices for the JS swap (the first product is ALSO
+  rendered directly and visibly by the section itself, so the section works with no JavaScript at
+  all; this template is simply unused until a visitor navigates away from it and back).
+{%- endcomment -%}
+<template data-signature-panel>
+  {%- render 'product-card', product: product, image_ratio: 'portrait' -%}
+</template>

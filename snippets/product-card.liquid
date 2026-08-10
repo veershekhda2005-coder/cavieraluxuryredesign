@@ -1,0 +1,83 @@
+{%- comment -%}
+  The one reusable CAVIERA product card. Params:
+    product (required), image_ratio ('square'|'portrait'|'tall', default settings.card_image_ratio)
+  Reads global settings for secondary image, vendor, quick add, swatches, title lines — no
+  marketplace badges, no fake scarcity, no aggressive discount styling.
+{%- endcomment -%}
+{%- liquid
+  assign ratio = image_ratio | default: settings.card_image_ratio | default: 'portrait'
+  assign primary_image = product.featured_media.preview_image | default: product.featured_image
+  assign secondary_image = product.media[1].preview_image
+-%}
+<article class="caviera-product-card" data-ratio="{{ ratio }}">
+  <a href="{{ product.url }}" class="caviera-product-card__media" aria-label="{{ product.title | escape }}">
+    {%- if primary_image -%}
+      <img
+        class="caviera-product-card__image caviera-product-card__image--primary"
+        src="{{ primary_image | image_url: width: 700 }}"
+        srcset="{{ primary_image | image_url: width: 350 }} 350w, {{ primary_image | image_url: width: 700 }} 700w, {{ primary_image | image_url: width: 1000 }} 1000w"
+        sizes="(min-width: 1024px) 25vw, 50vw"
+        width="{{ primary_image.width }}" height="{{ primary_image.height }}"
+        alt="{{ primary_image.alt | default: product.title | escape }}"
+        loading="lazy"
+      >
+    {%- else -%}
+      <span class="caviera-product-card__placeholder" aria-hidden="true"></span>
+    {%- endif -%}
+    {%- if secondary_image and settings.card_secondary_image -%}
+      <img
+        class="caviera-product-card__image caviera-product-card__image--secondary"
+        src="{{ secondary_image | image_url: width: 700 }}"
+        srcset="{{ secondary_image | image_url: width: 350 }} 350w, {{ secondary_image | image_url: width: 700 }} 700w"
+        sizes="(min-width: 1024px) 25vw, 50vw"
+        width="{{ secondary_image.width }}" height="{{ secondary_image.height }}"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+      >
+    {%- endif -%}
+    {%- if product.available == false -%}
+      <span class="badge caviera-product-card__badge">{{ 'products.product.sold_out' | t }}</span>
+    {%- endif -%}
+  </a>
+
+  <div class="caviera-product-card__info">
+    {%- if settings.card_show_vendor and product.vendor != blank -%}
+      <span class="caviera-product-card__vendor label">{{ product.vendor }}</span>
+    {%- endif -%}
+    <h3 class="caviera-product-card__title{% if settings.card_title_lines == '1' %} is-clamp-1{% else %} is-clamp-2{% endif %}">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+    {%- if product.type != blank -%}<p class="caviera-product-card__type label">{{ product.type }}</p>{%- endif -%}
+    {%- render 'product-price', product: product, show_from: true -%}
+
+    {%- if settings.card_show_swatches and product.options_with_values.size > 0 -%}
+      {%- for option in product.options_with_values -%}
+        {%- if option.name == 'Colour' or option.name == 'Color' or option.name == 'Metal' -%}
+          <div class="caviera-product-card__swatches" role="group" aria-label="{{ option.name }}">
+            {%- for value in option.values limit: 5 -%}
+              <span class="caviera-product-card__swatch" data-swatch="{{ value | handle }}" title="{{ value }}"></span>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- if settings.card_quick_add and product.available -%}
+      <button
+        type="button"
+        class="link-underline caviera-product-card__quick-add"
+        data-quick-add
+        data-quick-add-single-variant="{{ product.has_only_default_variant }}"
+        data-product-url="{{ product.url }}"
+        data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+      >
+        {%- if product.has_only_default_variant -%}
+          {{ 'products.product.add_to_bag' | t }}
+        {%- else -%}
+          {{ 'products.product.choose_options' | t }}
+        {%- endif -%}
+      </button>
+    {%- endif -%}
+  </div>
+</article>

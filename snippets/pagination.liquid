@@ -1,0 +1,26 @@
+{%- comment -%} Standard Shopify pagination — works without JavaScript, good for SEO. Param: paginate {%- endcomment -%}
+{%- if paginate.pages > 1 -%}
+<nav class="caviera-pagination" aria-label="Pagination">
+  <ul>
+    {%- if paginate.previous -%}
+      <li><a href="{{ paginate.previous.url }}" rel="prev">{% render 'icon', name: 'chevron-left' %}<span class="visually-hidden">{{ 'general.pagination.previous' | t }}</span></a></li>
+    {%- endif -%}
+    {%- for part in paginate.parts -%}
+      <li>
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{ part.title }}</a>
+        {%- else -%}
+          {%- if part.title == '&hellip;' -%}
+            <span aria-hidden="true">&hellip;</span>
+          {%- else -%}
+            <span aria-current="page">{{ part.title }}</span>
+          {%- endif -%}
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+    {%- if paginate.next -%}
+      <li><a href="{{ paginate.next.url }}" rel="next">{% render 'icon', name: 'chevron-right' %}<span class="visually-hidden">{{ 'general.pagination.next' | t }}</span></a></li>
+    {%- endif -%}
+  </ul>
+</nav>
+{%- endif -%}

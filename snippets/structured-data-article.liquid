@@ -1,0 +1,17 @@
+{%- comment -%} Article JSON-LD structured data — real article data only. {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ article.title | json }},
+  "url": {{ shop.url | append: article.url | json }},
+  "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},
+  {%- if article.author != blank -%}
+  "author": { "@type": "Person", "name": {{ article.author | json }} },
+  {%- endif -%}
+  {%- if article.image -%}
+  "image": [{{ article.image | image_url: width: 1200 | prepend: "https:" | json }}],
+  {%- endif -%}
+  "publisher": { "@type": "Organization", "name": {{ shop.name | json }} }
+}
+</script>

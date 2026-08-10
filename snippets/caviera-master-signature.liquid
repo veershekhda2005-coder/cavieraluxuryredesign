@@ -1,0 +1,61 @@
+{%- comment -%}
+  Renders the official Master Signature — the House Seal and the full CAVIERA JEWELS wordmark, in
+  the exact relative composition used in the House guidelines. This is proprietary artwork — it is
+  never retyped, redrawn, recomposed, or substituted with separately-placed mark + wordmark.
+
+  This is a distinct, more formal moment than the everyday wordmark — reserved for the homepage
+  closing signature, The House page, the password page and (space permitting) the footer. It is
+  never used in the ordinary navigation header.
+
+  Priority: 1) merchant-selected Theme Editor image, 2) approved bundled CAVIERA Master Signature
+  (assets/caviera-master-signature-*.png — official House artwork shipped with the theme), 3) if
+  somehow neither resolves, nothing renders on the storefront and a discreet reminder appears only
+  inside the Theme Editor.
+
+  Params:
+    mode: 'light' | 'dark' — which background this sits on (default 'light')
+    css_class: optional extra classes
+    width: optional max-width in px
+{%- endcomment -%}
+{%- liquid
+  assign mode = mode | default: 'light'
+  assign asset = settings.master_signature_on_light
+  assign bundled_file = 'caviera-master-signature-obsidian.png'
+  assign bundled_w = 3000
+  assign bundled_h = 2137
+  assign setting_label = 'Master signature — on light backgrounds — Theme settings → CAVIERA Identity'
+  if mode == 'dark'
+    assign asset = settings.master_signature_on_dark
+    assign bundled_file = 'caviera-master-signature-warm-bone.png'
+    assign setting_label = 'Master signature — on dark backgrounds — Theme settings → CAVIERA Identity'
+  endif
+-%}
+{%- if asset -%}
+  <img
+    class="caviera-master-signature {{ css_class }}"
+    src="{{ asset | image_url: width: 800 }}"
+    srcset="{{ asset | image_url: width: 400 }} 400w, {{ asset | image_url: width: 800 }} 800w, {{ asset | image_url: width: 1200 }} 1200w"
+    sizes="{{ width | default: 320 }}px"
+    width="{{ asset.width }}"
+    height="{{ asset.height }}"
+    alt="{{ shop.name }}"
+    loading="{{ loading | default: 'lazy' }}"
+    {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    style="{% if width %}max-width:{{ width }}px;{% endif %} height:auto; width:100%;"
+  >
+{%- elsif bundled_file -%}
+  <img
+    class="caviera-master-signature {{ css_class }}"
+    src="{{ bundled_file | asset_url }}"
+    width="{{ bundled_w }}"
+    height="{{ bundled_h }}"
+    alt="{{ shop.name }}"
+    loading="{{ loading | default: 'lazy' }}"
+    {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    style="{% if width %}max-width:{{ width }}px;{% endif %} height:auto; width:100%;"
+  >
+{%- elsif request.design_mode -%}
+  <span class="caviera-asset-placeholder" role="presentation">
+    Upload: {{ setting_label }}
+  </span>
+{%- endif -%}

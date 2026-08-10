@@ -1,0 +1,24 @@
+{%- comment -%}
+  Params: product (or variant), show_from (bool, default false)
+  Renders using Shopify money filters — no hardcoded currency symbols.
+{%- endcomment -%}
+{%- liquid
+  assign target = variant | default: product
+  assign compare_at = target.compare_at_price
+  assign price = target.price
+  assign formatted_price = price | money
+-%}
+<span class="price{% if compare_at > price %} price--on-sale{% endif %}">
+  {%- if show_from and product.variants.size > 1 and product.price_varies -%}
+    {{ 'products.product.from_price' | t: price: formatted_price }}
+  {%- else -%}
+    {%- if compare_at > price -%}
+      <span class="visually-hidden">{{ 'products.product.sale_price' | t }}</span>
+      <span class="price--sale">{{ formatted_price }}</span>
+      <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+      <span class="price--compare">{{ compare_at | money }}</span>
+    {%- else -%}
+      {{ formatted_price }}
+    {%- endif -%}
+  {%- endif -%}
+</span>

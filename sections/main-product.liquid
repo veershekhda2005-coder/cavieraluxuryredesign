@@ -1,0 +1,269 @@
+{%- comment -%}
+  Main product section. ~60/40 desktop split, media dominant. Sticky purchasing panel (desktop)
+  and sticky add-to-bag bar (mobile) are optional via theme settings. All metafield-driven detail
+  rows hide automatically when empty — no invented product facts.
+{%- endcomment -%}
+{%- liquid
+  assign product = product
+  assign current_variant = product.selected_or_first_available_variant
+-%}
+
+{%- render 'structured-data-product', product: product -%}
+
+<section class="caviera-product" data-sticky-info="{{ settings.product_sticky_info }}">
+  <div class="container">
+    {%- render 'breadcrumbs' -%}
+  </div>
+
+  <div class="caviera-product__layout container">
+    <div class="caviera-product__media">
+      {%- if product.media.size > 0 -%}
+        <product-media class="caviera-product-media" data-zoom="{{ settings.product_zoom }}" data-media-layout="{{ settings.product_media_layout | default: 'stacked' }}">
+          <div class="caviera-product-media__stage">
+            {%- for media in product.media -%}
+              <div
+                class="caviera-product-media__item{% if forloop.first %} is-active{% endif %}"
+                data-media-id="{{ media.id }}"
+                {% unless forloop.first %}hidden{% endunless %}
+              >
+                {%- case media.media_type -%}
+                  {%- when 'image' -%}
+                    <img
+                      src="{{ media.preview_image | image_url: width: 1200 }}"
+                      srcset="{{ media.preview_image | image_url: width: 600 }} 600w, {{ media.preview_image | image_url: width: 1200 }} 1200w, {{ media.preview_image | image_url: width: 1800 }} 1800w"
+                      sizes="(min-width: 900px) 55vw, 100vw"
+                      width="{{ media.preview_image.width }}" height="{{ media.preview_image.height }}"
+                      alt="{{ media.alt | default: product.title | escape }}"
+                      loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                      {% if forloop.first %}fetchpriority="high"{% endif %}
+                      data-zoomable
+                    >
+                  {%- when 'video', 'external_video' -%}
+                    {{ media | media_tag: controls: true }}
+                  {%- when 'model' -%}
+                    {{ media | model_viewer_tag }}
+                {%- endcase -%}
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- if product.media.size > 1 -%}
+            <div class="caviera-product-media__thumbs" role="tablist" aria-label="{{ 'products.product.media_gallery' | t }}">
+              {%- for media in product.media -%}
+                <button
+                  type="button"
+                  class="caviera-product-media__thumb{% if forloop.first %} is-active{% endif %}"
+                  role="tab"
+                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                  tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+                  data-media-thumb="{{ media.id }}"
+                >
+                  <img
+                    src="{{ media.preview_image | image_url: width: 160 }}"
+                    width="80" height="80"
+                    alt=""
+                    loading="lazy"
+                  >
+                </button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </product-media>
+      {%- elsif request.design_mode -%}
+        <div class="caviera-editor-note">This product has no media yet.</div>
+      {%- endif -%}
+    </div>
+
+    <div class="caviera-product__info" data-sticky-panel>
+      {%- assign design_name = product.metafields.custom.design_name.value -%}
+      {%- if design_name != blank -%}<p class="label caviera-product__design-name">{{ design_name }}</p>{%- endif -%}
+      <h1 class="heading-h1 caviera-product__title">{{ product.title }}</h1>
+
+      {%- assign short_desc = product.metafields.custom.short_description.value -%}
+      {%- if short_desc != blank -%}<p class="body-text caviera-product__short-desc">{{ short_desc }}</p>{%- endif -%}
+
+      <div class="caviera-product__price">
+        {%- render 'product-price', variant: current_variant -%}
+      </div>
+
+      {%- if settings.product_show_sku -%}
+        <p class="label caviera-product__sku" data-product-sku-row{% if current_variant.sku == blank %} hidden{% endif %}>
+          <span data-product-sku-text>{{ 'products.product.sku' | t: sku: current_variant.sku }}</span>
+        </p>
+      {%- endif -%}
+
+      {%- render 'product-form', product: product, section_id: section.id -%}
+
+      {%- if product.description != blank -%}
+        <div class="caviera-product__description body-text">
+          {{ product.description }}
+        </div>
+      {%- endif -%}
+
+      <div class="caviera-product__rows">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'metafield_row' -%}
+              {%- assign field_value = product.metafields.custom[block.settings.metafield_key].value -%}
+              {%- if field_value != blank -%}
+                <details class="caviera-product__row" {{ block.shopify_attributes }}>
+                  <summary>{{ block.settings.label }}<span class="caviera-product__row-icon">{% render 'icon', name: 'plus' %}</span></summary>
+                  <div class="caviera-product__row-content body-text">{{ field_value }}</div>
+                </details>
+              {%- endif -%}
+            {%- when 'custom_row' -%}
+              {%- if block.settings.content != blank -%}
+                <details class="caviera-product__row" {{ block.shopify_attributes }}>
+                  <summary>{{ block.settings.title }}<span class="caviera-product__row-icon">{% render 'icon', name: 'plus' %}</span></summary>
+                  <div class="caviera-product__row-content body-text">{{ block.settings.content }}</div>
+                </details>
+              {%- endif -%}
+            {%- when '@app' -%}
+              {% render block %}
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+
+      <div class="caviera-product__share">
+        <button type="button" class="link-underline" data-share-button data-share-url="{{ shop.url }}{{ product.url }}" data-share-title="{{ product.title | escape }}">
+          {{ 'general.share.share' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Product storytelling — full-width editorial blocks below the purchasing area (material study,
+  setting study, craftsmanship, packaging, service, bespoke CTA). Distinct from the homepage's
+  generic craftsmanship/packaging sections: these are tied to THIS product's own metafields, media
+  and merchant copy. Every block hides individually when empty — nothing forces every product to
+  use every block, and no fact is invented beyond what the merchant enters.
+{%- endcomment -%}
+{%- liquid
+  assign has_story_blocks = false
+  for block in section.blocks
+    if block.type == 'story_block' or block.type == 'bespoke_cta'
+      assign has_story_blocks = true
+    endif
+  endfor
+-%}
+{%- if has_story_blocks -%}
+  <div class="caviera-product__story">
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'story_block' -%}
+          {%- if block.settings.heading != blank or block.settings.body != blank -%}
+            <article
+              class="caviera-product__story-block{% if block.settings.image == blank %} caviera-product__story-block--text-only{% endif %}"
+              data-scheme="{{ block.settings.color_scheme }}"
+              data-image-position="{{ block.settings.image_position }}"
+              {{ block.shopify_attributes }}
+            >
+              {%- if block.settings.image -%}
+                <div class="caviera-product__story-media">
+                  <img
+                    src="{{ block.settings.image | image_url: width: 1200 }}"
+                    srcset="{{ block.settings.image | image_url: width: 600 }} 600w, {{ block.settings.image | image_url: width: 1200 }} 1200w, {{ block.settings.image | image_url: width: 1800 }} 1800w"
+                    sizes="(min-width: 900px) 50vw, 100vw"
+                    width="{{ block.settings.image.width }}" height="{{ block.settings.image.height }}"
+                    alt="{{ block.settings.image.alt | default: '' | escape }}"
+                    loading="lazy"
+                  >
+                </div>
+              {%- endif -%}
+              <div class="caviera-product__story-copy">
+                {%- if block.settings.label != blank -%}<span class="label">{{ block.settings.label }}</span>{%- endif -%}
+                {%- if block.settings.heading != blank -%}<h3 class="heading-h3">{{ block.settings.heading }}</h3>{%- endif -%}
+                {%- if block.settings.body != blank -%}<div class="body-text">{{ block.settings.body }}</div>{%- endif -%}
+              </div>
+            </article>
+          {%- endif -%}
+        {%- when 'bespoke_cta' -%}
+          {%- if block.settings.heading != blank -%}
+            <article class="caviera-product__story-block caviera-product__bespoke" data-scheme="obsidian" {{ block.shopify_attributes }}>
+              <div class="caviera-product__story-copy">
+                <h3 class="heading-h3">{{ block.settings.heading }}</h3>
+                {%- if block.settings.body != blank -%}<p class="body-text">{{ block.settings.body }}</p>{%- endif -%}
+                {%- if block.settings.link_text != blank -%}
+                  <a href="{{ block.settings.link_url | default: '#' }}" class="btn btn--primary">{{ block.settings.link_text }}</a>
+                {%- endif -%}
+              </div>
+            </article>
+          {%- endif -%}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+{%- endif -%}
+
+<div class="caviera-product__sticky-bar" data-sticky-mobile-bar="{{ settings.product_sticky_mobile_bar }}" hidden>
+  <div class="container caviera-product__sticky-bar-inner">
+    <span class="caviera-product__sticky-bar-title">{{ product.title }}</span>
+    {%- render 'product-price', variant: current_variant -%}
+    <button type="button" class="btn btn--primary" data-sticky-add-to-cart {% unless current_variant.available %}disabled{% endunless %}>
+      {%- if current_variant.available -%}{{ 'products.product.add_to_bag' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
+    </button>
+  </div>
+</div>
+
+<script src="{{ 'caviera-product.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Product information",
+  "blocks": [
+    {
+      "type": "metafield_row",
+      "name": "Metafield row",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "Certification" },
+        { "type": "text", "id": "metafield_key", "label": "Metafield key (custom.*)", "info": "e.g. certification, diamond_type, metal_details — see docs/recommended-product-metafields.md", "default": "certification" }
+      ]
+    },
+    {
+      "type": "custom_row",
+      "name": "Custom row",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "richtext", "id": "content", "label": "Content" }
+      ]
+    },
+    {
+      "type": "story_block",
+      "name": "Story block",
+      "settings": [
+        { "type": "paragraph", "content": "A full-width editorial moment below the purchasing area — material study, setting study, craftsmanship, packaging, service. Hidden automatically if left empty." },
+        { "type": "text", "id": "label", "label": "Label", "info": "e.g. Material, Setting, Craft, Packaging" },
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "richtext", "id": "body", "label": "Body" },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        {
+          "type": "select", "id": "image_position", "label": "Image position", "default": "left",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "right", "label": "Right" }
+          ]
+        },
+        {
+          "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",
+          "options": [
+            { "value": "bone", "label": "Warm Bone" },
+            { "value": "obsidian", "label": "Obsidian" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "bespoke_cta",
+      "name": "Bespoke appointment CTA",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Some objects begin with a conversation." },
+        { "type": "richtext", "id": "body", "label": "Body" },
+        { "type": "text", "id": "link_text", "label": "Link text", "default": "Request an appointment" },
+        { "type": "url", "id": "link_url", "label": "Link URL" }
+      ]
+    },
+    { "type": "@app" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,115 @@
+/* CAVIERA Grand Theme 2026 — Collection & search results */
+
+/* No-image state: a clean colour field (Bone/Cinnabar/Obsidian via data-scheme, same convention
+   used everywhere else in this theme) at a compact height — never a giant reserved empty area. */
+.caviera-collection__header { padding-top: 32px; padding-bottom: 40px; text-align: center; }
+.caviera-collection__header[data-align="left"] { text-align: left; }
+.caviera-collection__header[data-align="left"] .caviera-collection__description { margin-inline: 0; }
+.caviera-collection__header[data-scheme="cinnabar"] { background: var(--caviera-cinnabar); color: var(--caviera-bone); }
+.caviera-collection__header[data-scheme="obsidian"] { background: var(--caviera-obsidian); color: var(--caviera-bone); }
+.caviera-collection__header[data-scheme="cinnabar"] .caviera-collection__count,
+.caviera-collection__header[data-scheme="obsidian"] .caviera-collection__count { color: var(--text-inverse); opacity: 0.72; }
+.caviera-collection__header[data-scheme="cinnabar"] .caviera-breadcrumbs,
+.caviera-collection__header[data-scheme="obsidian"] .caviera-breadcrumbs { color: var(--text-inverse); opacity: 0.72; }
+.caviera-collection__description { margin: 16px auto 0; }
+.caviera-collection__count { color: var(--text-muted); margin-top: 12px; }
+
+/* Image-configured state: an architectural, controlled-height header with a thin Rhodium divider
+   at its base — text always sits on the dark overlay, regardless of the (unused in this state)
+   colour-field setting above. */
+.caviera-collection__header--media {
+  position: relative;
+  padding-top: 0; padding-bottom: 0;
+  display: flex; align-items: flex-end;
+  min-height: 280px;
+  color: var(--caviera-bone);
+  border-bottom: var(--border-width) solid var(--caviera-rhodium);
+}
+.caviera-collection__header--media[data-height="cinematic"] { min-height: 62vh; }
+.caviera-collection__header-media { position: absolute; inset: 0; overflow: hidden; }
+.caviera-collection__header-media-el { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.caviera-collection__header-media-el--mobile { display: none; }
+@media (max-width: 749px) {
+  .caviera-collection__header-media-el--desktop { display: none; }
+  .caviera-collection__header-media-el--mobile { display: block; }
+}
+.caviera-collection__header-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,16,18,0.62), rgba(17,16,18,0.18)); }
+.caviera-collection__header-inner { position: relative; z-index: 1; padding-block: 40px; }
+.caviera-collection__header--media .caviera-breadcrumbs { color: var(--caviera-bone); opacity: 0.8; }
+.caviera-collection__header--media .caviera-collection__count { color: var(--caviera-bone); opacity: 0.8; }
+
+.caviera-facets__bar { display: flex; align-items: center; gap: 16px; padding-bottom: 24px; flex-wrap: wrap; }
+.caviera-facets__chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.caviera-facets__chip a { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-subtle); padding: 6px 10px; font-size: 0.75rem; }
+.caviera-facets__chip svg { width: 10px; height: 10px; }
+.caviera-facets__sort { margin-left: auto; }
+.caviera-facets__sort select { border: 1px solid var(--border-subtle); background: transparent; padding: 10px 12px; font-size: 0.8125rem; }
+/* iOS Safari auto-zooms on focusing a control with a computed font-size under 16px — this stays
+   compact on desktop (no zoom behaviour to worry about there) but must not shrink below 16px on
+   any touchscreen viewport. */
+@media (max-width: 899px) { .caviera-facets__sort select { font-size: 1rem; } }
+
+.caviera-facets__panel { padding: 24px 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); margin-bottom: 24px; }
+.caviera-facets__panel-head { display: none; }
+.caviera-facets__scrim { display: none; }
+.caviera-facets__form { display: flex; gap: 40px; flex-wrap: wrap; padding-inline: var(--gutter-desktop); }
+@media (max-width: 599px) { .caviera-facets__form { padding-inline: var(--gutter-mobile); flex-direction: column; } }
+
+/* Below desktop widths, "Filter and sort" opens an actual off-canvas drawer (scrim, heading,
+   close button, focus trap already handled in caviera-facets.js) rather than an inline panel that
+   just pushes the grid down — large touch targets, a clear way to close, and body scroll locked
+   while it's open. */
+@media (max-width: 899px) {
+  .caviera-facets__scrim { display: block; position: fixed; inset: 0; z-index: calc(var(--z-drawer) - 1); background: rgba(17,16,18,0.45); }
+  .caviera-facets__panel[hidden] { display: none; }
+  .caviera-facets__panel {
+    position: fixed; inset: 0; z-index: var(--z-drawer);
+    margin-bottom: 0; border: none;
+    background: var(--caviera-bone);
+    display: flex; flex-direction: column;
+    padding: 0;
+    overflow-y: auto;
+  }
+  .caviera-facets__panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px var(--gutter-mobile);
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+  .caviera-facets__panel-close { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px; }
+  .caviera-facets__panel-close svg { width: 16px; height: 16px; }
+  .caviera-facets__form { padding: 24px var(--gutter-mobile); padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); flex-direction: column; gap: 32px; flex: 1; }
+  .caviera-facets__actions { padding: 0 var(--gutter-mobile) max(20px, env(safe-area-inset-bottom, 0px)); flex-wrap: wrap; }
+  .caviera-facets__actions .btn { min-height: 48px; flex: 1; }
+}
+.caviera-facets__group { border: none; padding: 0; margin: 0; min-width: 180px; }
+.caviera-facets__option { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.875rem; }
+.caviera-facets__count { color: var(--text-muted); }
+.caviera-facets__price-range { display: flex; align-items: center; gap: 8px; }
+.caviera-facets__price-range input { width: 90px; height: var(--input-height); border: var(--border-width) solid var(--border-subtle); padding-inline: 8px; background: transparent; font-size: 1rem; }
+.caviera-facets__actions { display: flex; align-items: center; gap: 20px; }
+
+.caviera-collection__empty { text-align: center; padding-block: 64px; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.caviera-collection__empty-actions { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-top: 8px; }
+.caviera-search-page__group { margin-top: 48px; }
+.caviera-search-page__group:first-of-type { margin-top: 24px; }
+.caviera-search-page__cards { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 20px; }
+@media (min-width: 700px) { .caviera-search-page__cards { grid-template-columns: repeat(2, 1fr); } }
+.caviera-pagination { display: flex; justify-content: center; padding-block: 48px; }
+.caviera-pagination ul { display: flex; gap: 12px; align-items: center; }
+.caviera-pagination a, .caviera-pagination span { display: inline-flex; min-width: 32px; height: 32px; align-items: center; justify-content: center; font-size: 0.8125rem; }
+.caviera-pagination [aria-current="page"] { border-bottom: 1px solid var(--caviera-cinnabar); color: var(--caviera-cinnabar); }
+.caviera-pagination svg { width: 14px; height: 14px; }
+
+.caviera-collection__editorial { text-align: center; padding-block: 56px; }
+.caviera-collection__subcollections ul { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; padding-bottom: 56px; }
+
+.caviera-collections-index__heading { text-align: center; margin-block: 32px 48px; }
+.caviera-collections-index__item { position: relative; display: block; aspect-ratio: 4/5; overflow: hidden; background: var(--caviera-rhodium); }
+.caviera-collections-index__item img { width: 100%; height: 100%; object-fit: cover; }
+.caviera-collections-index__label { position: absolute; left: 16px; bottom: 16px; color: var(--caviera-bone); font-family: var(--font-display); font-size: 1.25rem; text-shadow: 0 1px 12px rgba(0,0,0,0.25); }
+
+/* Search results reuse the same grid + facets styling */
+.caviera-search-results__group { padding-block: 32px; }
+.caviera-search-results__group-heading { margin-bottom: 20px; }

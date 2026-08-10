@@ -1,0 +1,329 @@
+{%- comment -%}
+  DIAGNOSIS (re-confirmed this round, same root cause as before — see docs/build-progress.md):
+  config/settings_data.json has no footer menu assignments at all, so footer_jewellery_menu /
+  footer_house_menu / footer_client_care_menu / footer_information_menu are genuinely blank. The
+  Liquid correctly hid each column when its menu was unset — but with all four unset and no
+  fallback, the whole navigation area had nothing to show. Confirmed: not a CSS visibility bug (no
+  display:none/opacity:0 ever targeted the grid), not a wrong-condition bug, not a section-group
+  issue (this is a plain static section, not a section group) — genuinely empty settings with no
+  fallback content.
+
+  FINAL RULE — navigation must never fully disappear: each of the four groups now has priority
+  1) the merchant-selected Shopify menu, 2) safe fallback links built only from resources
+  confirmed to exist (collections/pages/blogs/policies checked via Liquid's own existence tests —
+  `collections['handle']`, `pages['handle']`, `blogs['handle']`, `shop.*_policy` all resolve to
+  blank/nil if the resource doesn't exist, so nothing broken is ever rendered), 3) an individual
+  fallback item simply doesn't render if its destination doesn't exist — never a placeholder or
+  guessed URL. A merchant-selected menu always overrides the fallback entirely for that group.
+
+  Formal identity restructured per this round's explicit hierarchy: the Master Signature (House
+  Seal + wordmark, composed) is now the footer's own opening moment, alongside "Sculpted for a
+  lifetime." — previously this line and the Master Signature lived only in the homepage's separate
+  closing section above the real <footer> (see the clarification in an earlier report); this round
+  deliberately brings both into the footer itself, per the explicit new structure. The plain
+  horizontal wordmark moves to the bottom utility row as the smaller, secondary mark, and the small
+  House Seal remains the tiny final mark — no identity element repeated without a clear role.
+{%- endcomment -%}
+{%- liquid
+  assign mark_mode = section.settings.logo_scheme
+
+  assign has_jewellery_menu = false
+  if section.settings.footer_jewellery_menu != blank
+    assign has_jewellery_menu = true
+  endif
+  assign has_house_menu = false
+  if section.settings.footer_house_menu != blank
+    assign has_house_menu = true
+  endif
+  assign has_client_care_menu = false
+  if section.settings.footer_client_care_menu != blank
+    assign has_client_care_menu = true
+  endif
+  assign has_information_menu = false
+  if section.settings.footer_information_menu != blank
+    assign has_information_menu = true
+  endif
+
+  assign has_any_menu = false
+  if has_jewellery_menu or has_house_menu or has_client_care_menu or has_information_menu
+    assign has_any_menu = true
+  endif
+
+  # The live "Necklaces" collection's actual Shopify handle is misspelled ("neckalces" — see
+  # docs/merchant-actions-required.md); checked here as a second-tier fallback only, purely so
+  # this navigation doesn't stay broken while that's corrected upstream. Never renamed here.
+  assign necklaces_collection = collections['necklaces'] | default: collections['neckalces']
+
+  # Journal is treated as present only when the blog actually has published articles — matching
+  # the homepage Journal section's own rule (see caviera-journal.liquid) that a blog resource
+  # existing with zero articles still doesn't count as real content to link to. Computed once here
+  # and reused below so the site-wide has_any_fallback check and the House column's own fallback
+  # stay consistent with each other.
+  assign house_journal = blank
+  if blogs['news'] != blank and blogs['news'].articles.size > 0
+    assign house_journal = blogs['news']
+  elsif blogs['journal'] != blank and blogs['journal'].articles.size > 0
+    assign house_journal = blogs['journal']
+  endif
+
+  assign has_any_fallback = false
+  if collections['rings'] != blank or collections['earrings'] != blank or necklaces_collection != blank or collections['bracelets'] != blank
+    assign has_any_fallback = true
+  endif
+  if pages['about-caviera'] != blank or pages['the-house'] != blank or pages['craftsmanship'] != blank or pages['bespoke'] != blank or house_journal != blank
+    assign has_any_fallback = true
+  endif
+  if pages['contact'] != blank or pages['faq'] != blank or pages['shipping'] != blank or pages['returns'] != blank or pages['care'] != blank
+    assign has_any_fallback = true
+  endif
+  if shop.privacy_policy != blank or shop.terms_of_service != blank or shop.refund_policy != blank or shop.shipping_policy != blank
+    assign has_any_fallback = true
+  endif
+
+  assign show_nav = false
+  if has_any_menu or has_any_fallback
+    assign show_nav = true
+  endif
+-%}
+<footer class="caviera-footer" data-scheme="{{ section.settings.color_scheme }}">
+  {%- if section.settings.show_master_signature -%}
+    <div class="container caviera-footer__signature">
+      {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading heading-h2">{{ section.settings.master_heading }}</p>{%- endif -%}
+      <div class="caviera-footer__signature-mark">
+        {%- render 'caviera-master-signature', mode: mark_mode, width: 240 -%}
+      </div>
+      {%- if section.settings.statement != blank -%}
+        <p class="caviera-footer__statement body-text">{{ section.settings.statement }}</p>
+      {%- endif -%}
+    </div>
+    <span class="caviera-footer__rule" aria-hidden="true"></span>
+  {%- endif -%}
+
+  <div class="container caviera-footer__top">
+    {%- if show_nav -%}
+      <nav class="caviera-footer__columns" aria-label="{{ 'sections.footer.navigation' | t }}">
+        {%- comment -%} ---- Jewellery ---- {%- endcomment -%}
+        {%- liquid
+          unless has_jewellery_menu
+            assign jewellery_has_fallback = false
+            if collections['rings'] != blank or collections['earrings'] != blank or necklaces_collection != blank or collections['bracelets'] != blank
+              assign jewellery_has_fallback = true
+            endif
+          endunless
+        -%}
+        {%- if has_jewellery_menu or jewellery_has_fallback -%}
+          <div class="caviera-footer__column" data-footer-accordion>
+            <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Jewellery-{{ section.id }}">
+              {{ section.settings.footer_jewellery_heading | default: 'Jewellery' }}
+            </button>
+            <ul id="FooterMenu-Jewellery-{{ section.id }}" class="caviera-footer__column-list">
+              {%- if has_jewellery_menu -%}
+                {%- for link in section.settings.footer_jewellery_menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+              {%- else -%}
+                {%- if collections['rings'] != blank -%}<li><a href="{{ collections['rings'].url }}">Rings</a></li>{%- endif -%}
+                {%- if collections['earrings'] != blank -%}<li><a href="{{ collections['earrings'].url }}">Earrings</a></li>{%- endif -%}
+                {%- if necklaces_collection != blank -%}<li><a href="{{ necklaces_collection.url }}">Necklaces</a></li>{%- endif -%}
+                {%- if collections['bracelets'] != blank -%}<li><a href="{{ collections['bracelets'].url }}">Bracelets</a></li>{%- endif -%}
+                <li><a href="{{ routes.all_products_collection_url }}">Shop All</a></li>
+              {%- endif -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} ---- The House ---- {%- endcomment -%}
+        {%- liquid
+          assign house_page = pages['about-caviera'] | default: pages['the-house']
+          unless has_house_menu
+            assign house_has_fallback = false
+            if house_page != blank or pages['craftsmanship'] != blank or pages['bespoke'] != blank or house_journal != blank
+              assign house_has_fallback = true
+            endif
+          endunless
+        -%}
+        {%- if has_house_menu or house_has_fallback -%}
+          <div class="caviera-footer__column" data-footer-accordion>
+            <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-House-{{ section.id }}">
+              {{ section.settings.footer_house_heading | default: 'The House' }}
+            </button>
+            <ul id="FooterMenu-House-{{ section.id }}" class="caviera-footer__column-list">
+              {%- if has_house_menu -%}
+                {%- for link in section.settings.footer_house_menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+              {%- else -%}
+                {%- if house_page != blank -%}<li><a href="{{ house_page.url }}">The House</a></li>{%- endif -%}
+                {%- if pages['craftsmanship'] != blank -%}<li><a href="{{ pages['craftsmanship'].url }}">Craftsmanship</a></li>{%- endif -%}
+                {%- if pages['bespoke'] != blank -%}<li><a href="{{ pages['bespoke'].url }}">Bespoke</a></li>{%- endif -%}
+                {%- if house_journal != blank -%}<li><a href="{{ house_journal.url }}">Journal</a></li>{%- endif -%}
+              {%- endif -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} ---- Client Care ---- {%- endcomment -%}
+        {%- liquid
+          unless has_client_care_menu
+            assign client_care_has_fallback = false
+            if pages['contact'] != blank or pages['faq'] != blank or pages['shipping'] != blank or pages['returns'] != blank or pages['care'] != blank
+              assign client_care_has_fallback = true
+            endif
+          endunless
+        -%}
+        {%- if has_client_care_menu or client_care_has_fallback -%}
+          <div class="caviera-footer__column" data-footer-accordion>
+            <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-ClientCare-{{ section.id }}">
+              {{ section.settings.footer_client_care_heading | default: 'Client Care' }}
+            </button>
+            <ul id="FooterMenu-ClientCare-{{ section.id }}" class="caviera-footer__column-list">
+              {%- if has_client_care_menu -%}
+                {%- for link in section.settings.footer_client_care_menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+              {%- else -%}
+                {%- if pages['contact'] != blank -%}<li><a href="{{ pages['contact'].url }}">Contact Us</a></li>{%- endif -%}
+                {%- if pages['faq'] != blank -%}<li><a href="{{ pages['faq'].url }}">FAQ</a></li>{%- endif -%}
+                {%- if pages['shipping'] != blank -%}<li><a href="{{ pages['shipping'].url }}">Shipping</a></li>{%- endif -%}
+                {%- if pages['returns'] != blank -%}<li><a href="{{ pages['returns'].url }}">Returns</a></li>{%- endif -%}
+                {%- if pages['care'] != blank -%}<li><a href="{{ pages['care'].url }}">Care</a></li>{%- endif -%}
+              {%- endif -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} ---- Information (policies) ---- {%- endcomment -%}
+        {%- liquid
+          unless has_information_menu
+            assign information_has_fallback = false
+            if shop.privacy_policy != blank or shop.terms_of_service != blank or shop.refund_policy != blank or shop.shipping_policy != blank
+              assign information_has_fallback = true
+            endif
+          endunless
+        -%}
+        {%- if has_information_menu or information_has_fallback -%}
+          <div class="caviera-footer__column" data-footer-accordion>
+            <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Information-{{ section.id }}">
+              {{ section.settings.footer_information_heading | default: 'Information' }}
+            </button>
+            <ul id="FooterMenu-Information-{{ section.id }}" class="caviera-footer__column-list">
+              {%- if has_information_menu -%}
+                {%- for link in section.settings.footer_information_menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+              {%- else -%}
+                {%- if shop.privacy_policy != blank -%}<li><a href="{{ shop.privacy_policy.url }}">{{ shop.privacy_policy.title }}</a></li>{%- endif -%}
+                {%- if shop.terms_of_service != blank -%}<li><a href="{{ shop.terms_of_service.url }}">{{ shop.terms_of_service.title }}</a></li>{%- endif -%}
+                {%- if shop.refund_policy != blank -%}<li><a href="{{ shop.refund_policy.url }}">{{ shop.refund_policy.title }}</a></li>{%- endif -%}
+                {%- if shop.shipping_policy != blank -%}<li><a href="{{ shop.shipping_policy.url }}">{{ shop.shipping_policy.title }}</a></li>{%- endif -%}
+              {%- endif -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      </nav>
+    {%- elsif request.design_mode -%}
+      <div class="caviera-editor-note">No Shopify menus selected and no fallback resource (collection, page, blog or policy) could be detected for any group yet. Select menus above, or create the relevant pages/collections/policies, to populate the CAVIERA footer.</div>
+    {%- endif -%}
+
+    {%- if section.settings.show_newsletter -%}
+      <div class="caviera-footer__newsletter">
+        <h3 class="label">{{ section.settings.newsletter_heading | default: 'general.newsletter.submit' | t }}</h3>
+        {%- form 'customer', class: 'caviera-newsletter-form' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <label class="visually-hidden" for="FooterNewsletter">{{ 'general.newsletter.email_placeholder' | t }}</label>
+          <div class="caviera-newsletter-form__row">
+            <input type="email" id="FooterNewsletter" name="contact[email]" required placeholder="{{ 'general.newsletter.email_placeholder' | t }}" autocomplete="email">
+            <button type="submit" class="btn">{{ 'general.newsletter.submit' | t }}</button>
+          </div>
+          <p class="caviera-footer__consent">{{ 'general.newsletter.consent' | t }}</p>
+          {%- if form.posted_successfully? -%}
+            <p class="form-status" data-state="success">{{ 'general.newsletter.success' | t }}</p>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  <span class="caviera-footer__rule" aria-hidden="true"></span>
+
+  <div class="container caviera-footer__bottom">
+    <div class="caviera-footer__bottom-mark">
+      {%- render 'caviera-wordmark', mode: mark_mode, width: 140 -%}
+    </div>
+    {%- if section.settings.social_show -%}
+      <div class="caviera-footer__social">
+        {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
+        {%- if settings.social_pinterest != blank -%}<a href="{{ settings.social_pinterest }}" aria-label="Pinterest">{% render 'icon', name: 'pinterest' %}</a>{%- endif -%}
+        {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>{%- endif -%}
+        {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>{%- endif -%}
+        {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- liquid
+      assign has_multiple_markets = false
+      if localization.available_countries.size > 1 or localization.available_languages.size > 1
+        assign has_multiple_markets = true
+      endif
+    -%}
+    {%- if section.settings.show_localization and has_multiple_markets -%}
+      {%- render 'localization-form', context: 'Footer' -%}
+    {%- endif -%}
+    <p class="caviera-footer__copyright">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
+    {%- if section.settings.show_payment_icons -%}
+      <ul class="caviera-footer__payment">
+        {%- for type in shop.enabled_payment_types -%}
+          <li>{{ type | payment_type_svg_tag: class: 'payment-icon' }}</li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    <span class="caviera-footer__seal">{%- render 'caviera-house-seal', mode: mark_mode, width: 24, alt: '' -%}</span>
+  </div>
+</footer>
+
+<script src="{{ 'caviera-footer.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
+      "options": [
+        { "value": "obsidian", "label": "Obsidian" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "bone", "label": "Warm Bone" }
+      ]
+    },
+    {
+      "type": "select", "id": "logo_scheme", "label": "Identity colour version", "default": "dark",
+      "info": "Applies to the Master Signature, wordmark and House Seal below.",
+      "options": [
+        { "value": "light", "label": "For light backgrounds" },
+        { "value": "dark", "label": "For dark backgrounds" }
+      ]
+    },
+    { "type": "header", "content": "Formal signature" },
+    { "type": "checkbox", "id": "show_master_signature", "label": "Show Master Signature moment", "default": true, "info": "The formal opening of the footer — House Seal + wordmark composed, with a headline. The plain wordmark appears again, smaller, near the bottom as the everyday utility mark." },
+    { "type": "text", "id": "master_heading", "label": "Signature heading", "default": "Sculpted for a lifetime." },
+    { "type": "textarea", "id": "statement", "label": "Short house statement", "default": "A modern jewellery house shaped by precision, material and ritual." },
+    { "type": "checkbox", "id": "social_show", "label": "Show social links", "default": true },
+    { "type": "checkbox", "id": "show_localization", "label": "Show country/language selector", "default": false, "info": "Only appears when the store has more than one market or language configured." },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": false },
+
+    { "type": "header", "content": "Footer navigation" },
+    { "type": "paragraph", "content": "Select the Shopify menus displayed in each footer column. Menu selection is optional — leave any (or all) blank and that column automatically shows safe fallback links built from your store's existing collections, pages, blog and policies instead. A selected menu always takes priority over its fallback." },
+    { "type": "header", "content": "Jewellery menu" },
+    { "type": "text", "id": "footer_jewellery_heading", "label": "Heading", "default": "Jewellery" },
+    { "type": "link_list", "id": "footer_jewellery_menu", "label": "Jewellery menu", "info": "Optional. Falls back to Rings/Earrings/Necklaces/Bracelets/Shop All where those collections exist." },
+
+    { "type": "header", "content": "The House menu" },
+    { "type": "text", "id": "footer_house_heading", "label": "Heading", "default": "The House" },
+    { "type": "link_list", "id": "footer_house_menu", "label": "The House menu", "info": "Optional. Falls back to The House/Craftsmanship/Bespoke/Journal where those pages exist." },
+
+    { "type": "header", "content": "Client Care menu" },
+    { "type": "text", "id": "footer_client_care_heading", "label": "Heading", "default": "Client Care" },
+    { "type": "link_list", "id": "footer_client_care_menu", "label": "Client Care menu", "info": "Optional. Falls back to Contact Us/FAQ/Shipping/Returns/Care where those pages exist." },
+
+    { "type": "header", "content": "Information menu" },
+    { "type": "text", "id": "footer_information_heading", "label": "Heading", "default": "Information" },
+    { "type": "link_list", "id": "footer_information_menu", "label": "Information / Legal menu", "info": "Optional. Falls back to your store's own Privacy/Terms/Refund/Shipping policies where configured." },
+
+    { "type": "header", "content": "Newsletter" },
+    { "type": "paragraph", "content": "Leave off if the homepage Newsletter section is already enabled, so the form does not repeat on the homepage." },
+    { "type": "checkbox", "id": "show_newsletter", "label": "Show newsletter form in footer", "default": false },
+    { "type": "text", "id": "newsletter_heading", "label": "Newsletter heading" }
+  ]
+}
+{% endschema %}

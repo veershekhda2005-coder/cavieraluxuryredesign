@@ -1,0 +1,264 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "general": {
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "home": "Home",
+      "close": "Close",
+      "close_menu": "Close menu",
+      "open_menu": "Open menu",
+      "menu": "Menu",
+      "loading": "Loading",
+      "next_slide": "Next",
+      "previous_slide": "Previous",
+      "play_video": "Play video",
+      "link_opens_new_window": "Opens in a new window"
+    },
+    "search": {
+      "search": "Search",
+      "placeholder": "Search jewellery, collections, journal",
+      "submit": "Submit search",
+      "clear": "Clear search",
+      "results_for": "Results for “{{ terms }}”",
+      "results_count": {
+        "one": "{{ count }} result for “{{ terms }}”",
+        "other": "{{ count }} results for “{{ terms }}”"
+      },
+      "no_results": "No results for “{{ terms }}”.",
+      "no_results_prefix": "No results for",
+      "no_results_suggestion": "Check the spelling, or search for a collection, material or piece.",
+      "products": "Jewellery",
+      "collections": "Collections",
+      "pages": "Pages",
+      "articles": "Journal",
+      "return_home": "Return home"
+    },
+    "cart": {
+      "title": "Your bag",
+      "empty": "Your bag is empty.",
+      "empty_action": "Continue discovering",
+      "continue_shopping": "Continue shopping",
+      "subtotal": "Subtotal",
+      "note": "Add a note",
+      "note_placeholder": "Notes for your order",
+      "checkout": "Checkout",
+      "view_cart": "View bag",
+      "remove": "Remove",
+      "quantity": "Quantity",
+      "decrease_quantity": "Decrease quantity of {{ title }}",
+      "increase_quantity": "Increase quantity of {{ title }}",
+      "update": "Update",
+      "error": "Something did not update. Please try again.",
+      "item_added": "Added to your bag",
+      "shipping_at_least": "Spend {{ amount }} more for free shipping.",
+      "shipping_qualified": "Your order qualifies for free shipping.",
+      "taxes_included_shipping_at_checkout": "Taxes included. Shipping calculated at checkout."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{ number }}"
+    },
+    "newsletter": {
+      "email_placeholder": "Email address",
+      "submit": "Subscribe",
+      "consent": "By subscribing you agree to receive news from CAVIERA JEWELS. Unsubscribe anytime.",
+      "success": "Thank you. You are on the list.",
+      "error": "Please enter a valid email address."
+    },
+    "share": {
+      "share": "Share",
+      "copy_link": "Copy link",
+      "link_copied": "Link copied"
+    },
+    "localization": {
+      "country_label": "Country/region",
+      "language_label": "Language"
+    }
+  },
+  "products": {
+    "product": {
+      "sale_price": "Sale price",
+      "regular_price": "Regular price",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "add_to_bag": "Add to bag",
+      "buy_now": "Buy now",
+      "quantity": "Quantity",
+      "choose_options": "Choose options",
+      "from_price": "From {{ price }}",
+      "view_details": "Discover",
+      "description": "Description",
+      "media_gallery": "Product media",
+      "zoom": "Zoom image",
+      "sku": "SKU: {{ sku }}",
+      "vendor": "By {{ vendor }}"
+    },
+    "recommendations": {
+      "heading": "You may also discover"
+    }
+  },
+  "collections": {
+    "general": {
+      "empty": "No pieces currently match.",
+      "clear_filters": "Clear all",
+      "search_instead": "Search instead",
+      "filter_and_sort": "Filter and sort",
+      "sort_by": "Sort",
+      "product_count": {
+        "one": "{{ count }} piece",
+        "other": "{{ count }} pieces"
+      }
+    }
+  },
+  "sections": {
+    "header": {
+      "search": "Search",
+      "account": "Account",
+      "cart": "Bag",
+      "cart_count": {
+        "one": "Bag, {{ count }} item",
+        "other": "Bag, {{ count }} items"
+      },
+      "menu": "Menu",
+      "client_services": "Client services"
+    },
+    "loader": {
+      "loading_caviera": "CAVIERA JEWELS is loading"
+    },
+    "footer": {
+      "navigation": "Footer navigation"
+    },
+    "bespoke": {
+      "name": "Full name",
+      "email": "Email",
+      "phone": "Telephone (optional)",
+      "enquiry_type": "Enquiry type",
+      "preferred_contact": "Preferred contact method",
+      "timeframe": "Desired completion timeframe",
+      "reference": "Product or design reference (optional)",
+      "message": "Message",
+      "submit": "Send enquiry",
+      "success": "Thank you. A member of the House will respond shortly."
+    },
+    "faq": {
+      "heading": "Questions"
+    }
+  },
+  "templates": {
+    "404": {
+      "title": "This page could not be found",
+      "subtext": "The piece you are looking for may have moved, or the address may be incorrect.",
+      "search_prompt": "Try a search, or return to the collection.",
+      "home_link": "Return home"
+    },
+    "search": {
+      "title": "Search"
+    },
+    "list_collections": {
+      "title": "Collections"
+    },
+    "blog": {
+      "filter_by_tag": "Filter by topic",
+      "all_articles": "All",
+      "empty": "No entries yet."
+    },
+    "article": {
+      "back_to_journal": "Back to Journal"
+    },
+    "password": {
+      "opening_soon": "Opening soon",
+      "admin_link": "Enter using password",
+      "password_placeholder": "Enter store password",
+      "password_submit": "Enter",
+      "newsletter_heading": "Be first to know"
+    },
+    "contact": {
+      "hours": "Hours",
+      "appointment_intro": "Prefer to discuss something in person?",
+      "appointment_link": "Request an appointment",
+      "form": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "message": "Message",
+        "submit": "Send",
+        "success": "Thank you for your message.",
+        "error": "Please correct the errors below."
+      }
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "Account",
+      "details": "Account details",
+      "view_addresses": "View addresses",
+      "return": "Return to account details",
+      "order_history": "Order history",
+      "logged_in_as": "Logged in as {{ email }}"
+    },
+    "orders": {
+      "title": "Order history",
+      "order_number": "Order",
+      "date": "Date",
+      "payment_status": "Payment status",
+      "fulfillment_status": "Fulfillment status",
+      "total": "Total",
+      "none": "You have not placed any orders yet."
+    },
+    "log_in": "Log in",
+    "log_out": "Log out",
+    "create_account": "Create account",
+    "login_page": {
+      "email": "Email",
+      "password": "Password",
+      "sign_in": "Sign in",
+      "forgot_password": "Forgot your password?",
+      "create_account": "Create account"
+    },
+    "recover_password": {
+      "title": "Reset your password",
+      "subtext": "We will send you an email to reset your password.",
+      "submit": "Send reset link",
+      "success": "If that email exists, a reset link is on its way."
+    },
+    "register": {
+      "title": "Create account",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "add_new": "Add a new address",
+      "edit": "Edit",
+      "save": "Save address",
+      "delete": "Delete",
+      "delete_confirm": "Delete this address?",
+      "default": "Default"
+    }
+  },
+  "gift_cards": {
+    "issued": {
+      "title": "Here is your {{ value }} gift card for {{ shop }}",
+      "expiration": "This gift card expires on {{ expires_on }}",
+      "expiration_no_expiry": "This gift card never expires.",
+      "add_to_apple_wallet": "Add to Apple Wallet",
+      "qr_alt": "QR code for this gift card",
+      "copy_code": "Copy code",
+      "code_copied": "Copied",
+      "print": "Print",
+      "recipient": "For {{ name }}"
+    }
+  }
+}

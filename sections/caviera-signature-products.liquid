@@ -1,0 +1,110 @@
+{%- comment -%}
+  Signature product presentation — NOT a standard grid. One large focused product with a
+  navigable rail of smaller adjacent products underneath (real Shopify data only: image, title,
+  price, link — never an invented subtitle, diamond/edition claim, award or rating).
+
+  Source priority: explicit "Product" blocks (in the order added) if any exist, else the selected
+  collection's products. There is no catalogue-wide fallback.
+
+  CRITICAL FIX (see docs/final-caviera-consolidated-audit.md): this used to fall back to
+  `collections.all` whenever nothing was configured, then render `fallback_products.first` —
+  literally the first product in the ~344-item legacy catalogue — as if it were the hand-picked
+  "focus" product. That fallback is removed outright: with neither product blocks nor a collection
+  that actually has products, the whole section stays out of the published page.
+
+  Progressive enhancement: the rail's thumbnails are real `<a href="{{ product.url }}">` links —
+  fully functional navigation with zero JavaScript. assets/caviera-signature-products.js
+  intercepts clicks to swap the focused product in place instead, and adds arrow-key navigation
+  (Home/End too) following the ARIA tabs pattern. Swipe on mobile is native horizontal
+  scroll-snap on the rail, not a custom touch handler.
+{%- endcomment -%}
+{%- liquid
+  assign has_block_products = false
+  for block in section.blocks
+    if block.settings.product != blank
+      assign has_block_products = true
+    endif
+  endfor
+
+  assign fallback_collection = collections[section.settings.collection]
+  assign fallback_products = fallback_collection.products
+  assign has_content = false
+  if has_block_products or fallback_products.size > 0
+    assign has_content = true
+  endif
+-%}
+{%- if has_content -%}
+<section class="caviera-section caviera-signature-products" data-caviera-signature-products>
+  <div class="container caviera-signature-products__head" data-reveal>
+    <div>
+      {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+    </div>
+    {%- if has_block_products == false and fallback_collection.url -%}
+      <a href="{{ fallback_collection.url }}" class="link-underline">{{ section.settings.view_all_text | default: 'View all' }}</a>
+    {%- endif -%}
+  </div>
+
+  {%- if has_block_products -%}
+    <div class="caviera-signature-products__stage container--full">
+      <div class="caviera-signature-products__focus" id="CavieraSignatureFocus" data-signature-focus role="tabpanel" aria-labelledby="CavieraSignatureTab-0">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.product != blank -%}
+            {%- render 'product-card', product: block.settings.product, image_ratio: 'portrait' -%}
+            {%- break -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+      <div class="caviera-signature-products__rail" role="tablist" aria-label="{{ section.settings.heading | default: 'Signature products' | escape }}" data-signature-rail>
+        {%- assign panel_index = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.settings.product != blank -%}
+            {%- render 'signature-product-panel', product: block.settings.product, index: panel_index, is_first: panel_index == 0 -%}
+            {%- assign panel_index = panel_index | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- else -%}
+    <div class="caviera-signature-products__stage container--full">
+      <div class="caviera-signature-products__focus" id="CavieraSignatureFocus" data-signature-focus role="tabpanel" aria-labelledby="CavieraSignatureTab-0">
+        {%- render 'product-card', product: fallback_products.first, image_ratio: 'portrait' -%}
+      </div>
+      <div class="caviera-signature-products__rail" role="tablist" aria-label="{{ section.settings.heading | default: 'Signature products' | escape }}" data-signature-rail>
+        {%- for product in fallback_products limit: section.settings.product_limit -%}
+          {%- render 'signature-product-panel', product: product, index: forloop.index0, is_first: forloop.first -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+<script src="{{ 'caviera-signature-products.js' | asset_url }}" defer="defer"></script>
+{%- elsif request.design_mode -%}
+<section class="caviera-section caviera-signature-products">
+  <div class="container"><div class="caviera-editor-note">Add product blocks, or select a collection with products, to display this section. It no longer falls back to the full catalogue.</div></div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Signature products",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "In focus this season" },
+    { "type": "collection", "id": "collection", "label": "Collection", "info": "Used only when no product blocks are added below. One of the two is required — this section stays hidden from customers otherwise, and never falls back to the full catalogue." },
+    { "type": "range", "id": "product_limit", "label": "Product limit (collection mode)", "min": 3, "max": 8, "step": 1, "default": 5 },
+    { "type": "text", "id": "view_all_text", "label": "View-all link text", "default": "View all" }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product" }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Signature products" }]
+}
+{% endschema %}

@@ -1,0 +1,28 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "caviera-page-hero",
+      "settings": {
+        "eyebrow": "Bespoke",
+        "heading": "Some objects begin with a conversation.",
+        "intro": "<p>Bespoke design, adjustments and repairs — an ordinary enquiry, considered carefully.</p>",
+        "color_scheme": "cinnabar",
+        "height": "compact"
+      }
+    },
+    "form": {
+      "type": "caviera-bespoke-form",
+      "settings": {}
+    }
+  },
+  "order": ["intro", "form"]
+}

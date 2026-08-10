@@ -1,0 +1,89 @@
+{%- comment -%}
+  Native Shopify Search & Discovery filters. Works without JavaScript (plain GET form); JS only
+  progressively enhances it (auto-submit, drawer open/close, active-chip removal).
+  Params: results (a collection or search object exposing .filters / .sort_options / .url)
+{%- endcomment -%}
+{%- liquid
+  assign active_filter_count = 0
+  for filter in results.filters
+    assign active_filter_count = active_filter_count | plus: filter.active_values.size
+  endfor
+-%}
+<caviera-facets class="caviera-facets">
+  <div class="caviera-facets__bar container">
+    <button type="button" class="caviera-facets__toggle btn" data-facets-toggle aria-expanded="false" aria-controls="CavieraFacetsPanel">
+      {{ 'collections.general.filter_and_sort' | t }}
+    </button>
+
+    {%- if active_filter_count > 0 -%}
+      <ul class="caviera-facets__chips">
+        {%- for filter in results.filters -%}
+          {%- for value in filter.active_values -%}
+            <li class="caviera-facets__chip">
+              <a href="{{ value.url_to_remove }}">{{ filter.label }}: {{ value.label }} {% render 'icon', name: 'close' %}</a>
+            </li>
+          {%- endfor -%}
+        {%- endfor -%}
+        <li><a href="{{ results.url }}" class="link-underline">{{ 'collections.general.clear_filters' | t }}</a></li>
+      </ul>
+    {%- endif -%}
+
+    <form class="caviera-facets__sort" action="{{ results.url }}" method="get">
+      <label class="visually-hidden" for="CavieraSortBy">{{ 'collections.general.sort_by' | t }}</label>
+      <select name="sort_by" id="CavieraSortBy" onchange="this.form.submit()">
+        {%- for option in results.sort_options -%}
+          <option value="{{ option.value }}" {% if option.value == results.sort_by %}selected{% endif %}>{{ option.name }}</option>
+        {%- endfor -%}
+      </select>
+      {%- for key in request.parameters -%}
+        {%- unless key[0] == 'sort_by' or key[0] == 'page' -%}
+          <input type="hidden" name="{{ key[0] }}" value="{{ key[1] }}">
+        {%- endunless -%}
+      {%- endfor -%}
+    </form>
+  </div>
+
+  <div class="caviera-facets__scrim" data-facets-close aria-hidden="true"></div>
+  <div id="CavieraFacetsPanel" class="caviera-facets__panel" role="dialog" aria-modal="true" aria-label="{{ 'collections.general.filter_and_sort' | t }}" hidden>
+    <div class="caviera-facets__panel-head">
+      <h2 class="heading-h3">{{ 'collections.general.filter_and_sort' | t }}</h2>
+      <button type="button" class="caviera-facets__panel-close" data-facets-close aria-label="{{ 'general.accessibility.close' | t }}">
+        {% render 'icon', name: 'close' %}
+      </button>
+    </div>
+    <form action="{{ results.url }}" method="get" class="caviera-facets__form">
+      {%- for filter in results.filters -%}
+        <fieldset class="caviera-facets__group">
+          <legend class="label">{{ filter.label }}</legend>
+          {%- case filter.type -%}
+            {%- when 'list', 'boolean' -%}
+              {%- for value in filter.values -%}
+                <label class="caviera-facets__option">
+                  <input
+                    type="checkbox"
+                    name="{{ value.param_name }}"
+                    value="{{ value.value }}"
+                    {% if value.active %}checked{% endif %}
+                    {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                  >
+                  {{ value.label }} <span class="caviera-facets__count">({{ value.count }})</span>
+                </label>
+              {%- endfor -%}
+            {%- when 'price_range' -%}
+              <div class="caviera-facets__price-range">
+                <label class="visually-hidden" for="FilterPriceMin">Min price</label>
+                <input type="number" id="FilterPriceMin" name="{{ filter.min_value.param_name }}" placeholder="{{ filter.range_min | money }}" value="{{ filter.min_value.value }}">
+                <span aria-hidden="true">&ndash;</span>
+                <label class="visually-hidden" for="FilterPriceMax">Max price</label>
+                <input type="number" id="FilterPriceMax" name="{{ filter.max_value.param_name }}" placeholder="{{ filter.range_max | money }}" value="{{ filter.max_value.value }}">
+              </div>
+          {%- endcase -%}
+        </fieldset>
+      {%- endfor -%}
+      <div class="caviera-facets__actions">
+        <button type="submit" class="btn btn--primary">{{ 'collections.general.filter_and_sort' | t }}</button>
+        <a href="{{ results.url }}" class="link-underline">{{ 'collections.general.clear_filters' | t }}</a>
+      </div>
+    </form>
+  </div>
+</caviera-facets>

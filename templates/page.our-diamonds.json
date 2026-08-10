@@ -1,0 +1,33 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "caviera-page-hero",
+      "settings": {
+        "eyebrow": "Our Diamonds",
+        "heading": "Considered stone by stone.",
+        "intro": "<p>Lab-grown diamonds, selected with intention and disclosed on every product page.</p>",
+        "color_scheme": "obsidian",
+        "height": "compact"
+      }
+    },
+    "main": { "type": "caviera-page-content", "settings": {} },
+    "discover": {
+      "type": "caviera-bespoke-banner",
+      "settings": {
+        "heading": "Continue to the collection.",
+        "cta_text": "Discover the collection",
+        "cta_url": "/collections/all"
+      }
+    }
+  },
+  "order": ["hero", "main", "discover"]
+}

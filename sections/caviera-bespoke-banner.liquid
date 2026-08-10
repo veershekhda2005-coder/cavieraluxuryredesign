@@ -1,0 +1,64 @@
+{%- comment -%}
+  Dark, cinematic enquiry section. Never implies ordinary shopping requires approval — this is a
+  plain invitation to enquire, linking to a normal contact/bespoke page.
+
+  Media is dedicated only (desktop + mobile campaign images) — there is deliberately no fallback
+  to any product image. An unrelated catalogue photo here (the same fallback the hero and object
+  in focus used to reach for) is exactly what let one temporary product image, badge included,
+  repeat across the homepage. With no dedicated image, the section shows a clean Obsidian field.
+{%- endcomment -%}
+{%- liquid
+  assign bespoke_image = section.settings.image_desktop
+  assign bespoke_image_mobile = section.settings.image_mobile | default: section.settings.image_desktop
+-%}
+<section class="caviera-section caviera-bespoke" data-scheme="obsidian">
+  {%- if bespoke_image != blank -%}
+    <div class="caviera-bespoke__media">
+      <img
+        class="caviera-bespoke__media-el caviera-bespoke__media-el--desktop"
+        src="{{ bespoke_image | image_url: width: 1920 }}"
+        srcset="{{ bespoke_image | image_url: width: 960 }} 960w, {{ bespoke_image | image_url: width: 1920 }} 1920w"
+        sizes="100vw"
+        width="{{ bespoke_image.width }}" height="{{ bespoke_image.height }}"
+        alt="{{ bespoke_image.alt | default: '' | escape }}"
+        loading="lazy"
+      >
+      {%- if bespoke_image_mobile != blank -%}
+        <img
+          class="caviera-bespoke__media-el caviera-bespoke__media-el--mobile"
+          src="{{ bespoke_image_mobile | image_url: width: 900 }}"
+          srcset="{{ bespoke_image_mobile | image_url: width: 600 }} 600w, {{ bespoke_image_mobile | image_url: width: 900 }} 900w"
+          sizes="100vw"
+          width="{{ bespoke_image_mobile.width }}" height="{{ bespoke_image_mobile.height }}"
+          alt="{{ bespoke_image_mobile.alt | default: '' | escape }}"
+          loading="lazy"
+        >
+      {%- endif -%}
+      <div class="caviera-bespoke__overlay"></div>
+    </div>
+  {%- elsif request.design_mode -%}
+    <div class="caviera-editor-note">No dedicated bespoke image set — showing a clean Obsidian field instead of a stand-in photo. Campaign imagery must not contain marketplace badges, review stars, promotional text or watermarks.</div>
+  {%- endif -%}
+  <div class="container caviera-bespoke__content" data-reveal>
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.body != blank -%}<p class="body-text">{{ section.settings.body }}</p>{%- endif -%}
+    {%- if section.settings.cta_text != blank -%}
+      <a href="{{ section.settings.cta_url | default: '/pages/bespoke' }}" class="btn btn--primary">{{ section.settings.cta_text }}</a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bespoke enquiry",
+  "settings": [
+    { "type": "image_picker", "id": "image_desktop", "label": "Desktop campaign image", "info": "Dedicated image only — no marketplace badges, review stars, promotional text or watermarks. No product image is ever substituted automatically." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Mobile campaign image (falls back to desktop image)" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Some objects begin with a conversation." },
+    { "type": "textarea", "id": "body", "label": "Body" },
+    { "type": "text", "id": "cta_text", "label": "CTA text", "default": "Request an appointment" },
+    { "type": "url", "id": "cta_url", "label": "CTA link" }
+  ],
+  "presets": [{ "name": "Bespoke enquiry" }]
+}
+{% endschema %}

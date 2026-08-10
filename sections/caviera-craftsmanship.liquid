@@ -1,0 +1,201 @@
+{%- comment -%}
+  Craftsmanship storytelling — multiple sequential material/process chapters (Design & form,
+  Stone setting, Gold & finishing, Quality review, Hallmark, Care…). Used on the homepage, the
+  dedicated Craftsmanship page, and (as "House pillars", unrelated content) The House page.
+  Material truth only — no unsupported artisan/origin claims.
+
+  Because this one section is shared across three different content contexts, the two settings
+  that change its whole composition — `color_scheme` and `layout` — both default to the values
+  those existing pages already rely on implicitly ('bone' background, the per-chapter-row list),
+  so adding them here changes nothing for page.craftsmanship.json or page.house.json unless a
+  merchant explicitly opts in. Only the homepage instance (templates/index.json) sets
+  layout: "dominant_image" and color_scheme: "obsidian" explicitly.
+
+  layout: "list" (default, unchanged) — each imaged chapter keeps its own balanced media-and-text
+    row; with no images at all, chapters become a balanced multi-column staggered text layout
+    (never a permanently blank image column).
+  layout: "dominant_image" (new) — one large visual (the new dedicated main_image, or else a
+    controlled CAVIERA material field when none is set — never a simulated photo) beside a
+    vertical editorial list of the same chapters. A chapter's own per-block image (if any) is not
+    additionally shown in this layout, to avoid competing imagery beside an already-dominant visual.
+{%- endcomment -%}
+{%- liquid
+  assign layout = section.settings.layout | default: 'list'
+
+  assign any_chapter_has_image = false
+  assign any_chapter_has_title = false
+  for block in section.blocks
+    if block.settings.image != blank
+      assign any_chapter_has_image = true
+    endif
+    if block.settings.title != blank
+      assign any_chapter_has_title = true
+    endif
+  endfor
+  assign has_content = any_chapter_has_title
+  if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.intro != blank
+    assign has_content = true
+  endif
+
+  assign mark_mode = 'light'
+  unless section.settings.color_scheme == 'bone'
+    assign mark_mode = 'dark'
+  endunless
+
+  assign main_image = section.settings.main_image
+  assign main_image_mobile = section.settings.main_image_mobile | default: main_image
+  assign has_main_image = false
+  if main_image != blank
+    assign has_main_image = true
+  endif
+-%}
+{%- if has_content -%}
+<section class="caviera-section caviera-craftsmanship" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}">
+  <div class="container caviera-craftsmanship__head" data-reveal>
+    {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.intro != blank -%}<div class="body-text--wide">{{ section.settings.intro }}</div>{%- endif -%}
+  </div>
+
+  {%- if layout == 'dominant_image' -%}
+    <div class="container caviera-craftsmanship__split">
+      <div class="caviera-craftsmanship__visual-col">
+        <div class="caviera-craftsmanship__visual">
+          {%- if has_main_image -%}
+            <span class="caviera-craftsmanship__visual-offset" aria-hidden="true"></span>
+            <div class="caviera-craftsmanship__visual-frame">
+              <picture>
+                {%- if main_image_mobile != blank and main_image_mobile != main_image -%}
+                  <source media="(max-width: 749px)" srcset="{{ main_image_mobile | image_url: width: 700 }} 700w, {{ main_image_mobile | image_url: width: 1000 }} 1000w" sizes="100vw">
+                {%- endif -%}
+                <img
+                  src="{{ main_image | image_url: width: 1200 }}"
+                  srcset="{{ main_image | image_url: width: 600 }} 600w, {{ main_image | image_url: width: 1200 }} 1200w, {{ main_image | image_url: width: 1800 }} 1800w"
+                  sizes="(min-width: 1024px) 52vw, 100vw"
+                  width="{{ main_image.width }}" height="{{ main_image.height }}"
+                  alt="{{ main_image.alt | default: '' | escape }}"
+                  loading="lazy"
+                >
+              </picture>
+            </div>
+          {%- else -%}
+            {%- comment -%}
+              Controlled CAVIERA material field — never a simulated photo. Same "Cinnabar panel,
+              Warm Bone inset" language as Object in focus and Packaging ritual's own compositions.
+            {%- endcomment -%}
+            <div class="caviera-craftsmanship__composition" aria-hidden="true">
+              <span class="caviera-craftsmanship__composition-inset"></span>
+            </div>
+            {%- if section.settings.show_seal_watermark -%}
+              <div class="caviera-craftsmanship__composition-seal" style="--seal-opacity: {{ section.settings.seal_watermark_opacity | default: 6 }}%;">
+                {%- render 'caviera-house-seal', mode: mark_mode, width: 220, alt: '' -%}
+              </div>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="caviera-craftsmanship__stories">
+        {%- if any_chapter_has_title -%}
+          <ol class="caviera-craftsmanship__story-list">
+            {%- for block in section.blocks -%}
+              {%- if block.settings.title != blank -%}
+                <li class="caviera-craftsmanship__story" {{ block.shopify_attributes }}>
+                  <span class="caviera-craftsmanship__story-number label" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                  <h3 class="caviera-craftsmanship__story-title">{{ block.settings.title }}</h3>
+                  {%- if block.settings.body != blank -%}<div class="body-text">{{ block.settings.body }}</div>{%- endif -%}
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ol>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- else -%}
+    {%- if any_chapter_has_title -%}
+      <div class="container caviera-craftsmanship__list" data-media="{% if any_chapter_has_image %}yes{% else %}no{% endif %}">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.title != blank -%}
+            <article class="caviera-craftsmanship__row{% if block.settings.image == blank %} caviera-craftsmanship__row--text-only{% endif %}" data-reveal {{ block.shopify_attributes }}>
+              {%- if block.settings.image -%}
+                <div class="caviera-craftsmanship__image">
+                  <img
+                    src="{{ block.settings.image | image_url: width: 800 }}"
+                    srcset="{{ block.settings.image | image_url: width: 400 }} 400w, {{ block.settings.image | image_url: width: 800 }} 800w"
+                    sizes="(min-width: 900px) 33vw, 100vw"
+                    width="{{ block.settings.image.width }}" height="{{ block.settings.image.height }}"
+                    alt="{{ block.settings.image.alt | default: '' | escape }}"
+                    loading="lazy"
+                  >
+                </div>
+              {%- endif -%}
+              <div class="caviera-craftsmanship__copy">
+                <span class="label">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                <h3 class="heading-h3">{{ block.settings.title }}</h3>
+                {%- if block.settings.body != blank -%}<div class="body-text">{{ block.settings.body }}</div>{%- endif -%}
+              </div>
+            </article>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- elsif request.design_mode -%}
+      <div class="container"><div class="caviera-editor-note">Add up to six chapter blocks (e.g. Design & form, Stone setting, Gold & finishing).</div></div>
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if section.settings.show_hallmark -%}
+    <div class="caviera-craftsmanship__hallmark" data-reveal>
+      {%- render 'caviera-house-seal', mode: mark_mode, width: 56 -%}
+    </div>
+  {%- endif -%}
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Craftsmanship",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Craftsmanship" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Material truth." },
+    { "type": "richtext", "id": "intro", "label": "Intro" },
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    {
+      "type": "select", "id": "layout", "label": "Layout", "default": "list",
+      "info": "\"Editorial list\" is the original per-chapter layout, unchanged. \"Dominant image\" pairs one large visual with the chapters as a vertical list beside it.",
+      "options": [
+        { "value": "list", "label": "Editorial list (per-chapter images optional)" },
+        { "value": "dominant_image", "label": "Dominant image + story list" }
+      ]
+    },
+    { "type": "header", "content": "Dominant image layout" },
+    { "type": "image_picker", "id": "main_image", "label": "Main image (desktop)", "info": "Macro, material or process photography — sketch/CAD detail, diamond-setting macro, polished gold macro. No marketplace badges or promotional text." },
+    { "type": "image_picker", "id": "main_image_mobile", "label": "Main image (mobile)", "info": "Falls back to the desktop image when left blank." },
+    { "type": "checkbox", "id": "show_seal_watermark", "label": "Show House Seal watermark when no image is set", "default": false, "info": "A large, very quiet House Seal in the material field shown only when no main image is configured — optional, and never shown over real photography." },
+    { "type": "range", "id": "seal_watermark_opacity", "label": "Watermark opacity", "min": 4, "max": 8, "step": 1, "default": 6, "unit": "%" },
+    { "type": "header", "content": "Closing mark" },
+    { "type": "checkbox", "id": "show_hallmark", "label": "Show House Seal as closing hallmark", "default": false }
+  ],
+  "blocks": [
+    {
+      "type": "chapter",
+      "name": "Chapter",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image", "info": "Used in \"Editorial list\" layout only." },
+        { "type": "text", "id": "title", "label": "Title", "info": "e.g. Design & form, Stone setting, Gold & finishing, Quality review" },
+        { "type": "richtext", "id": "body", "label": "Body" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    { "name": "Craftsmanship", "blocks": [{ "type": "chapter" }, { "type": "chapter" }, { "type": "chapter" }] }
+  ]
+}
+{% endschema %}

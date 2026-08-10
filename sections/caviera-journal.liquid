@@ -1,0 +1,53 @@
+{%- comment -%}
+  Refined journal preview. Hides automatically when there are no real published articles — never
+  shows "coming soon" or fabricated cards/dates/authors.
+{%- endcomment -%}
+{%- liquid
+  assign blog = blogs[section.settings.blog]
+  if blog == blank
+    assign blog = blogs['news']
+  endif
+  assign limit = section.settings.article_limit
+-%}
+{%- if blog and blog.articles.size > 0 -%}
+<section class="caviera-section caviera-journal">
+  <div class="container caviera-journal__head" data-reveal>
+    <div>
+      {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+    </div>
+    <a href="{{ blog.url }}" class="link-underline">{{ 'general.search.articles' | t }}</a>
+  </div>
+  <div class="container caviera-journal__grid">
+    {%- for article in blog.articles limit: limit -%}
+      <a href="{{ article.url }}" class="caviera-journal__card" data-reveal>
+        {%- if article.image -%}
+          <img
+            src="{{ article.image | image_url: width: 700 }}"
+            srcset="{{ article.image | image_url: width: 350 }} 350w, {{ article.image | image_url: width: 700 }} 700w"
+            sizes="(min-width: 900px) 33vw, 100vw"
+            width="{{ article.image.width }}" height="{{ article.image.height }}"
+            alt="{{ article.image.alt | default: article.title | escape }}"
+            loading="lazy"
+          >
+        {%- endif -%}
+        <span class="caviera-journal__date">{{ article.published_at | date: '%B %Y' }}</span>
+        <h3 class="heading-h3">{{ article.title }}</h3>
+      </a>
+    {%- endfor -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Journal",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Journal" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "From the House" },
+    { "type": "blog", "id": "blog", "label": "Blog" },
+    { "type": "range", "id": "article_limit", "label": "Article limit", "min": 2, "max": 6, "step": 1, "default": 3 }
+  ],
+  "presets": [{ "name": "Journal" }]
+}
+{% endschema %}

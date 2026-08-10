@@ -1,0 +1,68 @@
+{%- comment -%}
+  Renders the full-body CAVIERA oryx (Living Mascot) — for ceremonial loading, editorial
+  storytelling and packaging ritual only. Never a replacement for the House Seal.
+
+  Priority (static variant only): 1) merchant-selected Theme Editor image, 2) approved bundled
+  CAVIERA Living Mascot (assets/caviera-living-mascot-*.png — official House artwork shipped with
+  the theme, colour chosen to suit the surface via `mode`), 3) if somehow neither resolves, nothing
+  renders on the storefront and a discreet reminder appears only inside the Theme Editor. The walk
+  variant has no bundled fallback (no approved walking asset exists yet — see the ceremonial loader
+  docs) and renders nothing unless a merchant has uploaded settings.oryx_walk or settings.oryx_full.
+
+  Params:
+    variant ('static'|'walk' — 'walk' prefers settings.oryx_walk, falls back to settings.oryx_full,
+             never to a bundled asset)
+    mode ('light'|'dark') — which background this sits on, for bundled-fallback colour only
+                             (default 'light'); ignored once a merchant asset is selected, since
+                             merchants upload one image per setting rather than a light/dark pair
+    css_class, width, loading, fetchpriority, alt (default '' — decorative; see caviera-house-seal
+    for when to pass explicit text)
+{%- endcomment -%}
+{%- liquid
+  assign variant = variant | default: 'static'
+  assign mode = mode | default: 'light'
+  assign asset = settings.oryx_full
+  if variant == 'walk' and settings.oryx_walk
+    assign asset = settings.oryx_walk
+  endif
+  assign bundled_file = nil
+  if asset == blank and variant != 'walk'
+    assign bundled_file = 'caviera-living-mascot-obsidian.png'
+    if mode == 'dark'
+      assign bundled_file = 'caviera-living-mascot-warm-bone.png'
+    endif
+  endif
+-%}
+{%- if asset -%}
+  <img
+    class="caviera-oryx caviera-oryx--{{ variant }} {{ css_class }}"
+    src="{{ asset | image_url: width: 800 }}"
+    {% unless variant == 'walk' %}
+    srcset="{{ asset | image_url: width: 400 }} 400w, {{ asset | image_url: width: 800 }} 800w, {{ asset | image_url: width: 1200 }} 1200w"
+    sizes="{{ width | default: 320 }}px"
+    {% endunless %}
+    width="{{ asset.width }}"
+    height="{{ asset.height }}"
+    alt="{{ alt | default: '' | escape }}"
+    aria-hidden="{% if alt == blank %}true{% else %}false{% endif %}"
+    loading="{{ loading | default: 'lazy' }}"
+    {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    style="{% if width %}max-width:{{ width }}px;{% endif %} height:auto; width:100%;"
+  >
+{%- elsif bundled_file -%}
+  <img
+    class="caviera-oryx caviera-oryx--{{ variant }} {{ css_class }}"
+    src="{{ bundled_file | asset_url }}"
+    width="1542"
+    height="2400"
+    alt="{{ alt | default: '' | escape }}"
+    aria-hidden="{% if alt == blank %}true{% else %}false{% endif %}"
+    loading="{{ loading | default: 'lazy' }}"
+    {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    style="{% if width %}max-width:{{ width }}px;{% endif %} height:auto; width:100%;"
+  >
+{%- elsif request.design_mode -%}
+  <span class="caviera-asset-placeholder" role="presentation">
+    Upload: Full-body oryx — Theme settings → CAVIERA Identity
+  </span>
+{%- endif -%}

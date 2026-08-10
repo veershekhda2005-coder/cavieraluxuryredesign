@@ -1,0 +1,39 @@
+<div class="caviera-page container container--narrow">
+  <a href="{{ routes.account_url }}" class="link-underline">{{ 'customer.account.return' | t }}</a>
+  <h1 class="heading-h1 caviera-customer__meta">{{ 'customer.orders.order_number' | t }} {{ order.name }}</h1>
+  <p class="body-text caviera-customer__meta--tight">{{ order.created_at | date: '%B %d, %Y' }}</p>
+
+  <table class="caviera-cart-page__table caviera-customer__table">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'products.product.description' | t }}</th>
+        <th scope="col">{{ 'general.cart.quantity' | t }}</th>
+        <th scope="col">{{ 'general.cart.subtotal' | t }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for line_item in order.line_items -%}
+        <tr class="caviera-cart-page__row">
+          <td>
+            <div class="caviera-cart-page__item">
+              {%- if line_item.image -%}<img src="{{ line_item.image | image_url: width: 160 }}" width="80" height="80" alt="{{ line_item.title | escape }}" loading="lazy">{%- endif -%}
+              <div><a href="{{ line_item.product.url }}">{{ line_item.title }}</a></div>
+            </div>
+          </td>
+          <td data-label="{{ 'general.cart.quantity' | t }}">{{ line_item.quantity }}</td>
+          <td data-label="{{ 'general.cart.subtotal' | t }}">{{ line_item.final_line_price | money }}</td>
+        </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+
+  <div class="caviera-cart-page__summary">
+    <span>{{ 'general.cart.subtotal' | t }}</span>
+    <span class="price">{{ order.total_price | money }}</span>
+  </div>
+
+  {%- if order.shipping_address -%}
+    <h2 class="heading-h3 caviera-customer__meta">{{ 'customer.addresses.title' | t }}</h2>
+    <address class="body-text caviera-customer__meta--tight">{{ order.shipping_address | format_address }}</address>
+  {%- endif -%}
+</div>

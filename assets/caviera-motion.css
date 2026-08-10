@@ -1,0 +1,22 @@
+/*
+  CAVIERA Grand Theme 2026 — Motion
+  Slow, lucid, controlled. 400–700ms transitions. No bounce, no elastic easing, no scroll-jacking.
+*/
+
+/* Ceremonial loader styling now lives in its own dedicated file — see assets/caviera-loader.css,
+   loaded only on the homepage template alongside caviera-home.css. */
+
+/* ---- Generic scroll-reveal (IntersectionObserver adds .is-visible) ---- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--motion-base) var(--ease-caviera), transform var(--motion-base) var(--ease-caviera);
+}
+[data-reveal].is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---- Shared transition helpers ---- */
+.caviera-fade { transition: opacity var(--motion-base) var(--ease-caviera); }
+.caviera-crossfade-out { opacity: 0; }

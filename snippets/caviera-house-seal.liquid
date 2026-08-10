@@ -1,0 +1,60 @@
+{%- comment -%}
+  Renders the angular oryx-head House Seal — the compact formal mark. Never confused with the
+  full-body Living Mascot.
+
+  Priority: 1) merchant-selected Theme Editor image, 2) approved bundled CAVIERA House Seal
+  (assets/caviera-house-seal-*.png — official House artwork shipped with the theme), 3) if somehow
+  neither resolves, nothing renders on the storefront and a discreet reminder appears only inside
+  the Theme Editor.
+
+  Params:
+    mode ('light'|'dark'), css_class, width, loading, fetchpriority
+    alt: accessible text. Default '' (decorative) — correct wherever the seal sits inside an
+         already-labelled link (e.g. the header logo link) or beside visible text that already
+         names it (e.g. "The House Seal" editorial story). Pass explicit text only where the seal
+         is the sole identifying content with no surrounding label, e.g. alt: shop.name.
+{%- endcomment -%}
+{%- liquid
+  assign mode = mode | default: 'light'
+  assign asset = settings.seal_on_light
+  assign bundled_file = 'caviera-house-seal-obsidian.png'
+  assign bundled_w = 1080
+  assign bundled_h = 2400
+  assign setting_label = 'House Seal on light — Theme settings → CAVIERA Identity'
+  if mode == 'dark'
+    assign asset = settings.seal_on_dark
+    assign bundled_file = 'caviera-house-seal-warm-bone.png'
+    assign setting_label = 'House Seal on dark — Theme settings → CAVIERA Identity'
+  endif
+-%}
+{%- if asset -%}
+  <img
+    class="caviera-house-seal {{ css_class }}"
+    src="{{ asset | image_url: width: 200 }}"
+    srcset="{{ asset | image_url: width: 100 }} 100w, {{ asset | image_url: width: 200 }} 200w, {{ asset | image_url: width: 320 }} 320w"
+    sizes="{{ width | default: 44 }}px"
+    width="{{ asset.width }}"
+    height="{{ asset.height }}"
+    alt="{{ alt | default: '' | escape }}"
+    aria-hidden="{% if alt == blank %}true{% else %}false{% endif %}"
+    loading="{{ loading | default: 'lazy' }}"
+    {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    style="{% if width %}max-width:{{ width }}px;{% endif %} height:auto; width:100%;"
+  >
+{%- elsif bundled_file -%}
+  <img
+    class="caviera-house-seal {{ css_class }}"
+    src="{{ bundled_file | asset_url }}"
+    width="{{ bundled_w }}"
+    height="{{ bundled_h }}"
+    alt="{{ alt | default: '' | escape }}"
+    aria-hidden="{% if alt == blank %}true{% else %}false{% endif %}"
+    loading="{{ loading | default: 'lazy' }}"
+    {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    style="{% if width %}max-width:{{ width }}px;{% endif %} height:auto; width:100%;"
+  >
+{%- elsif request.design_mode -%}
+  <span class="caviera-asset-placeholder caviera-asset-placeholder--square" role="presentation">
+    Upload: {{ setting_label }}
+  </span>
+{%- endif -%}

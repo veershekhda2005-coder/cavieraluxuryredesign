@@ -1,0 +1,51 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "caviera-page-hero",
+      "settings": {
+        "eyebrow": "Craftsmanship",
+        "heading": "Precision, by hand.",
+        "intro": "<p>Design, stone and metal, brought into agreement.</p>",
+        "color_scheme": "bone",
+        "height": "cinematic"
+      }
+    },
+    "craft": {
+      "type": "caviera-craftsmanship",
+      "blocks": {
+        "c-1": { "type": "chapter", "settings": { "title": "Design & form" } },
+        "c-2": { "type": "chapter", "settings": { "title": "Stone setting" } },
+        "c-3": { "type": "chapter", "settings": { "title": "Gold & finishing" } },
+        "c-4": { "type": "chapter", "settings": { "title": "Quality review" } }
+      },
+      "block_order": ["c-1", "c-2", "c-3", "c-4"],
+      "settings": { "eyebrow": "The process", "heading": "Material truth.", "show_hallmark": true }
+    },
+    "care": {
+      "type": "caviera-editorial-media",
+      "settings": {
+        "eyebrow": "Care",
+        "heading": "Made to age well.",
+        "image_position": "left"
+      }
+    },
+    "discover": {
+      "type": "caviera-bespoke-banner",
+      "settings": {
+        "heading": "Continue to the collection.",
+        "cta_text": "Discover the collection",
+        "cta_url": "/collections/all"
+      }
+    }
+  },
+  "order": ["hero", "craft", "care", "discover"]
+}

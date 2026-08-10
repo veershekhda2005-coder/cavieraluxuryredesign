@@ -1,0 +1,52 @@
+{%- comment -%}
+  Params: product, section_id
+  Native Shopify product form — variant selection, quantity, add to bag, sold-out state,
+  optional dynamic checkout button. Never bypasses required option selection.
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign form_id = 'ProductForm-' | append: section_id
+-%}
+<product-form class="caviera-product-form" data-section-id="{{ section_id }}">
+  {%- form 'product', product, id: form_id, class: 'caviera-product-form__form' -%}
+    <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id-input>
+
+    {%- if product.has_only_default_variant == false -%}
+      {%- render 'variant-picker', product: product, section_id: section_id -%}
+    {%- endif -%}
+
+    <div class="caviera-product-form__row">
+      <div class="caviera-product-form__quantity">
+        <label class="visually-hidden" for="Quantity-{{ section_id }}">{{ 'products.product.quantity' | t }}</label>
+        <button type="button" class="caviera-product-form__qty-btn" data-quantity-decrease aria-label="{{ 'general.cart.decrease_quantity' | t: title: product.title }}">{% render 'icon', name: 'minus' %}</button>
+        <input type="number" id="Quantity-{{ section_id }}" name="quantity" value="1" min="1" inputmode="numeric" data-quantity-input>
+        <button type="button" class="caviera-product-form__qty-btn" data-quantity-increase aria-label="{{ 'general.cart.increase_quantity' | t: title: product.title }}">{% render 'icon', name: 'plus' %}</button>
+      </div>
+
+      <button
+        type="submit"
+        name="add"
+        class="btn btn--primary btn--full caviera-product-form__submit"
+        data-add-to-cart
+        {% unless current_variant.available %}disabled{% endunless %}
+        aria-disabled="{% unless current_variant.available %}true{% else %}false{% endunless %}"
+      >
+        <span data-add-to-cart-text>
+          {%- if current_variant.available == false -%}
+            {{ 'products.product.sold_out' | t }}
+          {%- else -%}
+            {{ 'products.product.add_to_bag' | t }}
+          {%- endif -%}
+        </span>
+      </button>
+    </div>
+
+    {%- if settings.product_dynamic_checkout and current_variant.available -%}
+      <div class="caviera-product-form__dynamic-checkout">
+        {{ form | payment_button }}
+      </div>
+    {%- endif -%}
+
+    <div class="caviera-product-form__status" role="status" aria-live="polite" data-form-status></div>
+  {%- endform -%}
+</product-form>

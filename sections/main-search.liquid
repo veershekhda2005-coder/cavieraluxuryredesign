@@ -1,0 +1,107 @@
+{%- comment -%}
+  Full search results page: products, pages and articles — Shopify's native search object does
+  not include collections (that's a predictive-search-only resource type; see search-overlay.liquid
+  for that). Usable without JS/animation. Result types are grouped under their own labelled
+  heading rather than mixed together, per brand rule.
+{%- endcomment -%}
+<section class="caviera-collection">
+  <header class="caviera-collection__header container">
+    <h1 class="heading-h1">{{ 'templates.search.title' | t }}</h1>
+    {%- comment -%}
+      Plain native search form — "predictive_search" is not a registered Shopify {% form %} tag
+      type (confirmed by a live Liquid error during hosted QA). This is a standard GET search form.
+    {%- endcomment -%}
+    <form action="{{ routes.search_url }}" method="get" role="search">
+      <label class="visually-hidden" for="SearchPageInput">{{ 'general.search.search' | t }}</label>
+      <div class="caviera-search-page__row">
+        <input type="search" id="SearchPageInput" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search.placeholder' | t }}">
+        <button type="submit" class="btn btn--primary">{{ 'general.search.submit' | t }}</button>
+      </div>
+    </form>
+    {%- if search.performed and search.results_count > 0 -%}
+      <p class="label caviera-collection__count">
+        {%- if search.results_count == 1 -%}
+          {{ 'general.search.results_count.one' | t: count: search.results_count, terms: search.terms }}
+        {%- else -%}
+          {{ 'general.search.results_count.other' | t: count: search.results_count, terms: search.terms }}
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+  </header>
+
+  {%- if search.performed -%}
+    {%- if search.results_count == 0 -%}
+      <div class="container caviera-collection__empty">
+        <p class="body-text">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+        <p class="body-text">{{ 'general.search.no_results_suggestion' | t }}</p>
+        <div class="caviera-collection__empty-actions">
+          {%- if section.settings.suggested_collection != blank -%}
+            <a href="{{ section.settings.suggested_collection.url }}" class="btn btn--primary">{{ section.settings.suggested_collection.title }}</a>
+          {%- endif -%}
+          <a href="{{ routes.root_url }}" class="link-underline">{{ 'general.search.return_home' | t }}</a>
+        </div>
+      </div>
+    {%- else -%}
+      {%- paginate search.results by 24 -%}
+        {%- if search.filters.size > 0 -%}
+          {%- render 'facets', results: search -%}
+        {%- endif -%}
+        {%- liquid
+          assign products = search.results | where: 'object_type', 'product'
+          assign pages = search.results | where: 'object_type', 'page'
+          assign articles = search.results | where: 'object_type', 'article'
+        -%}
+        {%- if products.size > 0 -%}
+          <div class="container caviera-search-page__group">
+            <h2 class="heading-h3 label">{{ 'general.search.products' | t }}</h2>
+            <div class="caviera-product-grid caviera-product-grid--4">
+              {%- for item in products -%}
+                {%- render 'product-card', product: item -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+        {%- if pages.size > 0 -%}
+          <div class="container caviera-search-page__group">
+            <h2 class="heading-h3 label">{{ 'general.search.pages' | t }}</h2>
+            <div class="caviera-search-page__cards">
+              {%- for item in pages -%}
+                <a href="{{ item.url }}" class="caviera-search-page__result">
+                  <h3 class="heading-h3">{{ item.title }}</h3>
+                  {%- if item.content -%}<p class="body-text">{{ item.content | strip_html | truncate: 120 }}</p>{%- endif -%}
+                </a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+        {%- if articles.size > 0 -%}
+          <div class="container caviera-search-page__group">
+            <h2 class="heading-h3 label">{{ 'general.search.articles' | t }}</h2>
+            <div class="caviera-search-page__cards">
+              {%- for item in articles -%}
+                <a href="{{ item.url }}" class="caviera-search-page__result">
+                  <h3 class="heading-h3">{{ item.title }}</h3>
+                  {%- if item.content -%}<p class="body-text">{{ item.content | strip_html | truncate: 120 }}</p>{%- endif -%}
+                </a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+        <div class="container">{%- render 'pagination', paginate: paginate -%}</div>
+      {%- endpaginate -%}
+    {%- endif -%}
+  {%- endif -%}
+</section>
+
+{%- if search.performed and search.results_count > 0 and search.filters.size > 0 -%}
+  <script src="{{ 'caviera-facets.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Search results",
+  "settings": [
+    { "type": "collection", "id": "suggested_collection", "label": "Suggested collection (shown only when a search has no results)" }
+  ]
+}
+{% endschema %}

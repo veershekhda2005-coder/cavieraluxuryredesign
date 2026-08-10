@@ -1,0 +1,42 @@
+{%- comment -%}
+  Spacious formal brand moment built around the official Master Signature (House Seal + full
+  wordmark, composed as one mark) — never the ordinary nav-header wordmark. Reusable more than
+  once on a page: as the House page's opening signature (leave "Closing line" blank) or as the
+  closing moment before the footer (with a line). The Master Signature always has approved
+  artwork to show (merchant upload, or the bundled House default) — see
+  snippets/caviera-master-signature.liquid — so, unlike some other identity sections, this one
+  never needs to hide itself for missing art.
+{%- endcomment -%}
+{%- liquid
+  assign mark_mode = 'light'
+  unless section.settings.color_scheme == 'bone'
+    assign mark_mode = 'dark'
+  endunless
+-%}
+<section class="caviera-section caviera-signature" data-scheme="{{ section.settings.color_scheme }}">
+  <div class="container caviera-signature__inner" data-reveal>
+    <span class="caviera-signature__rule" aria-hidden="true"></span>
+    {%- if section.settings.line != blank -%}<p class="heading-h2 caviera-signature__line">{{ section.settings.line }}</p>{%- endif -%}
+    <div class="caviera-signature__mark">
+      {%- render 'caviera-master-signature', mode: mark_mode, width: 320 -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "House signature",
+  "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    { "type": "text", "id": "line", "label": "Line (optional)", "default": "Sculpted for a lifetime.", "info": "Leave blank to use this as a quiet opening signature; add a line for a closing moment." }
+  ],
+  "presets": [{ "name": "House signature" }]
+}
+{% endschema %}

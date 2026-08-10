@@ -1,0 +1,189 @@
+{%- comment -%}
+  Packaging ritual — ceremonial editorial spread, not a feature-card grid or a website timeline.
+  One editorial introduction, then a two-column composition: a large left "presentation case"
+  visual stage (merchant packaging photography, or — when none is set — an official CAVIERA
+  material study built from real brand colour and artwork, never a simulated photo) beside one
+  vertical sequence of six ritual steps (number, title, short description). A single thin
+  Rhodium/Cinnabar progression line runs beside the steps; an optional, restrained JS enhancement
+  (assets/caviera-packaging-ritual.js) brightens the step nearest the reading focus and grows the
+  progression line to match — every step is fully readable without it.
+
+  REDESIGN NOTE (see docs/build-progress.md): the previous version placed four equal-width colour
+  bars beside a further-nested flex column, which — combined with an unconstrained inner
+  max-width — could read as an extremely narrow, word-by-word-wrapped strip despite the outer grid
+  already having a readable-floor fix. This version removes that nested sub-layout entirely: steps
+  are one flat vertical list with an explicit, generous 500px max-width on the description text
+  (see .caviera-ritual__step-copy .body-text in caviera-home.css), and the "layering" idea moves to
+  where it actually communicates something — the visual stage itself (nested Obsidian → Cinnabar →
+  Warm Bone panels), not a set of 4px bars next to the text.
+
+  House Seal placement: rather than a single always-shown mark with no connection to any specific
+  step, the Seal now appears beside whichever step is actually titled "Unseal" (matched
+  case-insensitively, the same "match by content, not by position" technique already used for
+  header mega-menu features) — so it stays correctly attached to the authentication moment even if
+  a merchant edits/reorders the step blocks, rather than being pinned to "block #4" by assumption.
+{%- endcomment -%}
+{%- liquid
+  assign has_steps = false
+  for block in section.blocks
+    if block.settings.title != blank
+      assign has_steps = true
+    endif
+  endfor
+
+  assign mark_mode = 'light'
+  unless section.settings.color_scheme == 'bone'
+    assign mark_mode = 'dark'
+  endunless
+
+  assign visual_mode = section.settings.visual_mode | default: 'media'
+  assign stage_image = section.settings.image
+  assign stage_image_mobile = section.settings.image_mobile | default: stage_image
+  if stage_image == blank
+    assign visual_mode = 'composition'
+  endif
+-%}
+<section class="caviera-section caviera-ritual" data-scheme="{{ section.settings.color_scheme }}" data-spacing="{{ section.settings.spacing | default: 'standard' }}">
+  <div class="container container--narrow caviera-ritual__head" data-reveal>
+    {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h1 caviera-ritual__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.supporting_copy != blank -%}<p class="body-text caviera-ritual__intro-copy">{{ section.settings.supporting_copy }}</p>{%- endif -%}
+  </div>
+
+  <div class="container caviera-ritual__body">
+    <div class="caviera-ritual__stage-col">
+      <div class="caviera-ritual__stage" data-reveal>
+        {%- if visual_mode == 'media' -%}
+          <picture>
+            {%- if stage_image_mobile != blank and stage_image_mobile != stage_image -%}
+              <source media="(max-width: 749px)" srcset="{{ stage_image_mobile | image_url: width: 700 }} 700w, {{ stage_image_mobile | image_url: width: 1000 }} 1000w" sizes="100vw">
+            {%- endif -%}
+            <img
+              class="caviera-ritual__stage-media"
+              src="{{ stage_image | image_url: width: 1000 }}"
+              srcset="{{ stage_image | image_url: width: 600 }} 600w, {{ stage_image | image_url: width: 1000 }} 1000w, {{ stage_image | image_url: width: 1400 }} 1400w"
+              sizes="(min-width: 1024px) 48vw, 100vw"
+              width="{{ stage_image.width }}"
+              height="{{ stage_image.height }}"
+              alt="{{ stage_image.alt | default: '' | escape }}"
+              loading="lazy"
+            >
+          </picture>
+        {%- else -%}
+          {%- comment -%}
+            Official CAVIERA material study — never a simulated photo. Three nested panels
+            (Obsidian outer, Cinnabar case, Warm Bone interior) visualise the same opening
+            sequence named in the steps beside it, each edged in a hairline Rhodium rule. The
+            Living Mascot sits grounded on the innermost panel's edge, not centred like a logo.
+          {%- endcomment -%}
+          <div class="caviera-ritual__composition" aria-hidden="true">
+            <span class="caviera-ritual__panel" data-panel="cinnabar"></span>
+            <span class="caviera-ritual__panel" data-panel="bone"></span>
+          </div>
+          {%- if section.settings.show_oryx -%}
+            <div class="caviera-ritual__mascot">
+              {%- render 'caviera-oryx', variant: 'static', mode: 'dark', width: 320, alt: '' -%}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="caviera-ritual__rail">
+      {%- if has_steps -%}
+        <span class="caviera-ritual__progress" aria-hidden="true"><span class="caviera-ritual__progress-fill" data-ritual-progress-fill></span></span>
+        <ol class="caviera-ritual__steps" data-ritual-steps>
+          {%- for block in section.blocks -%}
+            {%- if block.settings.title != blank -%}
+              {%- liquid
+                assign is_unseal = false
+                assign title_down = block.settings.title | downcase
+                if title_down contains 'unseal'
+                  assign is_unseal = true
+                endif
+              -%}
+              <li class="caviera-ritual__step" data-reveal {{ block.shopify_attributes }}>
+                <span class="caviera-ritual__step-number label" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                <div class="caviera-ritual__step-copy">
+                  <h3 class="caviera-ritual__step-title">{{ block.settings.title }}</h3>
+                  {%- if block.settings.body != blank -%}<p class="body-text">{{ block.settings.body }}</p>{%- endif -%}
+                  {%- if is_unseal and section.settings.show_seal -%}
+                    <span class="caviera-ritual__step-seal">{%- render 'caviera-house-seal', mode: mark_mode, width: 32, alt: '' -%}</span>
+                  {%- endif -%}
+                </div>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ol>
+      {%- elsif request.design_mode -%}
+        <div class="caviera-editor-note">Add up to six ritual steps as blocks.</div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+<script src="{{ 'caviera-packaging-ritual.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Packaging ritual",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Label", "default": "Packaging" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "A ritual, not a box." },
+    { "type": "textarea", "id": "supporting_copy", "label": "Supporting line", "default": "The experience moves from protection to intimacy, with one controlled House cue at each stage." },
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    {
+      "type": "select", "id": "spacing", "label": "Section spacing", "default": "standard",
+      "options": [
+        { "value": "compact", "label": "Compact" },
+        { "value": "standard", "label": "Standard" },
+        { "value": "spacious", "label": "Spacious" }
+      ]
+    },
+    { "type": "header", "content": "Visual stage" },
+    {
+      "type": "select", "id": "visual_mode", "label": "Visual mode", "default": "media",
+      "info": "\"Media\" falls back to the CAVIERA material composition automatically whenever no packaging image is set below — the stage is never left empty.",
+      "options": [
+        { "value": "media", "label": "Merchant packaging media" },
+        { "value": "composition", "label": "CAVIERA material composition" }
+      ]
+    },
+    { "type": "image_picker", "id": "image", "label": "Packaging image (desktop)", "info": "Real packaging photography only — no marketplace badges, review stars or promotional text." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Packaging image (mobile)", "info": "Falls back to the desktop image when left blank." },
+    { "type": "checkbox", "id": "show_oryx", "label": "Show Living Mascot in the material composition", "default": true, "info": "Only shown in \"CAVIERA material composition\" mode — never overlaid on a merchant's own packaging photography. Uses the bundled official artwork; upload your own under Theme settings → CAVIERA Identity to override it." },
+    { "type": "checkbox", "id": "show_seal", "label": "Show House Seal beside the \"Unseal\" step", "default": true, "info": "Matches whichever step block is titled \"Unseal\" (case-insensitive) — rename that step and the mark moves with it." }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "info": "e.g. Arrive, Open, Discover, Unseal, Reveal, Keep" },
+        { "type": "textarea", "id": "body", "label": "Description", "info": "One to two short sentences read best." }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Packaging ritual",
+      "blocks": [
+        { "type": "step", "settings": { "title": "Arrive", "body": "Protection first. An Obsidian outer layer keeps the object concealed until the ritual begins." } },
+        { "type": "step", "settings": { "title": "Open", "body": "Cinnabar appears within — the House colour, held in reserve until this moment." } },
+        { "type": "step", "settings": { "title": "Discover", "body": "Warm Bone softens the interior and brings the object into a more intimate field." } },
+        { "type": "step", "settings": { "title": "Unseal", "body": "The House Seal marks the threshold between packaging and object." } },
+        { "type": "step", "settings": { "title": "Reveal", "body": "The jewellery stands alone, with nothing competing for attention." } },
+        { "type": "step", "settings": { "title": "Keep", "body": "The presentation is designed to remain part of the ownership experience." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,40 @@
+{%- comment -%} Full-screen predictive search overlay. Accessible dialog with focus trap. {%- endcomment -%}
+{%- if settings.predictive_search_enabled -%}
+<div id="caviera-search-overlay" class="caviera-search-overlay" role="dialog" aria-modal="true" aria-label="{{ 'general.search.search' | t }}" hidden>
+  <div class="caviera-search-overlay__scrim" data-search-close></div>
+  <div class="caviera-search-overlay__panel">
+    <div class="container caviera-search-overlay__head">
+      {%- comment -%}
+        Plain native search form — "predictive_search" is not a registered Shopify {% form %} tag
+        type (confirmed by a live Liquid error during hosted QA). Predictive search itself is a
+        JS-driven fetch against /search/suggest.json (see assets/caviera-search.js); this form is
+        the accessible, JS-free fallback that submits a normal GET search.
+      {%- endcomment -%}
+      <form action="{{ routes.search_url }}" method="get" class="caviera-search-overlay__form" role="search">
+        <button type="button" class="caviera-search-overlay__close" data-search-close aria-label="{{ 'general.accessibility.close' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
+        {% render 'icon', name: 'search' %}
+        <label class="visually-hidden" for="CavieraSearchInput">{{ 'general.search.search' | t }}</label>
+        <input
+          type="search"
+          id="CavieraSearchInput"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'general.search.placeholder' | t }}"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          data-search-input
+        >
+        <button type="button" class="caviera-search-overlay__clear" data-search-clear hidden aria-label="{{ 'general.search.clear' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
+        <button type="submit" class="visually-hidden">{{ 'general.search.submit' | t }}</button>
+      </form>
+    </div>
+    <div class="container caviera-search-overlay__results" data-search-results aria-live="polite"></div>
+  </div>
+</div>
+<script src="{{ 'caviera-search.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}

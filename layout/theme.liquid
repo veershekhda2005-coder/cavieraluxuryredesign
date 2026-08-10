@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" dir="{{ settings.text_direction | default: 'ltr' }}" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="{{ settings.color_obsidian | default: '#111012' }}">
+
+  {%- comment -%} ---- Title / description ---- {%- endcomment -%}
+  <title>
+    {{ page_title -}}
+    {%- if current_tags %} &ndash; {{ 'general.search.results_for' | t: terms: current_tags }}{% endif -%}
+    {%- if current_page != 1 %} &ndash; {{ 'general.pagination.page' | t: number: current_page }}{% endif -%}
+    {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  </title>
+  {%- if page_description -%}
+    <meta name="description" content="{{ page_description | escape }}">
+  {%- endif -%}
+  <link rel="canonical" href="{{ canonical_url }}">
+  {%- liquid
+    assign favicon_source = settings.favicon
+    if favicon_source == blank
+      assign favicon_source = settings.seal_on_dark | default: settings.seal_on_light
+    endif
+  -%}
+  {%- if favicon_source -%}
+    <link rel="icon" type="image/png" href="{{ favicon_source | image_url: width: 96 }}">
+  {%- else -%}
+    {%- comment -%}
+      No approved favicon or House Seal exists yet (see docs/required-brand-assets.md). Browsers
+      probe /favicon.ico automatically when no icon link is present at all, which 404s with no code
+      of ours to "fix" — this empty data URI icon suppresses that probe without inventing or
+      substituting any artwork. Remove once a real favicon or House Seal is uploaded via
+      Theme settings → CAVIERA Identity.
+    {%- endcomment -%}
+    <link rel="icon" href="data:,">
+  {%- endif -%}
+
+  {%- render 'social-meta-tags' -%}
+
+  {%- comment -%} ---- Preconnect to Shopify CDN only; no third-party font/CDN hosts ---- {%- endcomment -%}
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+  {{ 'caviera-base.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-layout.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-components.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-motion.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-header.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-footer.css' | asset_url | stylesheet_tag }}
+
+  {%- if template.name == 'index' -%}
+    {{ 'caviera-home.css' | asset_url | stylesheet_tag }}
+    {{ 'caviera-loader.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+  {%- if template contains 'product' -%}
+    {{ 'caviera-product.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+  {%- if template contains 'collection' or template contains 'search' or template contains 'list-collections' -%}
+    {{ 'caviera-collection.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+  {{ 'caviera-cart.css' | asset_url | stylesheet_tag }}
+
+  {% style %}
+    {{ settings.font_body | font_face: font_display: 'swap' }}
+    {{ settings.font_display | font_face: font_display: 'swap' }}
+  {% endstyle %}
+  <style>
+    :root{
+      --surface-primary: {{ settings.color_bone | default: '#F3EEE5' }};
+      --text-primary: {{ settings.color_text_primary | default: '#111012' }};
+      --text-inverse: {{ settings.color_text_inverse | default: '#F3EEE5' }};
+      --border-subtle: {{ settings.color_border_subtle | default: '#111012' }};
+      --caviera-cinnabar: {{ settings.color_cinnabar | default: '#8F261F' }};
+      --caviera-bone: {{ settings.color_bone | default: '#F3EEE5' }};
+      --caviera-obsidian: {{ settings.color_obsidian | default: '#111012' }};
+      --caviera-rhodium: {{ settings.color_rhodium | default: '#C4C1BB' }};
+      --button-bg: {{ settings.color_button_bg | default: '#111012' }};
+      --button-text: {{ settings.color_button_text | default: '#F3EEE5' }};
+      --font-display: {{ settings.font_display.family }}, "Cormorant", Georgia, serif;
+      --font-body: {{ settings.font_body.family }}, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --heading-scale: {{ settings.heading_scale | default: 100 | divided_by: 100.0 }};
+      --body-size: {{ settings.body_size | default: 16 }}px;
+      --nav-tracking: {{ settings.nav_tracking | default: 1 }}px;
+      --button-tracking: {{ settings.button_tracking | default: 1 }}px;
+      --container-max: {{ settings.container_max_width | default: 1560 }}px;
+      --gutter-desktop: {{ settings.gutter_desktop | default: 64 }}px;
+      --gutter-mobile: {{ settings.gutter_mobile | default: 20 }}px;
+      --section-spacing: clamp(56px, 8vw, {{ settings.section_spacing | default: 128 }}px);
+      {%- if settings.enable_motion == false -%}
+      --motion-fast: 1ms; --motion-base: 1ms; --motion-slow: 1ms;
+      {%- else -%}
+        {%- case settings.transition_speed -%}
+          {%- when 'fast' -%}
+      --motion-fast: 160ms; --motion-base: 320ms; --motion-slow: 480ms;
+          {%- when 'slow' -%}
+      --motion-fast: 320ms; --motion-base: 700ms; --motion-slow: 900ms;
+          {%- else -%}
+      --motion-fast: 240ms; --motion-base: 520ms; --motion-slow: 700ms;
+        {%- endcase -%}
+      {%- endif %}
+    }
+  </style>
+
+  <script>
+    window.theme = window.theme || {};
+    window.theme.moneyFormat = {{ shop.money_format | json }};
+    window.theme.routes = {
+      cartAdd: '{{ routes.cart_add_url }}',
+      cartUrl: '{{ routes.cart_url }}',
+      predictiveSearch: '{{ routes.predictive_search_url }}'
+    };
+    window.theme.strings = {
+      addToBag: {{ 'products.product.add_to_bag' | t | json }},
+      soldOut: {{ 'products.product.sold_out' | t | json }},
+      cartEmpty: {{ 'general.cart.empty' | t | json }},
+      cartUpdated: {{ 'general.cart.item_added' | t | json }},
+      cartError: {{ 'general.cart.error' | t | json }},
+      cartLabelEmpty: {{ 'sections.header.cart' | t | json }},
+      cartLabelOne: {{ 'sections.header.cart_count.one' | t: count: '__COUNT__' | json }},
+      cartLabelOther: {{ 'sections.header.cart_count.other' | t: count: '__COUNT__' | json }},
+      shippingAtLeast: {{ 'general.cart.shipping_at_least' | t: amount: '__AMOUNT__' | json }},
+      shippingQualified: {{ 'general.cart.shipping_qualified' | t | json }},
+      skuLabel: {{ 'products.product.sku' | t: sku: '__SKU__' | json }},
+      loading: {{ 'general.accessibility.loading' | t | json }},
+      noResults: {{ 'general.search.no_results_prefix' | t | json }},
+      products: {{ 'general.search.products' | t | json }},
+      collections: {{ 'general.search.collections' | t | json }},
+      pages: {{ 'general.search.pages' | t | json }},
+      articles: {{ 'general.search.articles' | t | json }}
+    };
+  </script>
+  {{ content_for_header }}
+</head>
+
+<body class="template-{{ template.name | handle }}">
+  <a class="skip-link" href="#main-content">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+  {%- if template.name == 'index' -%}
+    {%- render 'caviera-loader' -%}
+  {%- endif -%}
+
+  {%- section 'caviera-header' -%}
+
+  <main id="main-content" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {%- section 'caviera-footer' -%}
+
+  {%- render 'cart-drawer' -%}
+  {%- render 'search-overlay' -%}
+
+  <script src="{{ 'caviera-global.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'caviera-cart.js' | asset_url }}" defer="defer"></script>
+  <script>document.documentElement.classList.remove('no-js');</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+{%- comment -%}
+  "Object in focus" — one CAVIERA piece studied in detail, with sequential editorial chapters
+  (Stone, Setting, Gold, Silhouette, Craft, Hallmark…) beside it.
+
+  This section always renders — no outer condition removes the whole thing. Media is optional and
+  only changes what fills the left column, never whether the section (label, heading, story,
+  optional CTA) exists:
+    - MEDIA (data-mode="media"): a dedicated image, or else the selected product's featured image,
+      large, with a restrained offset Cinnabar plane behind it (architectural, not decorative).
+    - COMPOSITION (data-mode="composition"): no image resolves at all, so the same column instead
+      shows a controlled CAVIERA material field — a Cinnabar architectural panel, a Warm Bone
+      inset, and (optionally) a large, very subtle House Seal watermark — never an empty rectangle,
+      and never a reused hero/product/collection/packaging image.
+
+  Renders with plain CSS only — no [data-reveal] scroll-fade — so content visibility never depends
+  on JavaScript, IntersectionObserver support, or a Theme Editor section reload.
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product
+  assign dedicated_image = section.settings.image
+  assign dedicated_image_mobile = section.settings.image_mobile
+
+  assign img = dedicated_image
+  if img == blank and product != blank
+    assign img = product.featured_image
+  endif
+  assign img_mobile = dedicated_image_mobile
+  if img_mobile == blank
+    assign img_mobile = img
+  endif
+
+  assign has_media = false
+  if img != blank
+    assign has_media = true
+  endif
+
+  assign mark_mode = 'light'
+  unless section.settings.color_scheme == 'bone'
+    assign mark_mode = 'dark'
+  endunless
+
+  assign cta_url = blank
+  if product != blank
+    assign cta_url = product.url
+  endif
+  if section.settings.link_url != blank
+    assign cta_url = section.settings.link_url
+  endif
+  assign cta_text = section.settings.link_text | default: 'Discover the object'
+
+  assign has_chapters = false
+  for block in section.blocks
+    if block.settings.title != blank or block.settings.body != blank
+      assign has_chapters = true
+    endif
+  endfor
+-%}
+<section class="caviera-section caviera-object-focus" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}" data-spacing="{{ section.settings.spacing | default: 'standard' }}" data-mode="{% if has_media %}media{% else %}composition{% endif %}">
+  {%- if request.design_mode and has_media == false -%}
+    <div class="container container--narrow">
+      <div class="caviera-editor-note">Add a Featured object / product or editorial image to introduce jewellery media. The storefront will otherwise use a quiet CAVIERA material field instead.</div>
+    </div>
+  {%- endif -%}
+
+  <div class="container container--narrow caviera-object-focus__head">
+    {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h1 caviera-object-focus__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+  </div>
+
+  <div class="container caviera-object-focus__grid">
+    <div class="caviera-object-focus__media-col">
+      <div class="caviera-object-focus__media" data-fit="{{ section.settings.media_fit | default: 'contain' }}">
+        {%- if has_media -%}
+          <span class="caviera-object-focus__media-offset" aria-hidden="true"></span>
+          <picture>
+            {%- if img_mobile != blank and img_mobile != img -%}
+              <source media="(max-width: 749px)" srcset="{{ img_mobile | image_url: width: 700 }} 700w, {{ img_mobile | image_url: width: 1000 }} 1000w" sizes="100vw">
+            {%- endif -%}
+            <img
+              src="{{ img | image_url: width: 1200 }}"
+              srcset="{{ img | image_url: width: 600 }} 600w, {{ img | image_url: width: 1200 }} 1200w, {{ img | image_url: width: 1800 }} 1800w"
+              sizes="(min-width: 1024px) 58vw, 100vw"
+              width="{{ img.width }}" height="{{ img.height }}"
+              alt="{{ img.alt | default: product.title | default: '' | escape }}"
+              loading="lazy"
+            >
+          </picture>
+        {%- else -%}
+          {%- comment -%}
+            Controlled CAVIERA material field — never a simulated photo. A Cinnabar panel with a
+            Warm Bone inset, echoing the same "outer protection / inner reveal" language used in
+            Packaging ritual's own material composition, plus an optional quiet House Seal.
+          {%- endcomment -%}
+          <div class="caviera-object-focus__composition" aria-hidden="true">
+            <span class="caviera-object-focus__composition-inset"></span>
+          </div>
+          {%- if section.settings.show_seal_watermark -%}
+            <div class="caviera-object-focus__composition-seal" style="--seal-opacity: {{ section.settings.seal_watermark_opacity | default: 8 }}%;">
+              {%- render 'caviera-house-seal', mode: mark_mode, width: 220, alt: '' -%}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="caviera-object-focus__story">
+      {%- if has_chapters -%}
+        <ol class="caviera-object-focus__chapters">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.title != blank or block.settings.body != blank -%}
+              <li class="caviera-object-focus__chapter" {{ block.shopify_attributes }}>
+                <span class="caviera-object-focus__chapter-number label" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                <div class="caviera-object-focus__chapter-copy">
+                  {%- if block.settings.title != blank -%}<h3 class="caviera-object-focus__chapter-title">{{ block.settings.title }}</h3>{%- endif -%}
+                  {%- if block.settings.body != blank -%}<div class="body-text">{{ block.settings.body }}</div>{%- endif -%}
+                </div>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ol>
+      {%- endif -%}
+      {%- if cta_url != blank -%}
+        <a href="{{ cta_url }}" class="link-underline caviera-object-focus__cta">{{ cta_text }}<span class="caviera-object-focus__cta-arrow" aria-hidden="true"> &rarr;</span></a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Object in focus",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Featured object / product", "info": "Select the CAVIERA jewellery piece featured in this editorial study. Its featured image is used when no dedicated editorial image is uploaded." },
+    { "type": "image_picker", "id": "image", "label": "Desktop editorial image", "info": "Takes priority over the selected product's image. Should feel monumental, not a catalogue thumbnail — no marketplace badges, review stars or promotional text." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Mobile editorial image", "info": "Falls back to the desktop image (or the product's image) when left blank." },
+    {
+      "type": "select", "id": "media_fit", "label": "Media fit", "default": "contain",
+      "info": "Contain shows the whole piece at its true proportions (recommended). Cover fills an editorial frame and may crop the edges.",
+      "options": [
+        { "value": "contain", "label": "Contain — preserve the full piece" },
+        { "value": "cover", "label": "Cover — fill an editorial frame" }
+      ]
+    },
+    { "type": "text", "id": "eyebrow", "label": "Label", "default": "Object in focus" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Every line earns its place." },
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",
+      "info": "Warm Bone is the intended default — keeps the jewellery itself as the brightest visual focus.",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    {
+      "type": "select", "id": "spacing", "label": "Section spacing", "default": "standard",
+      "options": [
+        { "value": "compact", "label": "Compact" },
+        { "value": "standard", "label": "Standard" },
+        { "value": "spacious", "label": "Spacious" }
+      ]
+    },
+    { "type": "header", "content": "No-media fallback" },
+    { "type": "checkbox", "id": "show_seal_watermark", "label": "Show House Seal watermark in the material field", "default": true, "info": "Only shown when no image resolves — never overlaid on real jewellery media." },
+    { "type": "range", "id": "seal_watermark_opacity", "label": "Watermark opacity", "min": 5, "max": 12, "step": 1, "default": 8, "unit": "%" },
+    { "type": "header", "content": "Call to action" },
+    { "type": "text", "id": "link_text", "label": "CTA label", "default": "Discover the object" },
+    { "type": "url", "id": "link_url", "label": "CTA link (overrides the selected product's own page when set)" }
+  ],
+  "blocks": [
+    {
+      "type": "chapter",
+      "name": "Chapter",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "info": "e.g. Stone, Setting, Gold, Silhouette, Craft, Hallmark" },
+        { "type": "richtext", "id": "body", "label": "Body" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Object in focus",
+      "blocks": [
+        { "type": "chapter", "settings": { "title": "Stone", "body": "<p>Cut for clarity, set to catch the light without excess.</p>" } },
+        { "type": "chapter", "settings": { "title": "Setting", "body": "<p>A quiet setting, so the stone remains the focus.</p>" } },
+        { "type": "chapter", "settings": { "title": "Gold", "body": "<p>A considered finish, true to the House's material language.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,27 @@
+<div class="caviera-page container container--narrow">
+  <h1 class="heading-h1 caviera-customer__title">{{ 'customer.login_page.sign_in' | t }}</h1>
+  {%- form 'customer_login', class: 'caviera-customer__form' -%}
+    {%- if form.errors -%}
+      <p class="form-status" data-state="error">
+        {%- for field in form.errors -%}{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }} {%- endfor -%}
+      </p>
+    {%- endif -%}
+    <div class="field">
+      <label for="CustomerEmail">{{ 'customer.login_page.email' | t }}</label>
+      <input type="email" id="CustomerEmail" name="customer[email]" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label for="CustomerPassword">{{ 'customer.login_page.password' | t }}</label>
+      <input type="password" id="CustomerPassword" name="customer[password]" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn btn--primary btn--full">{{ 'customer.login_page.sign_in' | t }}</button>
+    <p class="caviera-customer__links">
+      <a href="{{ routes.account_recover_url }}" class="link-underline">{{ 'customer.login_page.forgot_password' | t }}</a>
+    </p>
+    {%- if shop.customer_accounts_optional -%}
+      <p class="caviera-customer__links">
+        <a href="{{ routes.account_register_url }}" class="link-underline">{{ 'customer.login_page.create_account' | t }}</a>
+      </p>
+    {%- endif -%}
+  {%- endform -%}
+</div>

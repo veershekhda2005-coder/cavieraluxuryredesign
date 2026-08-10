@@ -1,0 +1,28 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "caviera-page-hero",
+      "settings": {
+        "eyebrow": "Contact",
+        "heading": "We are here to help.",
+        "color_scheme": "bone"
+      }
+    },
+    "info": {
+      "type": "caviera-contact-info",
+      "settings": {
+        "intro": "<p>Share a few details and a member of the House will respond as soon as possible.</p>"
+      }
+    }
+  },
+  "order": ["hero", "info"]
+}

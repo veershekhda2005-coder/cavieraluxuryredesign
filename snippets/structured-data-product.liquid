@@ -1,0 +1,36 @@
+{%- comment -%} Product JSON-LD structured data. No invented facts — only real product data. {%- endcomment -%}
+{%- assign variant = product.selected_or_first_available_variant -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "url": {{ shop.url | append: product.url | json }},
+  {%- if product.featured_image -%}
+  "image": [{{ product.featured_image | image_url: width: 1200 | prepend: "https:" | json }}],
+  {%- endif -%}
+  {%- if product.description != blank -%}
+  "description": {{ product.description | strip_html | json }},
+  {%- endif -%}
+  {%- if product.vendor != blank -%}
+  "brand": { "@type": "Brand", "name": {{ product.vendor | json }} },
+  {%- endif -%}
+  {%- if variant.sku != blank -%}
+  "sku": {{ variant.sku | json }},
+  {%- endif -%}
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": {{ cart.currency.iso_code | json }},
+    {%- comment -%}
+      schema.org's Offer.price must be a plain number (e.g. 1317.6), not a locale-formatted string
+      — money_without_currency still applies thousands separators (e.g. "1,317.60"), which is
+      invalid here and would fail Google's Rich Results structured-data validation. variant.price
+      is already an integer in cents, so dividing by 100.0 gives the correct raw decimal with no
+      formatting filter involved. Confirmed against a real product's live-rendered output.
+    {%- endcomment -%}
+    "price": {{ variant.price | divided_by: 100.0 | json }},
+    "availability": "https://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
+    "url": {{ shop.url | append: product.url | json }}
+  }
+}
+</script>

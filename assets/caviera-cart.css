@@ -1,0 +1,64 @@
+/* CAVIERA Grand Theme 2026 — Cart drawer + cart page */
+
+.caviera-cart-drawer { position: fixed; inset: 0; z-index: var(--z-drawer); }
+.caviera-cart-drawer[hidden] { display: none; }
+.caviera-cart-drawer__scrim { position: absolute; inset: 0; background: rgba(17,16,18,0.45); }
+.caviera-cart-drawer__panel {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--caviera-bone);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform var(--motion-base) var(--ease-caviera);
+}
+.caviera-cart-drawer:not([hidden]) .caviera-cart-drawer__panel { transform: translateX(0); }
+.caviera-cart-drawer__head { display: flex; align-items: center; justify-content: space-between; padding: 24px; border-bottom: 1px solid var(--border-subtle); }
+.caviera-cart-drawer__close svg { width: 18px; height: 18px; }
+.caviera-cart-drawer__body { flex: 1; overflow-y: auto; padding: 0 24px; }
+.caviera-cart-drawer__body.is-loading { opacity: 0.6; pointer-events: none; transition: opacity var(--motion-fast) var(--ease-caviera); }
+.caviera-cart-drawer__empty { padding: 48px 0; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.caviera-cart-drawer__list { display: flex; flex-direction: column; }
+.caviera-cart-drawer__item { display: grid; grid-template-columns: 80px 1fr auto; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--border-subtle); }
+.caviera-cart-drawer__item-media img { width: 80px; height: 80px; object-fit: cover; }
+.caviera-cart-drawer__item-title { font-size: 0.9375rem; }
+.caviera-cart-drawer__item-variant { color: var(--text-muted); margin-top: 4px; }
+.caviera-cart-drawer__item-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.caviera-cart-drawer__qty { display: flex; align-items: center; border: 1px solid var(--border-subtle); }
+.caviera-cart-drawer__qty span { min-width: 28px; text-align: center; font-size: 0.8125rem; }
+.caviera-cart-drawer__remove { align-self: flex-start; font-size: 0.6875rem; letter-spacing: var(--label-tracking); text-transform: uppercase; color: var(--text-muted); }
+.caviera-cart-drawer__footer { padding: 20px 24px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 12px; }
+.caviera-cart-drawer__subtotal { display: flex; justify-content: space-between; font-size: 1.0625rem; margin-top: 8px; }
+.caviera-cart-drawer__tax-note { color: var(--text-muted); }
+.caviera-cart-drawer__note textarea { width: 100%; margin-top: 8px; border: 1px solid var(--border-subtle); background: transparent; padding: 10px; min-height: 60px; }
+.caviera-cart-drawer__shipping-message { font-size: 0.8125rem; color: var(--caviera-cinnabar); }
+.caviera-cart-drawer__discounts { font-size: 0.8125rem; color: var(--caviera-cinnabar); }
+
+/* Cart page */
+.caviera-cart-page { padding-block: var(--section-spacing); }
+.caviera-cart-page__empty { display: flex; flex-direction: column; gap: 20px; align-items: flex-start; padding-block: 40px; }
+.caviera-cart-page__table { width: 100%; border-collapse: collapse; margin-top: 32px; }
+.caviera-cart-page__table th { text-align: left; font-size: 0.75rem; letter-spacing: var(--label-tracking); text-transform: uppercase; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); }
+.caviera-cart-page__row td { padding: 20px 12px 20px 0; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+.caviera-cart-page__item { display: flex; gap: 16px; }
+.caviera-cart-page__item-media img { width: 100px; height: 100px; object-fit: cover; }
+.caviera-cart-page__item-title { font-size: 1rem; }
+.caviera-cart-page__row input[type="number"] { width: 64px; border: 1px solid var(--border-subtle); background: transparent; padding: 8px; }
+.caviera-cart-page__remove { display: block; margin-top: 10px; font-size: 0.75rem; color: var(--text-muted); }
+.caviera-cart-page__discounts { margin-top: 16px; font-size: 0.875rem; color: var(--caviera-cinnabar); }
+.caviera-cart-page__summary { display: flex; justify-content: flex-end; gap: 24px; font-size: 1.25rem; margin-top: 24px; }
+.caviera-cart-page__actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+.caviera-cart-page__continue { margin-right: auto; }
+
+/* Below ~700px a 3-column table (product/qty/subtotal) has no room to breathe — restructure each
+   row into a stacked block instead of forcing a cramped/overflowing table. No JS needed. */
+@media (max-width: 699px) {
+  .caviera-cart-page__table thead { display: none; }
+  .caviera-cart-page__table, .caviera-cart-page__table tbody, .caviera-cart-page__table tr { display: block; width: 100%; }
+  .caviera-cart-page__row { border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 16px; }
+  .caviera-cart-page__row td { display: block; width: 100%; border-bottom: none; padding: 6px 0; }
+  .caviera-cart-page__row td[data-label] { display: flex; align-items: center; justify-content: space-between; }
+  .caviera-cart-page__row td[data-label]::before { content: attr(data-label); font-size: 0.75rem; letter-spacing: var(--label-tracking); text-transform: uppercase; color: var(--text-muted); }
+  .caviera-cart-page__row input[type="number"] { width: 72px; }
+  .caviera-cart-page__actions { justify-content: stretch; }
+  .caviera-cart-page__continue { margin-right: 0; width: 100%; text-align: center; order: 3; }
+}

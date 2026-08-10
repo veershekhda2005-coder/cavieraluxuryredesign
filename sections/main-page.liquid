@@ -1,0 +1,12 @@
+{%- comment -%} Generic editorial page — renders the page's native title/content; additional CAVIERA sections can be layered above/below via the template JSON. {%- endcomment -%}
+<section class="caviera-page container container--narrow">
+  {%- render 'breadcrumbs' -%}
+  <h1 class="heading-h1 caviera-page__title">{{ page.title }}</h1>
+  <div class="body-text--wide caviera-page__content">
+    {{ page.content }}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Page" }
+{% endschema %}

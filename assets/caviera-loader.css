@@ -1,0 +1,127 @@
+/*
+  CAVIERA Grand Theme 2026 — Ceremonial loader
+  Slow, lucid, controlled. No bounce, no elastic easing, no scroll-jacking.
+
+  Loader intentionally disabled pending approved walking Oryx animation and final House Seal
+  asset verification — see config/settings_data.json (enable_loader: false). This file is
+  untouched and stays ready; no CSS change is needed to re-enable, only flipping enable_loader
+  back to true.
+
+  Loaded only on the homepage template (see layout/theme.liquid). The root element itself is
+  always present in the homepage DOM (see snippets/caviera-loader.liquid) — this file is what
+  keeps it invisible and inert by default so a blocked/failed script never leaves a dead overlay
+  on screen: nothing below the `.is-active` rule ever paints or takes hit-testing space.
+*/
+
+.caviera-loader {
+  /* Safety default: invisible, out of flow, non-interactive until JS confirms it should run.
+     If caviera-loader.js never runs at all, the loader never appears and never blocks the page. */
+  display: none;
+  pointer-events: none;
+}
+
+.caviera-loader.is-active {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* modern dynamic viewport unit, falls back to 100vh above on older browsers */
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: var(--z-loader);
+  background: var(--loader-bg, var(--caviera-cinnabar));
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity var(--motion-slow) var(--ease-caviera), visibility 0s var(--motion-slow);
+}
+
+/* Terminal state — fades out, then becomes fully inert. The root element itself is never removed
+   from the DOM (see snippets/caviera-loader.liquid comment), only hidden this way, so
+   `document.querySelector('[data-caviera-loader]')` keeps resolving after dismissal too. */
+.caviera-loader.is-dismissed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Both stage wrappers ([data-loader-oryx] and [data-loader-seal]) always exist in the DOM — see
+   snippets/caviera-loader.liquid — even when empty, so they always sit centred and correctly
+   stacked regardless of whether their image ended up rendering inside. */
+.caviera-loader__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity var(--motion-base) var(--ease-caviera);
+}
+.caviera-loader__stage img,
+.caviera-loader__stage picture,
+.caviera-loader__stage video,
+.caviera-loader__stage svg {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(220px, 60vw);
+  max-height: min(220px, 60vh);
+  object-fit: contain;
+}
+.caviera-loader__stage picture img,
+.caviera-loader__stage picture video {
+  width: 100%;
+  height: 100%;
+}
+
+/* The oryx stage appears first (visible as soon as the loader is .is-active, since it carries no
+   opacity override of its own); the House Seal stage starts hidden until resolution. */
+.caviera-loader__seal { opacity: 0; }
+.caviera-loader.is-resolving .caviera-loader__oryx { opacity: 0; }
+.caviera-loader.is-resolving .caviera-loader__seal { opacity: 1; }
+
+/* Restrained walk: horizontal progression + max 2% body-height vertical bob, capped at two loops
+   by the animation's iteration-count (JS timing also enforces this independently as a safety net,
+   never relying on the animation event alone). No bounce, no elastic/playful easing. */
+.caviera-loader.is-active:not(.is-reduced):not(.is-resolving) .caviera-loader__oryx img {
+  animation: caviera-walk-cycle 1.2s ease-in-out 2;
+}
+@keyframes caviera-walk-cycle {
+  0%   { transform: translate(-10%, 0); }
+  25%  { transform: translate(-3%, -2%); }
+  50%  { transform: translate(4%, 0); }
+  75%  { transform: translate(8%, -1.4%); }
+  100% { transform: translate(10%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caviera-loader__oryx img { animation: none; }
+}
+
+/* Restrained sizing on narrow viewports — the !important overrides the render-time inline
+   max-width (set from the width param in snippets/caviera-loader.liquid) so small phones get a
+   smaller stage without needing a second Liquid render call. */
+@media (max-width: 380px) {
+  .caviera-loader__oryx img { max-width: 160px !important; }
+  .caviera-loader__seal img { max-width: 56px !important; }
+}
+
+/* Editor-only missing-asset guidance — never reaches the public storefront (guarded by
+   request.design_mode in the snippet itself, this just keeps it legible if it does render). */
+.caviera-loader__editor-note {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 320px;
+  padding: 10px 14px;
+  border: 1px dashed var(--caviera-rhodium);
+  color: var(--caviera-bone);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Scroll lock while the loader is active — applied to <body> per caviera-loader.js. */
+body.caviera-loader-active {
+  overflow: hidden;
+  height: 100%;
+}

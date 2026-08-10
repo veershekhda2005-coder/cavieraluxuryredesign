@@ -1,0 +1,81 @@
+{%- comment -%}
+  Bespoke enquiry form — a native Shopify contact form, presented as an ordinary invitation to
+  enquire. Never implies that ordinary shopping requires approval.
+{%- endcomment -%}
+<section class="caviera-section caviera-bespoke-form">
+  <div class="container container--narrow">
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.intro != blank -%}<div class="body-text--wide">{{ section.settings.intro }}</div>{%- endif -%}
+
+    {%- form 'contact', class: 'caviera-bespoke-form__form' -%}
+      {%- if form.posted_successfully? -%}
+        <p class="form-status" data-state="success">{{ 'sections.bespoke.success' | t }}</p>
+      {%- endif -%}
+
+      <div class="field">
+        <label for="BespokeName">{{ 'sections.bespoke.name' | t }}</label>
+        <input type="text" id="BespokeName" name="contact[name]" autocomplete="name" required value="{{ form.name }}">
+      </div>
+      <div class="field">
+        <label for="BespokeEmail">{{ 'sections.bespoke.email' | t }}</label>
+        <input type="email" id="BespokeEmail" name="contact[email]" autocomplete="email" required value="{{ form.email }}">
+      </div>
+      <div class="field">
+        <label for="BespokePhone">{{ 'sections.bespoke.phone' | t }}</label>
+        <input type="tel" id="BespokePhone" name="contact[phone]" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label for="BespokeType">{{ 'sections.bespoke.enquiry_type' | t }}</label>
+        {%- assign enquiry_type_options = section.settings.enquiry_types | split: ',' -%}
+        <select id="BespokeType" name="contact[Enquiry type]">
+          {%- for option in enquiry_type_options -%}
+            <option value="{{ option | strip }}">{{ option | strip }}</option>
+          {%- endfor -%}
+        </select>
+      </div>
+      <div class="field">
+        <label for="BespokeContactMethod">{{ 'sections.bespoke.preferred_contact' | t }}</label>
+        <select id="BespokeContactMethod" name="contact[Preferred contact method]">
+          <option value="Email">{{ 'sections.bespoke.email' | t }}</option>
+          <option value="Phone">{{ 'sections.bespoke.phone' | t }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="BespokeTimeframe">{{ 'sections.bespoke.timeframe' | t }}</label>
+        <input type="text" id="BespokeTimeframe" name="contact[Desired timeframe]">
+      </div>
+      <div class="field">
+        <label for="BespokeReference">{{ 'sections.bespoke.reference' | t }}</label>
+        <input type="text" id="BespokeReference" name="contact[Product or design reference]">
+      </div>
+      <div class="field">
+        <label for="BespokeMessage">{{ 'sections.bespoke.message' | t }}</label>
+        <textarea id="BespokeMessage" name="contact[body]" rows="5" required>{{ form.body }}</textarea>
+      </div>
+
+      {%- if section.settings.show_consent -%}
+        <div class="field field--checkbox">
+          <label>
+            <input type="checkbox" name="contact[Consent]" value="yes" required>
+            {{ section.settings.consent_text }}
+          </label>
+        </div>
+      {%- endif -%}
+
+      <button type="submit" class="btn btn--primary">{{ 'sections.bespoke.submit' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bespoke enquiry form",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Share the details.", "info": "The page's main headline lives in the Page hero section above this one — keep this one distinct from it." },
+    { "type": "richtext", "id": "intro", "label": "Intro", "default": "<p>Share a little about what you have in mind. A member of the House will respond within a few days.</p>" },
+    { "type": "text", "id": "enquiry_types", "label": "Enquiry types (comma-separated)", "default": "Bespoke design, Resizing or repair, Press, General enquiry" },
+    { "type": "checkbox", "id": "show_consent", "label": "Show consent checkbox", "info": "Enable if required by your local data-protection law.", "default": false },
+    { "type": "text", "id": "consent_text", "label": "Consent text", "default": "I agree to be contacted about this enquiry." }
+  ]
+}
+{% endschema %}

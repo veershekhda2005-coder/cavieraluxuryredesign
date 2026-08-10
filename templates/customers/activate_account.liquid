@@ -1,0 +1,20 @@
+<div class="caviera-page container container--narrow">
+  <h1 class="heading-h1 caviera-customer__title">{{ 'customer.register.title' | t }}</h1>
+  {%- form 'activate_customer_password', class: 'caviera-customer__form' -%}
+    {%- if form.errors -%}
+      <p class="form-status" data-state="error">
+        {%- for field in form.errors -%}{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }} {%- endfor -%}
+      </p>
+    {%- endif -%}
+    <div class="field">
+      <label for="ActivatePassword">{{ 'customer.register.password' | t }}</label>
+      <input type="password" id="ActivatePassword" name="customer[password]" autocomplete="new-password" required>
+    </div>
+    <div class="field">
+      <label for="ActivatePasswordConfirm">Confirm password</label>
+      <input type="password" id="ActivatePasswordConfirm" name="customer[password_confirmation]" autocomplete="new-password" required>
+    </div>
+    <button type="submit" name="accept" class="btn btn--primary btn--full">{{ 'customer.register.submit' | t }}</button>
+    <button type="submit" name="decline" class="link-underline caviera-customer__links">{{ 'general.accessibility.close' | t }}</button>
+  {%- endform -%}
+</div>

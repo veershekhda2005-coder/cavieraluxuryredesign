@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  {%- assign card_value = gift_card.initial_value | money -%}
+  <title>{{ 'gift_cards.issued.title' | t: value: card_value, shop: shop.name }}</title>
+  <meta name="robots" content="noindex">
+  {%- liquid
+    assign favicon_source = settings.favicon
+    if favicon_source == blank
+      assign favicon_source = settings.seal_on_dark | default: settings.seal_on_light
+    endif
+  -%}
+  {%- if favicon_source -%}<link rel="icon" type="image/png" href="{{ favicon_source | image_url: width: 96 }}">{%- else -%}<link rel="icon" href="data:,">{%- endif -%}
+  {{ 'caviera-base.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-layout.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-components.css' | asset_url | stylesheet_tag }}
+  {% style %}
+    {{ settings.font_body | font_face: font_display: 'swap' }}
+    {{ settings.font_display | font_face: font_display: 'swap' }}
+  {% endstyle %}
+  <style>
+    :root{ --font-display: {{ settings.font_display.family }}, "Cormorant", Georgia, serif; --font-body: {{ settings.font_body.family }}, "Helvetica Neue", sans-serif; }
+    body { background: var(--caviera-obsidian); color: var(--caviera-bone); }
+    .caviera-gift-card { max-width: 640px; margin: 0 auto; padding: 64px var(--gutter-mobile); text-align: center; }
+    .caviera-gift-card__mark { max-width: 200px; margin: 0 auto 24px; }
+    .caviera-gift-card__recipient { margin-top: 12px; color: var(--caviera-rhodium); }
+    .caviera-gift-card__message { margin-top: 16px; font-style: italic; color: var(--caviera-rhodium); }
+    .caviera-gift-card__code { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.08em; border: 1px dashed var(--caviera-rhodium); padding: 20px; margin: 32px 0; }
+    .caviera-gift-card__qr { margin-top: 24px; }
+    .caviera-gift-card__qr img { margin-inline: auto; }
+    .caviera-gift-card__actions { display: flex; gap: 16px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+    @media print { .caviera-gift-card__actions { display: none; } }
+  </style>
+</head>
+<body>
+  <main class="caviera-gift-card">
+    <div class="caviera-gift-card__mark">{%- render 'caviera-wordmark', mode: 'dark', width: 200 -%}</div>
+    <h1 class="heading-h2">{{ 'gift_cards.issued.title' | t: value: card_value, shop: shop.name }}</h1>
+    {%- if gift_card.recipient.name != blank -%}
+      <p class="label caviera-gift-card__recipient">{{ 'gift_cards.issued.recipient' | t: name: gift_card.recipient.name }}</p>
+    {%- endif -%}
+    {%- if gift_card.message != blank -%}
+      <p class="body-text caviera-gift-card__message">&ldquo;{{ gift_card.message }}&rdquo;</p>
+    {%- endif -%}
+
+    {%- if gift_card.enabled and gift_card.expired == false -%}
+      <p class="caviera-gift-card__code">{{ gift_card.code | format_code }}</p>
+      {%- if gift_card.qr_identifier -%}
+        <div class="caviera-gift-card__qr">
+          <img
+            src="{{ shop.url }}/tools/qrcode.png?identifier={{ gift_card.qr_identifier }}"
+            width="120" height="120"
+            alt="{{ 'gift_cards.issued.qr_alt' | t }}"
+            loading="lazy"
+          >
+        </div>
+      {%- endif -%}
+      {%- if gift_card.expires_on -%}
+        <p class="body-text">{{ 'gift_cards.issued.expiration' | t: expires_on: gift_card.expires_on }}</p>
+      {%- else -%}
+        <p class="body-text">{{ 'gift_cards.issued.expiration_no_expiry' | t }}</p>
+      {%- endif -%}
+    {%- else -%}
+      <p class="body-text">{{ gift_card.balance | money }} / {{ gift_card.initial_value | money }}</p>
+    {%- endif -%}
+
+    <div class="caviera-gift-card__actions">
+      <a href="{{ shop.url }}" class="btn btn--primary">{{ shop.name }}</a>
+      {%- if gift_card.pass_url -%}
+        <a href="{{ gift_card.pass_url }}" class="btn">{{ 'gift_cards.issued.add_to_apple_wallet' | t }}</a>
+      {%- endif -%}
+      <button type="button" class="btn" onclick="window.print()">{{ 'gift_cards.issued.print' | t }}</button>
+      <button type="button" class="btn" data-copy-code="{{ gift_card.code }}" onclick="navigator.clipboard && navigator.clipboard.writeText(this.dataset.copyCode)">{{ 'gift_cards.issued.copy_code' | t }}</button>
+    </div>
+  </main>
+</body>
+</html>

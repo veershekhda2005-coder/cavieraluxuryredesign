@@ -1,0 +1,176 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "CAVIERA Grand Theme 2026",
+    "theme_version": "1.0.0-rc1",
+    "theme_author": "CAVIERA JEWELS",
+    "theme_documentation_url": "https://github.com/caviera-jewels/caviera-grand-theme-2026",
+    "theme_support_url": "https://github.com/caviera-jewels/caviera-grand-theme-2026/issues"
+  },
+  {
+    "name": "CAVIERA Identity",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Official CAVIERA artwork ships bundled with the theme and is used automatically wherever the mark appears. Upload a file below only to override a specific placement — it is never required. See docs/official-brand-asset-audit.md."
+      },
+      { "type": "image_picker", "id": "wordmark_on_light", "label": "Full wordmark — on light backgrounds", "info": "Used in the header, footer and formal closing moments. Proprietary artwork — never typeset. Uses the approved bundled wordmark until you override it here." },
+      { "type": "image_picker", "id": "wordmark_on_dark", "label": "Full wordmark — on dark backgrounds" },
+      { "type": "image_picker", "id": "seal_on_light", "label": "House Seal — on light backgrounds", "info": "The angular oryx-head mark. Used in the mobile header, compact sticky header and small formal moments. Uses the approved bundled seal until you override it here." },
+      { "type": "image_picker", "id": "seal_on_dark", "label": "House Seal — on dark backgrounds" },
+      { "type": "image_picker", "id": "master_signature_on_light", "label": "Master signature — on light backgrounds", "info": "Official angular House Seal + proprietary CAVIERA JEWELS signature, in the exact relative composition used in the House guidelines. Never retype or recreate. Used for the homepage closing signature, The House page and the password page." },
+      { "type": "image_picker", "id": "master_signature_on_dark", "label": "Master signature — on dark backgrounds" },
+      { "type": "image_picker", "id": "oryx_full", "label": "Full-body oryx (Living Mascot)", "info": "Editorial storytelling only — The House page, packaging story. Never a logo, never on every page." },
+      { "type": "image_picker", "id": "oryx_walk", "label": "Walking oryx animation (WebP/GIF)", "info": "Optional. Reserved for the ceremonial loader once approved — see the Motion section below. If absent, the loader uses its documented static-fallback framework." },
+      { "type": "image_picker", "id": "favicon", "label": "Favicon", "info": "Square, at least 256×256px. No approved favicon file exists yet — this setting is ready but still requires a dedicated icon file from the House. Falls back to a safe blank icon if left empty; never a broken icon request." }
+    ]
+  },
+  {
+    "name": "Colours",
+    "settings": [
+      { "type": "header", "content": "House palette" },
+      { "type": "color", "id": "color_cinnabar", "label": "Caviera Cinnabar", "default": "#8F261F", "info": "Recognition — used sparingly, for the one element that should draw the eye first." },
+      { "type": "color", "id": "color_bone", "label": "Warm Bone", "default": "#F3EEE5", "info": "Editorial relief — the theme's primary light surface." },
+      { "type": "color", "id": "color_obsidian", "label": "Obsidian", "default": "#111012", "info": "Depth and theatre — the theme's primary dark surface." },
+      { "type": "color", "id": "color_rhodium", "label": "Brushed Rhodium", "default": "#C4C1BB", "info": "Fine dividers and restrained accents only — never a dominant fill." },
+      { "type": "header", "content": "Functional colours" },
+      { "type": "color", "id": "color_text_primary", "label": "Primary text", "default": "#111012" },
+      { "type": "color", "id": "color_text_inverse", "label": "Inverse text", "default": "#F3EEE5" },
+      { "type": "color", "id": "color_border_subtle", "label": "Subtle border", "default": "#111012" },
+      { "type": "color", "id": "color_button_bg", "label": "Primary button background", "default": "#111012" },
+      { "type": "color", "id": "color_button_text", "label": "Primary button text", "default": "#F3EEE5" }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      { "type": "paragraph", "content": "The CAVIERA wordmark is artwork, never a typeface. These settings govern editorial and interface type only." },
+      { "type": "font_picker", "id": "font_display", "label": "Display font (headlines)", "default": "cormorant_n4", "info": "Page and section headings, editorial statements. The wordmark itself is never typeset in this or any font." },
+      { "type": "font_picker", "id": "font_body", "label": "Body / interface font", "default": "assistant_n4", "info": "Navigation, prices, labels, forms, buttons and body copy." },
+      { "type": "range", "id": "heading_scale", "label": "Heading scale", "min": 80, "max": 120, "step": 5, "default": 100, "unit": "%" },
+      { "type": "range", "id": "body_size", "label": "Base body size", "min": 14, "max": 19, "step": 1, "default": 16, "unit": "px" },
+      { "type": "range", "id": "nav_tracking", "label": "Navigation letter-spacing", "min": 0, "max": 4, "step": 1, "default": 1, "unit": "px" },
+      { "type": "range", "id": "button_tracking", "label": "Button letter-spacing", "min": 0, "max": 4, "step": 1, "default": 1, "unit": "px" }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      { "type": "paragraph", "content": "Structural controls. Large changes here affect every page — adjust with care." },
+      { "type": "range", "id": "container_max_width", "label": "Maximum content width", "min": 1280, "max": 1680, "step": 20, "default": 1560, "unit": "px" },
+      { "type": "range", "id": "gutter_desktop", "label": "Desktop gutter", "min": 32, "max": 96, "step": 4, "default": 64, "unit": "px" },
+      { "type": "range", "id": "gutter_mobile", "label": "Mobile gutter", "min": 12, "max": 32, "step": 2, "default": 20, "unit": "px" },
+      { "type": "range", "id": "section_spacing", "label": "Section spacing (max)", "min": 64, "max": 180, "step": 4, "default": 128, "unit": "px" }
+    ]
+  },
+  {
+    "name": "Product Cards",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Applies everywhere the shared product card appears — homepage grids, collections, search results and recommendations — so it always looks the same across the store."
+      },
+      {
+        "type": "select", "id": "card_image_ratio", "label": "Image ratio", "default": "portrait",
+        "options": [
+          { "value": "square", "label": "Square (1:1)" },
+          { "value": "portrait", "label": "Portrait (4:5)" },
+          { "value": "tall", "label": "Tall (3:4 editorial)" }
+        ]
+      },
+      { "type": "checkbox", "id": "card_secondary_image", "label": "Show second image on hover", "default": true, "info": "Desktop only — touch devices never depend on hover." },
+      { "type": "checkbox", "id": "card_show_vendor", "label": "Show vendor", "default": false },
+      { "type": "checkbox", "id": "card_quick_add", "label": "Enable quick add", "default": false, "info": "Adds directly for single-variant products; sends multi-variant products to the product page to choose." },
+      { "type": "checkbox", "id": "card_show_swatches", "label": "Show colour/metal swatches", "default": true },
+      {
+        "type": "select", "id": "card_title_lines", "label": "Title line clamp", "default": "2",
+        "options": [
+          { "value": "1", "label": "1 line" },
+          { "value": "2", "label": "2 lines" }
+        ],
+        "info": "Visual only — the complete title always remains in the page for accessibility and search."
+      }
+    ]
+  },
+  {
+    "name": "Product Page",
+    "settings": [
+      { "type": "checkbox", "id": "product_sticky_info", "label": "Sticky purchasing panel (desktop)", "default": true },
+      { "type": "checkbox", "id": "product_sticky_mobile_bar", "label": "Sticky add-to-bag bar (mobile)", "default": true, "info": "Appears only once the main purchase form scrolls out of view." },
+      { "type": "checkbox", "id": "product_dynamic_checkout", "label": "Show dynamic checkout button", "default": true },
+      {
+        "type": "select", "id": "product_media_layout", "label": "Media layout", "default": "stacked",
+        "options": [
+          { "value": "stacked", "label": "Stacked filmstrip" },
+          { "value": "thumbnails_left", "label": "Thumbnails beside media" }
+        ]
+      },
+      { "type": "checkbox", "id": "product_zoom", "label": "Enable image zoom", "default": true },
+      { "type": "checkbox", "id": "product_show_sku", "label": "Show SKU", "default": false }
+    ]
+  },
+  {
+    "name": "Cart",
+    "settings": [
+      { "type": "checkbox", "id": "cart_drawer_enabled", "label": "Use cart drawer", "default": true, "info": "When off, the cart icon links directly to the cart page instead." },
+      { "type": "checkbox", "id": "cart_note_enabled", "label": "Allow order note", "default": true },
+      { "type": "checkbox", "id": "cart_shipping_message", "label": "Show shipping progress message", "default": false, "info": "Only enable once a real, currently-valid free-shipping threshold is configured below — never left on with an invented promise." },
+      { "type": "number", "id": "cart_shipping_threshold", "label": "Free-shipping threshold (in shop currency)", "default": 0, "info": "Only used when the message above is enabled. 0 disables the calculation safely." }
+    ]
+  },
+  {
+    "name": "Search",
+    "settings": [
+      { "type": "checkbox", "id": "predictive_search_enabled", "label": "Enable predictive search", "default": true, "info": "When off, the search icon links to the standard search results page instead of opening the overlay." }
+    ]
+  },
+  {
+    "name": "Localization",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "The country/language selector itself is a Shopify Markets feature and appears automatically wherever it's enabled below, but only once the store has more than one market or language configured in Settings → Markets. Turn it on per placement: Header section → \"Show country/language selector\"; Footer section → \"Show country/language selector\"; the mobile menu follows the header's setting automatically. There is nothing to configure here — this section exists so the controls are easy to find."
+      }
+    ]
+  },
+  {
+    "name": "Social Media",
+    "settings": [
+      { "type": "text", "id": "social_instagram", "label": "Instagram URL" },
+      { "type": "text", "id": "social_pinterest", "label": "Pinterest URL" },
+      { "type": "text", "id": "social_facebook", "label": "Facebook URL" },
+      { "type": "text", "id": "social_tiktok", "label": "TikTok URL" },
+      { "type": "text", "id": "social_youtube", "label": "YouTube URL" }
+    ]
+  },
+  {
+    "name": "Motion",
+    "settings": [
+      { "type": "checkbox", "id": "enable_motion", "label": "Enable interface motion", "default": true, "info": "Scroll reveals, hover transitions, menu/drawer animation. Reduced-motion visitors always get instant transitions regardless of this setting." },
+      {
+        "type": "select", "id": "transition_speed", "label": "Transition speed", "default": "base",
+        "options": [
+          { "value": "fast", "label": "Brisk (240ms)" },
+          { "value": "base", "label": "Assured (520ms)" },
+          { "value": "slow", "label": "Ceremonial (700ms)" }
+        ]
+      },
+      { "type": "header", "content": "Ceremonial loader" },
+      {
+        "type": "paragraph",
+        "content": "Loader currently disabled pending approved walking Oryx animation and final House Seal asset verification. Full-body oryx, walking animation and House Seal artwork are uploaded once, under CAVIERA Identity above, and reused everywhere the mark appears — including here — so nothing is ever uploaded twice."
+      },
+      { "type": "checkbox", "id": "enable_loader", "label": "Enable ceremonial loader", "default": false, "info": "Leave off until the walking Oryx animation is approved. Even when on, the loader stays inert on any page where the required artwork is missing." },
+      { "type": "color", "id": "loader_background", "label": "Loader background", "default": "#8F261F" },
+      { "type": "checkbox", "id": "loader_once_per_session", "label": "Show once per browser session", "info": "Off shows it on every homepage visit instead of only the first.", "default": true },
+      { "type": "range", "id": "loader_duration", "label": "Maximum duration", "min": 1600, "max": 3200, "step": 100, "default": 2600, "unit": "ms" },
+      {
+        "type": "select", "id": "loader_reduced_motion", "label": "Reduced-motion behaviour", "default": "static_brief",
+        "options": [
+          { "value": "skip", "label": "Skip entirely" },
+          { "value": "static_brief", "label": "Show static House Seal briefly (recommended)" }
+        ]
+      }
+    ]
+  }
+]

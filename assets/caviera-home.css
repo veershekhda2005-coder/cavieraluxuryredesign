@@ -1,0 +1,973 @@
+/* CAVIERA Grand Theme 2026 — Homepage-only sections (loaded only on template.name == 'index') */
+
+/* ---- Hero — architectural asymmetric split, not a centred banner ---- */
+.caviera-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Mobile: the selected hero image (assets/15_oryx_necklace_on_model.png) is landscape — a tall
+     portrait-shaped row would force a deep, over-zoomed crop to fill it. Sizing this row from
+     viewport WIDTH (not height) keeps it close to the image's own ~3:2 landscape proportions at
+     any phone width, matching the "landscape / controlled hero image" requirement instead of a
+     tall banner. Text row stays "auto" (sized to content) for the same reason as before — it
+     should never pad out into empty colour on short copy. */
+  grid-template-rows: clamp(200px, 74vw, 320px) auto;
+}
+@media (min-width: 900px) {
+  .caviera-hero {
+    /* 1.08fr : 1fr resolves to ~51.9% / 48.1% — inside the approved 51–53% / 47–49% split
+       (near 50/50, not the earlier, more exaggerated ~53.5/46.5). */
+    grid-template-columns: 1.08fr 1fr;
+    grid-template-rows: none;
+    /* Compact landscape hero, matched to the approved reference — not a near-full-screen
+       cinematic banner. Nudged slightly taller than the previous clamp(430px, 52vw, 500px): at
+       common desktop widths the fixed image (521×358, ~1.46 landscape) was cropping more tightly
+       than intended once the panel's own aspect ratio drifted away from the image's — this closes
+       most of that gap without meaningfully reopening the earlier "too tall" problem. */
+    height: clamp(440px, 53vw, 515px);
+  }
+  .caviera-hero[data-media-position="right"] { grid-template-columns: 1fr 1.08fr; }
+  .caviera-hero[data-media-position="right"] .caviera-hero__media { order: 2; }
+  .caviera-hero[data-media-position="right"] .caviera-hero__field { order: 1; }
+}
+.caviera-hero__media { position: relative; overflow: hidden; background: var(--caviera-cinnabar); }
+.caviera-hero__media picture { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.caviera-hero__media-el {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: var(--hero-focal, center);
+}
+.caviera-hero__media-el--mobile { display: none; }
+@media (max-width: 749px) {
+  .caviera-hero__media-el--desktop { display: none; }
+  .caviera-hero__media-el--mobile { display: block; }
+}
+.caviera-hero__overlay { position: absolute; inset: 0; background: var(--caviera-obsidian); }
+/* Architectural colour field shown when no dedicated hero media is configured — never a stand-in
+   product photo (see the comment at the top of sections/caviera-hero.liquid). A flat single-colour
+   fill read as a dead, empty panel; this keeps it a considered placeholder — a soft directional
+   gradient for depth, a faint corner highlight suggesting light, and a fine inset Rhodium frame
+   evoking a gallery mat waiting for the campaign image — without simulating a photo or reusing an
+   identity mark outside its approved roles (the Living Mascot is explicitly never a hero image;
+   see docs/required-brand-assets.md). Replaced entirely the moment a real desktop image is set. */
+.caviera-hero__field-fallback {
+  display: none;
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 100% at 20% 12%, rgba(243,238,229,0.08), transparent 55%),
+    linear-gradient(155deg, var(--caviera-cinnabar) 0%, #6c1d18 72%, var(--caviera-obsidian) 145%);
+}
+.caviera-hero__field-fallback::after {
+  content: "";
+  position: absolute;
+  inset: clamp(20px, 4vw, 48px);
+  border: 1px solid rgba(196,193,187,0.32);
+  pointer-events: none;
+}
+/* The fallback renders unconditionally in the DOM (data-attributes carry which breakpoints
+   actually have media) so it can be shown independently per breakpoint — e.g. a desktop video
+   with no mobile counterpart should still show the placeholder specifically on mobile, not
+   nothing and not the (irrelevant, hidden) desktop video. */
+.caviera-hero__media[data-has-desktop-media="false"] .caviera-hero__field-fallback { display: block; }
+@media (max-width: 749px) {
+  .caviera-hero__media[data-has-desktop-media="false"] .caviera-hero__field-fallback { display: none; }
+  .caviera-hero__media[data-has-mobile-media="false"] .caviera-hero__field-fallback { display: block; }
+}
+.caviera-hero .caviera-editor-note {
+  position: absolute; left: 12px; bottom: 12px; z-index: 1; right: 12px;
+  background: rgba(17,16,18,0.7); color: var(--caviera-bone);
+  font-size: 0.6875rem; letter-spacing: 0.02em; padding: 8px 12px; max-width: 320px;
+}
+
+.caviera-hero__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Controlled asymmetry, not a centred landing-page block: content sits left, against the
+     architectural grid, with the media panel's width doing the work of "generous breathing room"
+     on its right. */
+  justify-content: flex-start;
+  /* Reduced from the previous clamp(48px, 8vh, 96px) to fit comfortably inside the now much more
+     compact hero height (clamp(430px, 52vw, 500px) at desktop, see .caviera-hero above). */
+  padding-block: clamp(20px, 4vh, 36px);
+  overflow: hidden;
+}
+/* Architectural linework — assets/26_oryx_palace_concept.png as a right-side backdrop on the
+   Cinnabar field, not a visible photograph. Restored multiply (removed in the previous round at
+   a much lower 5% opacity, where its own effect and the plain-opacity fallback were both close to
+   imperceptible) — multiply darkens the drawing's linework toward a deeper Cinnabar-maroon while
+   its pale cream background all but disappears into the field beneath it, which is what actually
+   makes arches/columns read as "linework embedded in Cinnabar" rather than either invisible or a
+   literal photo. Opacity raised to a level where that darkened linework is genuinely visible.
+   Widened slightly and the mask's fade zone shortened so more of the panel shows real detail —
+   still well clear of the text column on the left, so headline legibility is never in question. */
+.caviera-hero__architecture {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 58%;
+  background-repeat: no-repeat;
+  /* Right-biased crop — shows a fragment of the architecture (columns/obelisks), not the full
+     central medallion, reading as a passing detail rather than "a palace photo placed over red". */
+  background-position: center right;
+  background-size: cover;
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 25%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 25%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+}
+@media (max-width: 899px) { .caviera-hero__architecture { display: none; } }
+.caviera-hero__field-inner {
+  padding-inline: var(--gutter-mobile);
+  /* The shared .container class (also applied on this element) centres via margin-inline: auto —
+     flexbox auto-margins consume free main-axis space before justify-content ever runs, which
+     would silently re-centre this box and defeat justify-content: flex-start above. Cancel it so
+     the content genuinely sits left, against the grid, as intended. */
+  margin-inline: 0;
+  /* Slightly above true vertical centre reads as composed rather than dead-centred; a small,
+     proportional nudge rather than a fixed offset so it holds up across content lengths. */
+  transform: translateY(-6%);
+}
+@media (min-width: 900px) { .caviera-hero__field-inner { padding-inline: clamp(40px, 5vw, 72px); max-width: none; } }
+
+/* Rhodium hinge — thin hardware-like line at the seam between the media field and the editorial
+   field, like the hinge line of a presentation case. Full-height on desktop; a short tick mark
+   above the copy on mobile, where the fields stack instead of sitting side by side. */
+.caviera-hero__hinge {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 1px;
+  background: var(--caviera-rhodium);
+  opacity: 0.45;
+}
+.caviera-hero[data-media-position="right"] .caviera-hero__hinge { left: auto; right: 0; }
+@media (max-width: 899px) {
+  .caviera-hero__hinge { position: static; top: auto; bottom: auto; width: 56px; height: 1px; margin: 0 auto 32px; }
+}
+
+.caviera-hero__wordmark { max-width: 200px; margin-bottom: clamp(28px, 5vh, 52px); }
+/* Deliberately smaller than the shared .heading-display token: that scale (up to 6rem/96px) is
+   tuned for full-width section headlines, not this editorial column, which is only ~40% of the
+   viewport on desktop. At the full display size the headline over-wraps into single words per
+   line; this clamp keeps 2–3 balanced lines instead (paired with text-wrap: balance below). */
+.caviera-hero__heading {
+  color: var(--text-primary);
+  text-wrap: balance;
+  max-width: 16ch;
+  font-size: calc(clamp(2.25rem, 1.5rem + 2.6vw, 4.25rem) * var(--heading-scale));
+  line-height: 1;
+}
+.caviera-hero__subheading { color: var(--text-primary); opacity: 0.86; margin-top: 20px; max-width: 400px; }
+.caviera-hero__actions { display: flex; gap: 28px; align-items: center; margin-top: 36px; flex-wrap: wrap; }
+[data-scheme="cinnabar"] .caviera-hero__actions .btn--primary,
+[data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
+.caviera-hero__secondary { color: var(--text-primary); }
+
+.caviera-hero__scroll-cue { position: absolute; bottom: max(28px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 1px; height: 40px; z-index: 1; }
+.caviera-hero__scroll-cue span { display: block; width: 1px; height: 100%; background: var(--caviera-rhodium); opacity: 0.8; animation: caviera-scroll-cue 1.8s var(--ease-caviera) infinite; }
+@keyframes caviera-scroll-cue { 0% { transform: scaleY(0); transform-origin: top; opacity: 0.9; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) { .caviera-hero__scroll-cue span { animation: none; } }
+
+/* ---- House statement — an opening in a presentation case, not a centred quote block ----
+   The statement itself sits inside .container--narrow (860px) rather than the full 1560px
+   container, unchanged from before: at wide desktop widths the copy block (max 56ch) inside a
+   full-width container left acres of dead space to its right, which read as unfinished rather
+   than intentional. That space is now where the House Seal watermark lives (below) — filled with
+   an atmospheric brand element instead of being reclaimed by shrinking the layout. Vertical
+   padding is also reduced from the general section clamp so the section feels spacious without
+   accidental empty height. `position: relative` is new, only so the watermark below (a section-
+   level absolutely-positioned child) has a containing block to size against. */
+/* Compact overall height, matched against the approved reference (~300–340px at desktop) rather
+   than the previous generous section-default spacing: top padding keeps a little breathing room
+   below the hero, bottom padding is kept deliberately small since the transition band just below
+   already provides a natural close, and category-reveal's own top padding (see its override
+   further down this file) supplies the rest of the gap before the category cards. */
+.caviera-statement { position: relative; z-index: 0; padding-top: clamp(32px, 4vw, 56px); padding-bottom: clamp(0px, 0.5vw, 8px); overflow: hidden; }
+
+/* Palace architecture — a genuinely visible environment image spanning the full section (behind
+   both the statement AND the three feature columns below it, not just the top portion), reading
+   as "architectural drawing visible through Warm Bone" rather than a bare cream background.
+   Opacity comes from the section setting (15–30%, see the Liquid) — raised from an earlier, much
+   fainter round where the combination of low opacity and an aggressive right-fade mask had made it
+   read as almost vanished. Negative z-index relies on .caviera-statement above establishing its
+   own stacking context (position: relative + z-index: 0) so it stays behind this section's own
+   content without reaching back into the section before it.
+
+   No directional mask now (removed): the left edge, centre arch and right architectural edge
+   should all be visible, per the brief, rather than fading away toward one side — a flat opacity
+   across the full width is what actually delivers that, given the source image's own pale,
+   architectural-drawing character keeps it well clear of fighting with the text at this opacity
+   level. object-position moved from an upper-biased "center 30%" to true "center" so the central
+   arch and oryx medallion — the section's House-identity anchor — stay in frame. */
+.caviera-statement__palace {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: var(--palace-opacity, 20%);
+  pointer-events: none;
+}
+.caviera-statement__palace-img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.caviera-statement__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1px 1fr;
+  gap: clamp(20px, 5vw, 40px);
+  align-items: center;
+}
+.caviera-statement__rule { display: block; background: var(--caviera-rhodium); height: 100%; min-height: 48px; align-self: stretch; }
+/* Heading and body side by side (one line of reading, per the approved reference) rather than
+   stacked — this is what actually recovers most of the section's previous extra height, on top of
+   the reduced padding above. Stacks back to a single column on mobile, where side-by-side text
+   would be too narrow to read comfortably either way. */
+.caviera-statement__copy { display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 700px) {
+  .caviera-statement__copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+}
+.caviera-statement__label {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--caviera-cinnabar);
+  margin-bottom: 12px;
+}
+/* Deliberately smaller than the shared .heading-h1 token — this section's compact target height
+   (~300–340px) has no room for a full-scale display headline once it sits beside the body copy
+   rather than above it. */
+.caviera-statement__heading {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-wrap: balance;
+  font-size: calc(clamp(1.75rem, 1.3rem + 2vw, 2.75rem) * var(--heading-scale));
+  line-height: 1.08;
+}
+.caviera-statement__body-col { padding-top: 2px; }
+.caviera-statement__body { max-width: 42ch; }
+.caviera-statement__cta { display: inline-block; margin-top: 16px; }
+.caviera-statement__seal { grid-column: 1 / -1; display: inline-flex; justify-self: start; margin-top: 12px; }
+@media (max-width: 599px) {
+  .caviera-statement__inner { grid-template-columns: 1fr; }
+  .caviera-statement__rule { width: 56px; height: 1px; min-height: 0; }
+}
+
+/* House Seal watermark — large, very low opacity, embedded in the negative space rather than
+   floating in it. Centred, in normal flow, below the statement on narrower screens (so it can
+   never sit under running text); absolutely positioned into the previously-empty right field only
+   once there's room for it beside the copy. Decorative only — the snippet's own alt="" already
+   makes it aria-hidden internally; the wrapper is marked aria-hidden too for the div itself. */
+.caviera-statement__watermark {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  opacity: var(--seal-watermark-opacity, 8%);
+  pointer-events: none;
+}
+.caviera-statement__watermark img { width: clamp(180px, 30vw, 260px); height: auto; }
+@media (min-width: 1024px) {
+  .caviera-statement__watermark {
+    position: absolute;
+    top: 50%;
+    right: clamp(24px, 6vw, 96px);
+    margin-top: 0;
+    transform: translateY(-50%);
+  }
+  .caviera-statement__watermark img { width: clamp(220px, 22vw, 380px); }
+}
+
+/* Three homepage features — visually the same restrained editorial-index language as the four
+   House pillars below (Cinnabar number, Obsidian title, thin Rhodium rule, no cards/shadows/large
+   icons), kept as an entirely separate ruleset so the House pillars' own CSS is untouched for any
+   instance (e.g. The House page) still using them. Margin-top is deliberately much tighter than
+   the pillars' own clamp(48px, 7vw, 88px) — this variant exists specifically for the compact
+   homepage section target height, not the more spacious brand-page context. */
+.caviera-statement__features { margin-top: clamp(20px, 3vw, 32px); }
+.caviera-statement__feature-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--caviera-rhodium);
+}
+@media (min-width: 700px) {
+  .caviera-statement__feature-list { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+}
+@media (min-width: 1024px) {
+  .caviera-statement__feature { padding-inline: 24px; border-left: 1px solid var(--caviera-rhodium); }
+  .caviera-statement__feature:first-child { border-left: none; padding-left: 0; }
+}
+.caviera-statement__feature-number { display: block; color: var(--caviera-cinnabar); margin-bottom: 8px; }
+.caviera-statement__feature-title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  transition: color var(--motion-fast) var(--ease-caviera);
+}
+.caviera-statement__feature-body { color: var(--text-primary); opacity: 0.82; font-size: 0.9375rem; max-width: 34ch; }
+@media (hover: hover) {
+  .caviera-statement__feature:hover .caviera-statement__feature-title { color: var(--caviera-cinnabar); }
+}
+@media (min-width: 1024px) {
+  .caviera-statement__feature { border-left-color: var(--caviera-rhodium); transition: border-left-color var(--motion-fast) var(--ease-caviera); }
+  @media (hover: hover) {
+    .caviera-statement__feature:hover { border-left-color: var(--caviera-cinnabar); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-statement__feature-title, .caviera-statement__feature { transition: none; }
+}
+
+/* House pillars — an editorial index, not cards: numbers, tracked titles, thin Rhodium rules
+   between items only (no per-item background or border). One column on the smallest screens
+   (each description gets full readable width rather than a cramped 2-up split), 2×2 from tablet,
+   4 across only once there's genuinely room for four short columns side by side. Unchanged from
+   before — still used in full wherever content_layout is left at its "pillars" default (e.g. The
+   House page). */
+.caviera-statement__pillars { margin-top: clamp(48px, 7vw, 88px); }
+.caviera-statement__pillar-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--caviera-rhodium);
+}
+@media (min-width: 700px) {
+  .caviera-statement__pillar-list { grid-template-columns: repeat(2, 1fr); gap: 40px 48px; }
+}
+@media (min-width: 1024px) {
+  .caviera-statement__pillar-list { grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .caviera-statement__pillar { padding-inline: 28px; border-left: 1px solid var(--caviera-rhodium); }
+  .caviera-statement__pillar:first-child { border-left: none; padding-left: 0; }
+}
+.caviera-statement__pillar-number { display: block; color: var(--caviera-cinnabar); margin-bottom: 10px; }
+.caviera-statement__pillar-title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  transition: color var(--motion-fast) var(--ease-caviera);
+}
+.caviera-statement__pillar-body { color: var(--text-primary); opacity: 0.82; max-width: 34ch; }
+/* Restrained hover only — colour and border-strength shift, never a movement. Irrelevant on touch
+   (no hover event), so mobile has no dependency on it. */
+@media (hover: hover) {
+  .caviera-statement__pillar:hover .caviera-statement__pillar-title { color: var(--caviera-cinnabar); }
+}
+@media (min-width: 1024px) {
+  .caviera-statement__pillar { border-left-color: var(--caviera-rhodium); transition: border-left-color var(--motion-fast) var(--ease-caviera); }
+  @media (hover: hover) {
+    .caviera-statement__pillar:hover { border-left-color: var(--caviera-cinnabar); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-statement__pillar-title, .caviera-statement__pillar { transition: none; }
+}
+
+/* Bottom transition band — gives "Discover" / "Shaped by category" (the next section's own
+   eyebrow/heading, blanked in templates/index.json to avoid double-printing) a deliberate home at
+   the foot of this section, rather than floating disconnected as a second section's stray head. */
+.caviera-statement__transition {
+  /* Reduced from clamp(48px, 7vw, 88px) — the approved reference keeps "Shaped by category"
+     close beneath the statement/features above, not floating a large gap below it. */
+  margin-top: clamp(24px, 3vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.caviera-statement__transition-label { margin-bottom: 0; }
+.caviera-statement__transition-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--step-h2);
+  line-height: var(--line-height-display);
+}
+.caviera-statement__transition-rule { display: block; height: 1px; background: var(--caviera-rhodium); }
+@media (min-width: 700px) {
+  .caviera-statement__transition { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 24px; }
+  .caviera-statement__transition-label { flex: 0 0 auto; }
+  .caviera-statement__transition-heading { margin-left: auto; }
+  .caviera-statement__transition-rule { flex: 1 1 100%; order: 3; }
+}
+
+/* ---- Category reveal: display-case panels, not a generic four-card grid ---- */
+/* Spacing-only correction: this section otherwise inherits the generic .caviera-section
+   padding-block (top AND bottom, clamp(48px, 6vw, 96px) — see caviera-layout.css) from its own
+   base class. Stacked directly against .caviera-statement's own bottom padding just above it, that
+   produced a very large blank Warm Bone gap between "Shaped by category" and the cards — visible
+   as an "accidental" empty area, not intentional negative space. This overrides only this
+   section's own top padding; bottom padding, and every other property of the cards themselves
+   (images, links, layout, hover), is untouched. Tightened further from the previous
+   clamp(20px, 3vw, 36px) — combined with .caviera-statement's own reduced bottom padding just
+   above, the total gap between the transition line and the cards is now ~20px (mobile) to ~32px
+   (desktop) at typical widths, roughly 20px less than before at desktop, while still keeping a
+   deliberate, non-zero breathing gap (never touching). */
+.caviera-category-reveal { padding-top: clamp(12px, 2vw, 24px); }
+.caviera-category-reveal__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 32px; }
+/* Flex, not grid: the item rules just below (flex: 1, flex-grow: 2.4 on hover/dominant/focus) are
+   what actually drives "one dominant, others secondary, focus shifts on hover" from this file's
+   opening comment — flex-grow has no effect on a grid child, so a grid row here would silently
+   leave every panel equal-width and inert at desktop. Kept as one row rule for both breakpoints;
+   only the seam/scroll behaviour differs below. */
+.caviera-category-reveal__row { display: flex; gap: 1px; background: var(--caviera-rhodium); }
+@media (max-width: 899px) { .caviera-category-reveal__row { overflow-x: auto; scroll-snap-type: x mandatory; gap: 0; background: none; } }
+.caviera-category-reveal__item {
+  position: relative; display: block; aspect-ratio: 4/5; overflow: hidden;
+  flex: 0 0 84%; scroll-snap-align: start;
+  background: var(--caviera-obsidian);
+  transition: flex-grow var(--motion-base) var(--ease-caviera);
+}
+@media (min-width: 900px) {
+  .caviera-category-reveal__item { flex: 1; }
+  .caviera-category-reveal__item.is-dominant,
+  .caviera-category-reveal__item:hover,
+  .caviera-category-reveal__item:focus-within { flex-grow: 2.4; }
+}
+.caviera-category-reveal__item img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--motion-slow) var(--ease-caviera); }
+.caviera-category-reveal__item:hover img { transform: scale(1.03); }
+/* Clean colour-field state — shown instead of a duplicated or missing photo, cycling through the
+   brand palette so adjacent unconfigured panels still read as distinct. */
+.caviera-category-reveal__item.is-color-field[data-color="cinnabar"] { background: var(--caviera-cinnabar); }
+.caviera-category-reveal__item.is-color-field[data-color="obsidian"] { background: var(--caviera-obsidian); }
+.caviera-category-reveal__item.is-color-field[data-color="bone"] { background: var(--caviera-bone); }
+.caviera-category-reveal__item.is-color-field[data-color="bone"] .caviera-category-reveal__label { color: var(--caviera-obsidian); text-shadow: none; }
+.caviera-category-reveal__note {
+  position: absolute; inset: auto 14px 14px 14px; z-index: 1;
+  background: rgba(17,16,18,0.7); color: var(--caviera-bone);
+  font-size: 0.6875rem; padding: 8px 10px;
+}
+/* Unconfigured-block placeholder — Theme-Editor-only (request.design_mode guard lives in the
+   Liquid; never rendered to real customers). Deliberately a dashed-border empty slot rather than
+   a rotating brand colour-field, so it reads as "not finished" and is never mistaken for the
+   colour-field state used when a real collection just lacks a photo. Overrides the note's
+   photo-caption positioning (absolute/bottom-anchored, dark scrim) since there is no photo behind
+   it here — centred in the open tile instead, two-class specificity so it wins outright regardless
+   of source order. */
+.caviera-category-reveal__item--empty {
+  display: flex; align-items: center; justify-content: center;
+  border: 1px dashed var(--caviera-rhodium);
+}
+.caviera-category-reveal__item--empty .caviera-category-reveal__note {
+  position: relative; inset: auto; z-index: auto;
+  background: none; max-width: 26ch;
+}
+/* Engraving-plate corner bracket — a hardware-like frame detail, not a rounded card */
+.caviera-category-reveal__plate {
+  position: absolute; top: 14px; left: 14px; width: 22px; height: 22px; z-index: 1;
+  border-top: 1px solid var(--caviera-rhodium); border-left: 1px solid var(--caviera-rhodium);
+  opacity: 0.85;
+}
+.caviera-category-reveal__label {
+  position: absolute; left: 20px; bottom: 20px;
+  color: var(--caviera-bone); font-family: var(--font-display); font-size: 1.375rem;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.35);
+}
+
+/* ---- Signature products: one focused product + navigable rail, deliberately not a grid ---- */
+.caviera-signature-products__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 32px; }
+.caviera-signature-products__stage { display: flex; flex-direction: column; gap: 24px; }
+@media (min-width: 900px) {
+  .caviera-signature-products__stage { flex-direction: row; align-items: flex-start; gap: 0; }
+}
+.caviera-signature-products__focus { flex: 1; min-width: 0; padding-inline: var(--gutter-mobile); max-width: 420px; margin-inline: auto; }
+@media (min-width: 900px) {
+  /* Thin Rhodium rule as the seam — the same architectural cue as the hero's hinge divider. */
+  .caviera-signature-products__focus {
+    flex: 1 1 58%;
+    max-width: 560px;
+    margin-inline: 0;
+    padding-left: var(--gutter-desktop);
+    padding-right: clamp(32px, 4vw, 56px);
+    border-right: var(--border-width) solid var(--caviera-rhodium);
+  }
+}
+/* Reduce the focused image's effective height — the natural 4:5 portrait ratio at up to 560px
+   wide was rendering near-1400px tall, dominating the section; capping height keeps one product
+   dominant without the image becoming the whole page. */
+.caviera-signature-products__focus .caviera-product-card__media { max-height: 560px; }
+.caviera-signature-products__focus .caviera-product-card__title { font-size: 1.25rem; margin-top: 2px; }
+
+.caviera-signature-products__rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-inline: var(--gutter-mobile);
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 900px) {
+  .caviera-signature-products__rail {
+    flex: 1 1 42%;
+    flex-direction: column;
+    overflow-x: visible;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    max-height: 560px;
+    padding-inline: clamp(24px, 3vw, 40px);
+    padding-right: var(--gutter-desktop);
+    gap: 0;
+  }
+}
+/* Editorial list treatment — a hairline rule between rows and a Cinnabar accent on the active/
+   hovered row, not an individually bordered "card" per thumbnail. */
+.caviera-signature-products__thumb {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 220px;
+  scroll-snap-align: start;
+  padding: 14px 4px;
+  border: 0;
+  border-bottom: var(--border-width) solid var(--border-subtle);
+  border-left: 2px solid transparent;
+  opacity: 0.62;
+  transition: opacity var(--motion-fast) var(--ease-caviera), border-color var(--motion-fast) var(--ease-caviera), padding-left var(--motion-fast) var(--ease-caviera);
+}
+@media (min-width: 900px) { .caviera-signature-products__thumb { flex: 0 0 auto; } }
+.caviera-signature-products__thumb img { width: 52px; height: 52px; object-fit: cover; flex-shrink: 0; }
+.caviera-signature-products__thumb-title { font-size: 0.875rem; }
+.caviera-signature-products__thumb.is-active,
+.caviera-signature-products__thumb:hover,
+.caviera-signature-products__thumb:focus-visible {
+  opacity: 1;
+  border-left-color: var(--caviera-cinnabar);
+  padding-left: 12px;
+}
+
+/* ---- Featured collection: the standard, reliable grid (uses shared .caviera-product-grid) ---- */
+.caviera-featured-collection__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 40px; }
+.caviera-featured-collection .caviera-product-grid { padding-inline: var(--gutter-mobile); }
+@media (min-width: 600px) { .caviera-featured-collection .caviera-product-grid { padding-inline: var(--gutter-desktop); } }
+
+/* ---- Object in focus — luxury product-study moment ----
+   This section always renders — no outer condition can remove the whole thing. `data-mode` picks
+   what fills the (always-present) left column, never whether the section exists:
+     data-mode="media"       — a dedicated or product image, with a restrained offset Cinnabar
+                                plane behind it.
+     data-mode="composition" — no image resolved at all; a controlled CAVIERA material field
+                                (Cinnabar panel + Warm Bone inset + optional House Seal watermark)
+                                fills the same column instead — never an empty rectangle. */
+.caviera-object-focus__head { margin-inline: auto; margin-bottom: clamp(32px, 5vw, 56px); }
+.caviera-object-focus__heading { margin-top: 0.35em; }
+
+.caviera-object-focus__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+@media (min-width: 1024px) {
+  .caviera-object-focus__grid {
+    /* 1.5fr:1fr ≈ 60/40 once both floors are satisfied — inside the 58–62/38–42 target. Floors
+       verified, not guessed: .caviera-object-focus__chapter's 32px number column + 16px gap = 48px
+       of overhead per row, so a 440px floor leaves ~392px for the actual description text —
+       inside the 320–420px readable-width target, not just "the column looks wide enough on
+       paper." At 1024px viewport (container gutters 64px each side, gap ~51px at 5vw): 380 + 440
+       + 51 = 871px against ~896px available — fits with room to spare; the same floors would not
+       fit at 900px, which is why the split activates at 1024px rather than 900px. */
+    grid-template-columns: minmax(380px, 1.5fr) minmax(440px, 1fr);
+    gap: clamp(40px, 5vw, 80px);
+    align-items: start;
+  }
+}
+
+.caviera-object-focus__media {
+  position: relative;
+  background: var(--caviera-bone);
+}
+.caviera-object-focus__media picture { position: relative; z-index: 1; display: block; }
+.caviera-object-focus__media img { display: block; width: 100%; height: auto; }
+.caviera-object-focus__media[data-fit="cover"] {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+.caviera-object-focus__media[data-fit="cover"] picture,
+.caviera-object-focus__media[data-fit="cover"] img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+/* Offset Cinnabar plane — architectural, not decorative: a rectangle peeking out from behind
+   roughly the bottom-left fifth of the image, like a case revealing its lining, not a shadow or
+   a full background field. Only applies to "contain" fit: "cover" mode already crops the image to
+   a hard-edged frame (overflow: hidden — see [data-fit="cover"] above), which would clip an
+   offset plane meant to peek out past that same edge; "contain" mode's image doesn't fill a hard
+   rectangle, so the plane has real space to show through. */
+.caviera-object-focus__media[data-fit="contain"] .caviera-object-focus__media-offset {
+  position: absolute;
+  left: -20px; bottom: -20px;
+  width: 55%; height: 45%;
+  background: var(--caviera-cinnabar);
+  z-index: 0;
+}
+
+/* Controlled CAVIERA material field (data-mode="composition") — never a simulated photo. A
+   Cinnabar panel filling the column with a Warm Bone inset offset toward one corner, matching the
+   same "outer protection / inner reveal" language as Packaging ritual's own material composition,
+   at this section's own aspect ratio rather than a fixed box. */
+.caviera-object-focus__composition {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--caviera-cinnabar);
+}
+.caviera-object-focus__composition-inset {
+  position: absolute;
+  inset: 18% 14% 14% 22%;
+  background: var(--caviera-bone);
+  border: 1px solid var(--caviera-rhodium);
+}
+.caviera-object-focus__composition-seal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: var(--seal-opacity, 8%);
+  pointer-events: none;
+}
+.caviera-object-focus__composition-seal img { width: clamp(160px, 26%, 220px); height: auto; }
+
+@media (min-width: 1024px) {
+  /* Sticky within the section's own natural height only — releases normally once the section
+     ends, same non-scroll-jacking pattern as Packaging ritual. Disabled below 1024px; the section
+     works fully without it either way (it's presentational, not required to read the content). */
+  .caviera-object-focus__media-col { position: sticky; top: calc(var(--header-height) + 40px); }
+}
+
+.caviera-object-focus__chapters { display: flex; flex-direction: column; gap: 0; }
+.caviera-object-focus__chapter {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 16px;
+  padding-block: 24px;
+  border-bottom: 1px solid var(--caviera-rhodium);
+}
+.caviera-object-focus__chapter:first-child { padding-top: 0; }
+.caviera-object-focus__chapter:last-child { border-bottom: none; }
+.caviera-object-focus__chapter-number { color: var(--caviera-cinnabar); padding-top: 0.2em; }
+.caviera-object-focus__chapter-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-h3);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.caviera-object-focus__chapter .body-text { max-width: 420px; line-height: 1.65; }
+/* Editorial text link, not a filled button — the arrow nudges on hover/focus only, never a
+   continuous animation, and the transition is disabled under reduced motion below. */
+.caviera-object-focus__cta { display: inline-flex; align-items: baseline; margin-top: 32px; }
+.caviera-object-focus__cta-arrow { display: inline-block; transition: transform var(--motion-fast) var(--ease-caviera); }
+.caviera-object-focus__cta:hover .caviera-object-focus__cta-arrow,
+.caviera-object-focus__cta:focus-visible .caviera-object-focus__cta-arrow { transform: translateX(4px); }
+@media (prefers-reduced-motion: reduce) { .caviera-object-focus__cta-arrow { transition: none; } }
+
+/* ---- Editorial media & text ---- */
+.caviera-editorial__grid { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 900px) {
+  .caviera-editorial__grid { grid-template-columns: 1fr 1fr; align-items: center; }
+  .caviera-editorial[data-reverse="right"] .caviera-editorial__media { order: 2; }
+}
+.caviera-editorial__media img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/5; }
+.caviera-editorial__text { padding: 48px var(--gutter-mobile); max-width: 44ch; }
+@media (min-width: 900px) { .caviera-editorial__text { padding: 48px var(--gutter-desktop); } }
+.caviera-editorial__text .body-text { margin: 20px 0 28px; }
+
+/* ---- Craftsmanship ---- */
+.caviera-craftsmanship__head { text-align: center; margin-bottom: 48px; }
+.caviera-craftsmanship__head .body-text--wide { margin: 16px auto 0; }
+.caviera-craftsmanship__list { display: flex; flex-direction: column; gap: 48px; }
+/* Media-configured rows: image + text, balanced. Rows without an image never reserve the image
+   column — a text-only row spans the full width instead of leaving a blank right half. */
+.caviera-craftsmanship__row { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: center; }
+@media (min-width: 700px) { .caviera-craftsmanship__row:not(.caviera-craftsmanship__row--text-only) { grid-template-columns: 280px 1fr; } }
+.caviera-craftsmanship__row--text-only { max-width: 640px; }
+.caviera-craftsmanship__image img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.caviera-craftsmanship__copy .label { color: var(--caviera-cinnabar); }
+.caviera-craftsmanship__copy h3 { margin: 8px 0 12px; }
+/* No-media state: a balanced staggered column layout instead of a stacked media+text rhythm with
+   nothing to show on one side — every row here is text-only by definition (data-media="no"). */
+@media (min-width: 700px) {
+  .caviera-craftsmanship__list[data-media="no"] { flex-direction: row; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .caviera-craftsmanship__list[data-media="no"] .caviera-craftsmanship__row--text-only {
+    flex: 1 1 260px; max-width: none; display: block;
+  }
+}
+.caviera-craftsmanship__hallmark { display: flex; justify-content: center; margin-top: 48px; }
+
+/* ---- Craftsmanship: "Dominant image" layout — one large visual + a vertical story list, the
+   same architectural language (offset Cinnabar plane / controlled material field) as Object in
+   focus, so the two enriched sections read as one coherent chapter of the homepage. ---- */
+.caviera-craftsmanship__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+  margin-top: clamp(40px, 6vw, 64px);
+}
+@media (min-width: 1024px) {
+  .caviera-craftsmanship__split {
+    /* ~52/48, inside the 48–55/45–52 target. Floors chosen the same verified way as Object in
+       focus: 360 + 380 + a ~51px gap at 1024px = 791px against ~896px available — fits with
+       room to spare. */
+    grid-template-columns: minmax(360px, 1.1fr) minmax(380px, 1fr);
+    align-items: start;
+  }
+}
+.caviera-craftsmanship__visual { position: relative; }
+.caviera-craftsmanship__visual-frame { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--caviera-obsidian); }
+.caviera-craftsmanship__visual-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Offset plane sits outside .visual-frame (which clips via overflow: hidden), so it is never cut
+   off by the image's own crop — same architectural cue as Object in focus's media offset. */
+.caviera-craftsmanship__visual-offset {
+  position: absolute;
+  left: -20px; bottom: -20px;
+  width: 45%; height: 40%;
+  background: var(--caviera-cinnabar);
+  z-index: 0;
+}
+.caviera-craftsmanship__visual-frame { z-index: 1; }
+
+.caviera-craftsmanship__composition {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--caviera-cinnabar);
+}
+.caviera-craftsmanship__composition-inset {
+  position: absolute;
+  inset: 16% 22% 16% 12%;
+  background: var(--caviera-bone);
+  border: 1px solid var(--caviera-rhodium);
+}
+.caviera-craftsmanship__composition-seal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: var(--seal-opacity, 6%);
+  pointer-events: none;
+}
+.caviera-craftsmanship__composition-seal img { width: clamp(160px, 26%, 220px); height: auto; }
+
+.caviera-craftsmanship__story-list { display: flex; flex-direction: column; gap: 0; }
+.caviera-craftsmanship__story {
+  padding-block: 24px;
+  border-bottom: 1px solid var(--caviera-rhodium);
+}
+.caviera-craftsmanship__story:first-child { padding-top: 0; }
+.caviera-craftsmanship__story:last-child { border-bottom: none; }
+.caviera-craftsmanship__story-number { display: block; color: var(--caviera-cinnabar); margin-bottom: 10px; }
+.caviera-craftsmanship__story-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-h3);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.caviera-craftsmanship__story .body-text { max-width: 420px; line-height: 1.65; }
+
+/* ---- Packaging ritual — ceremonial editorial spread ----
+   REDESIGN (see the comment at the top of sections/caviera-packaging-ritual.liquid): the previous
+   version placed four equal-width colour bars beside a further-nested flex column, which read as
+   an extremely narrow, word-by-word-wrapped strip. This version is one flat two-column grid —
+   visual stage, then a single vertical step list with its own generous, explicit copy max-width —
+   with no nested sub-layout narrowing the text a second time. */
+.caviera-ritual[data-spacing="compact"] { padding-block: calc(var(--section-spacing) * 0.6); }
+.caviera-ritual[data-spacing="spacious"] { padding-block: calc(var(--section-spacing) * 1.35); }
+
+.caviera-ritual__head { text-align: center; margin-inline: auto; margin-bottom: clamp(40px, 6vw, 72px); }
+.caviera-ritual__heading { margin-top: 0.35em; }
+.caviera-ritual__intro-copy { margin: 20px auto 0; }
+
+.caviera-ritual__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+@media (min-width: 1024px) {
+  .caviera-ritual__body {
+    /* The rail's floor (460px) isn't the description's actual width — .caviera-ritual__rail's own
+       24px gap + 1px progress line, plus each step's 32px number column + 16px internal gap,
+       account for ~73px of that before any text renders. 460 - 73 ≈ 387px, landing inside the
+       380–520px target rather than the ~300px it would be if the floor were set to look right on
+       paper without subtracting what the row itself consumes. Verified this way rather than
+       guessed: at exactly 1024px (with 340px on the stage), 340 + 460 + the gap still fits inside
+       the container with room to spare — at 900px, the same floors would overflow, which is why
+       the breakpoint moved rather than staying at 900 with a bigger number bolted on. */
+    grid-template-columns: minmax(340px, 1fr) minmax(460px, 1fr);
+    gap: clamp(40px, 5vw, 80px);
+    align-items: start;
+  }
+}
+/* Below 1024px: stacked. Two tracks with a readable floor on each side genuinely don't fit in the
+   768–1023px tablet range without either overflowing or breaking the floor promise — stacking the
+   full tablet range (rather than forcing a split that can't actually hold ~380px of readable text)
+   is what "switch layouts earlier rather than allowing broken wrapping" means in practice here. */
+
+.caviera-ritual__stage-col { position: relative; }
+@media (min-width: 1024px) {
+  /* Sticky within the section's own natural height only — this is not scroll-jacking: it simply
+     keeps the visual stage in view while the (taller) step list scrolls past beside it, and
+     releases normally once the section ends. Disabled below 1024px per the brief. */
+  .caviera-ritual__stage-col { position: sticky; top: calc(var(--header-height) + 40px); }
+}
+.caviera-ritual__stage {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--caviera-obsidian);
+  /* No max-height here at desktop: the column's own grid-track width already governs the box's
+     height via aspect-ratio, and since the stage is sticky (not stacked in flow), the viewport
+     naturally limits how much of it is ever visible at once anyway. A max-height here would
+     instead fight the aspect-ratio at wide viewports — width fixed by the grid track, height
+     capped below what 4:5 would compute, producing an unintentionally near-square box. The
+     mobile override below caps height directly instead, since mobile is in normal flow. */
+}
+.caviera-ritual__stage-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* Official CAVIERA material composition — the "no packaging photo yet" state. Three nested,
+   hairline-Rhodium-edged panels (the section's own Obsidian background, a Cinnabar case, a Warm
+   Bone interior) visualise the same Arrive → Open → Discover sequence named in the steps beside
+   it — an architectural study, never a simulated product photo. */
+.caviera-ritual__composition { position: absolute; inset: 0; }
+.caviera-ritual__panel { position: absolute; border: 1px solid var(--caviera-rhodium); }
+.caviera-ritual__panel[data-panel="cinnabar"] { inset: 12% 10%; background: var(--caviera-cinnabar); }
+.caviera-ritual__panel[data-panel="bone"] { inset: 36% 26% 8% 26%; background: var(--caviera-bone); }
+
+/* Living Mascot: a discovered House element grounded on the innermost panel's edge, not centred
+   like a logo and never more than roughly a third of the stage's width. */
+.caviera-ritual__mascot { position: absolute; left: 8%; bottom: 6%; width: clamp(140px, 28%, 360px); z-index: 1; }
+.caviera-ritual__mascot img { width: 100%; height: auto; display: block; }
+
+.caviera-ritual__rail { position: relative; display: flex; gap: 24px; }
+/* Presentation-case progression line — a hairline Rhodium base with a Cinnabar fill that grows
+   with reading position. Purely decorative; the numbered <ol> already carries the real sequence
+   for assistive tech, so this is aria-hidden. Static (no fill) is a perfectly legible default —
+   the JS enhancement in caviera-packaging-ritual.js is what animates it, and never required. */
+.caviera-ritual__progress { position: relative; flex: 0 0 1px; width: 1px; align-self: stretch; background: var(--caviera-rhodium); opacity: 0.4; }
+.caviera-ritual__progress-fill { position: absolute; top: 0; left: 0; width: 1px; height: 0%; background: var(--caviera-cinnabar); transition: height 0.4s var(--ease-caviera); }
+@media (prefers-reduced-motion: reduce) { .caviera-ritual__progress-fill { transition: none; } }
+
+.caviera-ritual__steps { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.caviera-ritual__step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 16px;
+  padding-block: 28px;
+  border-bottom: var(--border-width) solid var(--border-subtle);
+  opacity: 1;
+  transition: opacity 0.4s var(--ease-caviera);
+}
+.caviera-ritual__step:first-child { padding-top: 0; }
+.caviera-ritual__step:last-child { border-bottom: none; }
+/* The JS enhancement only dims non-active steps once it has actually initialised (marked by
+   data-observing on the list) — without it, every step stays at full opacity, fully readable, per
+   the brief. 0.7 (not lower) keeps inactive steps clearly legible, just quieter. */
+.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step { opacity: 0.7; }
+.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step.is-active { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .caviera-ritual__step { transition: none; } }
+
+.caviera-ritual__step-number { color: var(--caviera-cinnabar); padding-top: 0.2em; }
+.caviera-ritual__step-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-h3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+/* Generous but capped — even inside a genuinely wide column, a line length north of ~500px reads
+   poorly. This is the single, explicit fix for the reported narrow/word-by-word column: one flat
+   max-width declaration, not a chain of nested flex/grid tracks each silently shrinking it further. */
+.caviera-ritual__step-copy .body-text { max-width: 500px; }
+.caviera-ritual__step-seal { display: inline-flex; margin-top: 16px; }
+
+@media (max-width: 1023px) {
+  .caviera-ritual__stage { aspect-ratio: 4 / 5; max-height: 520px; }
+  .caviera-ritual__mascot { width: clamp(140px, 45%, 190px); }
+  .caviera-ritual__rail { gap: 16px; }
+  .caviera-ritual__step { padding-block: 22px; }
+}
+
+/* Top-of-section gap fix: the preceding section (also Obsidian, at least by default on the
+   homepage) and this one each independently carried the full shared --section-spacing on their
+   touching edges — up to ~128px + ~128px = ~256px of unbroken same-colour space at large
+   viewports, with nothing marking where one section ends and the next begins. `padding-top`
+   here is deliberately more specific than the `padding-block` shorthand above (both the base
+   .caviera-section rule and the [data-spacing] overrides), and — because it's declared after
+   them in this file — wins the cascade regardless of which spacing option is selected, replacing
+   only the top half of the padding with a small, breakpoint-tuned value. padding-bottom is
+   completely untouched, so the transition into the next section below is unaffected. This does
+   not touch the preceding section's own CSS at all — only this section's top edge changed. */
+.caviera-ritual { padding-top: 16px; }
+@media (min-width: 768px) { .caviera-ritual { padding-top: 28px; } }
+@media (min-width: 1024px) { .caviera-ritual { padding-top: 16px; } }
+/* Extremely restrained 1px Rhodium boundary line — gives the now-shorter gap a deliberate seam
+   between two same-colour sections, rather than relying on the (reduced) empty space alone to
+   read as intentional. Absolutely positioned (.caviera-section already provides
+   position: relative) so it sits within the existing padding-top space above without adding any
+   layout height of its own — the padding-top values above already are the full intended gap;
+   this only marks a point inside that gap, it does not add to it. Pure CSS pseudo-element: no
+   DOM node, no aria implications. */
+.caviera-ritual::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--caviera-rhodium);
+  opacity: 0.35;
+}
+
+/* ---- Services ---- */
+.caviera-services__heading { text-align: center; margin-bottom: 32px; }
+.caviera-services__grid { display: grid; grid-template-columns: 1fr; gap: 28px; text-align: center; }
+@media (min-width: 700px) { .caviera-services__grid { grid-template-columns: repeat(3, 1fr); gap: 0; } }
+.caviera-services__item p { margin-top: 8px; color: var(--text-muted); }
+/* Subtle Rhodium dividers instead of relying on gap alone to separate the three statements. */
+@media (min-width: 700px) {
+  .caviera-services__item { padding-inline: 28px; border-left: var(--border-width) solid var(--border-subtle); }
+  .caviera-services__item:first-child { border-left: none; padding-left: 0; }
+  .caviera-services__item:last-child { padding-right: 0; }
+}
+@media (max-width: 699px) {
+  .caviera-services__item { padding-top: 20px; border-top: var(--border-width) solid var(--border-subtle); }
+  .caviera-services__item:first-child { border-top: none; padding-top: 0; }
+}
+
+/* ---- Bespoke banner ---- */
+.caviera-bespoke { position: relative; min-height: 52vh; max-height: 680px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.caviera-bespoke__media { position: absolute; inset: 0; z-index: 0; }
+.caviera-bespoke__media-el { width: 100%; height: 100%; object-fit: cover; }
+.caviera-bespoke__media-el--mobile { display: none; }
+@media (max-width: 749px) {
+  .caviera-bespoke__media-el--desktop { display: none; }
+  .caviera-bespoke__media-el--mobile { display: block; }
+}
+.caviera-bespoke__overlay { position: absolute; inset: 0; background: rgba(17,16,18,0.55); }
+/* No dedicated media configured — data-scheme="obsidian" on the section already supplies the
+   clean Obsidian field; the overlay/media layer simply isn't rendered in that case. */
+.caviera-bespoke .caviera-editor-note { position: relative; z-index: 1; margin-bottom: 16px; max-width: 620px; }
+.caviera-bespoke__content { position: relative; z-index: 1; max-width: 560px; }
+.caviera-bespoke__content .body-text { margin: 16px 0 28px; }
+
+/* ---- Journal (homepage preview head only — card/grid styles are global, see caviera-components.css) ---- */
+.caviera-journal__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 40px; }
+
+/* ---- Newsletter ---- */
+.caviera-newsletter__inner { text-align: center; }
+/* Base row/input rule lives in caviera-components.css — this only overrides context-specific layout. */
+.caviera-newsletter-form__row { max-width: 420px; margin: 24px auto 0; }
+.caviera-newsletter-form__row input { text-align: left; }
+.caviera-newsletter__incentive { color: var(--caviera-cinnabar); margin-top: 12px; }
+
+/* ---- Closing house signature ---- */
+.caviera-signature__inner { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+.caviera-signature__rule { display: block; width: 56px; height: 1px; background: var(--caviera-rhodium); }
+.caviera-signature__mark { max-width: 320px; width: 100%; }

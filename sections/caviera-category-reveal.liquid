@@ -1,0 +1,124 @@
+{%- comment -%}
+  Immersive category discovery. Desktop: one collection dominant, others secondary, focus shifts
+  on hover/click. Mobile: swipeable/stacked editorial cards, no tiny side cards.
+
+  CRITICAL LINK FIX (see docs/final-caviera-consolidated-audit.md): every block used to fall back
+  to `collections.all` whenever its own `collection` setting was blank — meaning any unconfigured
+  block linked to the full catalogue, and since none of the four homepage blocks had a collection
+  explicitly assigned, all four silently pointed to the SAME destination (Rings, Earrings,
+  Necklaces and Bracelets all landed on /collections/all). There is now no shared fallback at all:
+  a block with no collection selected renders nothing publicly (a Theme-Editor-only note names it)
+  rather than linking somewhere generic. Each block's `collection.url` is used independently.
+
+  Image source per block, in order: block-specific override image, then the linked collection's
+  own featured image. There is deliberately no third tier that reaches into a collection's
+  products for "the first one with an image" — that is exactly the behaviour that let one
+  temporary product photo (and its baked-in badge) surface across every category panel. When a
+  block resolves to no image at all, or to the exact same image URL as an earlier block, it shows
+  a clean rotating brand-colour field instead of a photo — never a duplicated or broken image.
+{%- endcomment -%}
+<section class="caviera-section caviera-category-reveal">
+  {%- if section.settings.heading != blank -%}
+    <div class="container caviera-category-reveal__head" data-reveal>
+      {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+      <h2 class="heading-h2">{{ section.settings.heading }}</h2>
+    </div>
+  {%- endif -%}
+
+  {%- liquid
+    assign has_content = false
+    for block in section.blocks
+      if block.settings.collection != blank
+        assign has_content = true
+      endif
+    endfor
+    assign seen_image_urls = ''
+    assign color_fields = 'cinnabar,obsidian,bone' | split: ','
+  -%}
+
+  {%- if has_content -%}
+    <div class="caviera-category-reveal__row container--full" data-caviera-category-reveal>
+      {%- for block in section.blocks -%}
+        {%- if block.settings.collection != blank -%}
+          {%- liquid
+            assign collection = collections[block.settings.collection]
+            assign img = block.settings.image
+            if img == blank
+              assign img = collection.featured_image
+            endif
+            assign is_duplicate = false
+            if img != blank and seen_image_urls contains img.src
+              assign is_duplicate = true
+            endif
+            if img != blank and is_duplicate == false
+              assign seen_image_urls = seen_image_urls | append: img.src | append: '|'
+            endif
+            assign color_index = forloop.index0 | modulo: 3
+            assign color_field = color_fields[color_index]
+          -%}
+          <a
+            href="{{ collection.url }}"
+            class="caviera-category-reveal__item{% if forloop.first %} is-dominant{% endif %}{% if img == blank or is_duplicate %} is-color-field{% endif %}"
+            data-caviera-category-item
+            {% if img == blank or is_duplicate %}data-color="{{ color_field }}"{% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <span class="caviera-category-reveal__plate" aria-hidden="true"></span>
+            {%- if img != blank and is_duplicate == false -%}
+              <img
+                src="{{ img | image_url: width: 1000 }}"
+                srcset="{{ img | image_url: width: 500 }} 500w, {{ img | image_url: width: 1000 }} 1000w, {{ img | image_url: width: 1500 }} 1500w"
+                sizes="(min-width: 900px) 50vw, 100vw"
+                width="{{ img.width }}" height="{{ img.height }}"
+                alt="{{ img.alt | default: collection.title | escape }}"
+                loading="lazy"
+              >
+            {%- elsif request.design_mode -%}
+              <div class="caviera-editor-note caviera-category-reveal__note">
+                {%- if is_duplicate -%}
+                  This block uses the same image as another category — add a unique override image.
+                {%- else -%}
+                  No override image and no collection image — add one, or select a collection with a featured image.
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+            <span class="caviera-category-reveal__label">
+              {{ block.settings.title | default: collection.title }}
+            </span>
+          </a>
+        {%- elsif request.design_mode -%}
+          <div class="caviera-category-reveal__item caviera-category-reveal__item--empty" data-color="rhodium">
+            <div class="caviera-editor-note caviera-category-reveal__note">{% if block.settings.title != blank %}"{{ block.settings.title }}"{% else %}This category{% endif %} has no collection selected yet — hidden publicly until one is assigned.</div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- elsif request.design_mode -%}
+    <div class="container"><div class="caviera-editor-note">Add category blocks and pick a collection for each — each must have its own distinct collection; none fall back to the full catalogue.</div></div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Category discovery",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Discover" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shaped by category" }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "text", "id": "title", "label": "Override title" },
+        { "type": "image_picker", "id": "image", "label": "Override image", "info": "Give each category its own unique image — no marketplace badges, review stars or promotional text. Falls back to the collection's own image only; never to a product photo." }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    { "name": "Category discovery", "blocks": [{ "type": "category" }, { "type": "category" }, { "type": "category" }, { "type": "category" }] }
+  ]
+}
+{% endschema %}

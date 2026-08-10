@@ -1,0 +1,29 @@
+{%- comment -%} All collections index — editorial grid, no fabricated content. {%- endcomment -%}
+<section class="caviera-section container">
+  <h1 class="heading-h1 caviera-collections-index__heading">{{ 'templates.list_collections.title' | t }}</h1>
+  {%- if collections.size > 0 -%}
+    <div class="caviera-product-grid caviera-product-grid--4">
+      {%- for collection in collections -%}
+        <a href="{{ collection.url }}" class="caviera-collections-index__item">
+          {%- if collection.featured_image -%}
+            <img
+              src="{{ collection.featured_image | image_url: width: 700 }}"
+              srcset="{{ collection.featured_image | image_url: width: 350 }} 350w, {{ collection.featured_image | image_url: width: 700 }} 700w"
+              sizes="(min-width: 900px) 25vw, 50vw"
+              width="{{ collection.featured_image.width }}" height="{{ collection.featured_image.height }}"
+              alt="{{ collection.featured_image.alt | default: collection.title | escape }}"
+              loading="lazy"
+            >
+          {%- endif -%}
+          <span class="caviera-collections-index__label">{{ collection.title }}</span>
+        </a>
+      {%- endfor -%}
+    </div>
+  {%- elsif request.design_mode -%}
+    <div class="caviera-editor-note">No collections exist yet in this store.</div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{ "name": "All collections" }
+{% endschema %}

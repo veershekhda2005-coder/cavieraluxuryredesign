@@ -1,0 +1,33 @@
+{%- comment -%}
+  Accessible variant picker. Renders a fieldset per option using native radio buttons styled as
+  pills (never an inaccessible custom <select> replacement) with a native <select> fallback list
+  for options with many values. Reads the current URL variant for deep-linking.
+  Params: product, section_id (unique DOM-id scope; falls back to product.id)
+{%- endcomment -%}
+{%- assign scope_id = section_id | default: product.id -%}
+<variant-picker class="caviera-variant-picker" data-product-url="{{ product.url }}">
+  {%- for option in product.options_with_values -%}
+    <fieldset class="caviera-variant-picker__option">
+      <legend class="label">{{ option.name }}</legend>
+      <div class="caviera-variant-picker__values" role="radiogroup" aria-label="{{ option.name }}">
+        {%- for value in option.values -%}
+          <input
+            type="radio"
+            id="Option-{{ option.position }}-{{ forloop.index }}-{{ scope_id }}"
+            name="option-{{ option.position }}"
+            value="{{ value | escape }}"
+            class="visually-hidden-focusable caviera-variant-picker__radio"
+            {% if option.selected_value == value %}checked{% endif %}
+          >
+          <label for="Option-{{ option.position }}-{{ forloop.index }}-{{ scope_id }}" class="caviera-variant-picker__value">
+            {{ value }}
+          </label>
+        {%- endfor -%}
+      </div>
+    </fieldset>
+  {%- endfor -%}
+
+  <script type="application/json" data-variant-data>
+    {{ product.variants | json }}
+  </script>
+</variant-picker>

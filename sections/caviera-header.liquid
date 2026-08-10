@@ -1,0 +1,309 @@
+{%- comment -%}
+  Global header. Desktop: spacious, optionally transparent over a hero, compacts on scroll and may
+  swap the full wordmark for the House Seal. Mobile: House Seal + full-screen drawer. Menu content
+  is entirely merchant-driven via a Shopify linklist — nothing here is hardcoded.
+{%- endcomment -%}
+{%- liquid
+  assign menu = section.settings.main_menu
+  assign transparent = section.settings.transparent_over_hero
+  assign sticky = section.settings.sticky_header
+  assign sticky_logo_mode = section.settings.sticky_logo_mode
+-%}
+<caviera-header
+  class="caviera-header{% if transparent %} caviera-header--transparent{% endif %}"
+  data-sticky="{{ sticky }}"
+  data-sticky-logo-mode="{{ sticky_logo_mode }}"
+  role="banner"
+>
+  <div class="caviera-header__bar container">
+    <button type="button" class="caviera-header__menu-toggle" data-caviera-menu-toggle aria-expanded="false" aria-controls="caviera-mobile-nav">
+      {% render 'icon', name: 'menu' %}
+      <span class="visually-hidden">{{ 'sections.header.menu' | t }}</span>
+    </button>
+
+    <a href="{{ routes.root_url }}" class="caviera-header__logo" aria-label="{{ shop.name }} — {{ 'general.accessibility.home' | t }}">
+      <span class="caviera-header__logo-full">
+        {%- render 'caviera-wordmark', mode: section.settings.logo_scheme, loading: 'eager', fetchpriority: 'high', width: section.settings.logo_width_desktop -%}
+      </span>
+      <span class="caviera-header__logo-compact">
+        {%- render 'caviera-house-seal', mode: section.settings.logo_scheme, loading: 'eager', width: section.settings.logo_width_mobile, alt: '' -%}
+      </span>
+    </a>
+
+    {%- if menu != blank -%}
+    <nav class="caviera-header__nav" aria-label="{{ 'sections.header.menu' | t }}">
+      <ul>
+        {%- for link in menu.links -%}
+          <li class="caviera-header__nav-item{% if link.links != blank %} has-submenu{% endif %}">
+            {%- if link.links != blank -%}
+              {%- liquid
+                assign feature_block = nil
+                for block in section.blocks
+                  if block.type == 'megamenu_feature' and block.settings.match_title != blank and block.settings.match_title == link.title
+                    assign feature_block = block
+                  endif
+                endfor
+              -%}
+              <button type="button" class="caviera-header__nav-link" aria-expanded="false" aria-haspopup="true">
+                {{ link.title }}
+                {% render 'icon', name: 'chevron-down' %}
+              </button>
+              <div class="caviera-header__megamenu">
+                <div class="caviera-header__megamenu-columns">
+                  {%- for child in link.links -%}
+                    <div class="caviera-header__megamenu-column">
+                      <a href="{{ child.url }}" class="caviera-header__megamenu-heading">{{ child.title }}</a>
+                      {%- if child.links != blank -%}
+                        <ul>
+                          {%- for grandchild in child.links -%}
+                            <li><a href="{{ grandchild.url }}">{{ grandchild.title }}</a></li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </div>
+                  {%- endfor -%}
+                  {%- if feature_block -%}
+                    {%- liquid
+                      assign feature_url = nil
+                      assign feature_title = nil
+                      assign feature_image = feature_block.settings.image
+                      case feature_block.settings.feature_type
+                        when 'collection'
+                          assign feature_url = feature_block.settings.collection.url
+                          assign feature_title = feature_block.settings.collection.title
+                          if feature_image == blank
+                            assign feature_image = feature_block.settings.collection.featured_image
+                          endif
+                        when 'article'
+                          assign feature_url = feature_block.settings.article.url
+                          assign feature_title = feature_block.settings.article.title
+                          if feature_image == blank
+                            assign feature_image = feature_block.settings.article.image
+                          endif
+                      endcase
+                    -%}
+                    {%- if feature_image != blank -%}
+                      <a
+                        href="{{ feature_url | default: '#' }}"
+                        class="caviera-header__megamenu-editorial"
+                        {{ feature_block.shopify_attributes }}
+                      >
+                        <img
+                          src="{{ feature_image | image_url: width: 640 }}"
+                          srcset="{{ feature_image | image_url: width: 320 }} 320w, {{ feature_image | image_url: width: 640 }} 640w"
+                          sizes="320px"
+                          width="{{ feature_image.width }}"
+                          height="{{ feature_image.height }}"
+                          alt="{{ feature_image.alt | default: feature_title | default: '' | escape }}"
+                          loading="lazy"
+                        >
+                        {%- if feature_title != blank -%}<span class="caviera-header__megamenu-editorial-label">{{ feature_title }}</span>{%- endif -%}
+                      </a>
+                    {%- endif -%}
+                  {%- elsif section.settings.megamenu_image -%}
+                    <div class="caviera-header__megamenu-editorial">
+                      <img
+                        src="{{ section.settings.megamenu_image | image_url: width: 640 }}"
+                        srcset="{{ section.settings.megamenu_image | image_url: width: 320 }} 320w, {{ section.settings.megamenu_image | image_url: width: 640 }} 640w"
+                        sizes="320px"
+                        width="{{ section.settings.megamenu_image.width }}"
+                        height="{{ section.settings.megamenu_image.height }}"
+                        alt="{{ section.settings.megamenu_image.alt | default: '' | escape }}"
+                        loading="lazy"
+                      >
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- else -%}
+              <a href="{{ link.url }}" class="caviera-header__nav-link">{{ link.title }}</a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    {%- endif -%}
+
+    <div class="caviera-header__actions">
+      {%- if section.settings.enable_search -%}
+        {%- if settings.predictive_search_enabled -%}
+        <button type="button" class="caviera-header__action" data-caviera-search-toggle aria-haspopup="dialog">
+          {% render 'icon', name: 'search' %}
+          <span class="visually-hidden">{{ 'sections.header.search' | t }}</span>
+        </button>
+        {%- else -%}
+        <a href="{{ routes.search_url }}" class="caviera-header__action">
+          {% render 'icon', name: 'search' %}
+          <span class="visually-hidden">{{ 'sections.header.search' | t }}</span>
+        </a>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if section.settings.enable_account and shop.customer_accounts_enabled -%}
+      <a href="{{ routes.account_url }}" class="caviera-header__action">
+        {% render 'icon', name: 'account' %}
+        <span class="visually-hidden">{{ 'sections.header.account' | t }}</span>
+      </a>
+      {%- endif -%}
+
+      <button type="button" class="caviera-header__action caviera-header__cart" data-caviera-cart-toggle aria-haspopup="dialog">
+        {% render 'icon', name: 'bag' %}
+        <span class="visually-hidden" data-cart-label>
+          {%- if cart.item_count > 0 -%}
+            {%- if cart.item_count == 1 -%}
+              {{ 'sections.header.cart_count.one' | t: count: cart.item_count }}
+            {%- else -%}
+              {{ 'sections.header.cart_count.other' | t: count: cart.item_count }}
+            {%- endif -%}
+          {%- else -%}
+            {{ 'sections.header.cart' | t }}
+          {%- endif -%}
+        </span>
+        <span class="caviera-header__cart-count" data-cart-count="{{ cart.item_count }}" aria-hidden="true">{{ cart.item_count }}</span>
+      </button>
+    </div>
+  </div>
+
+  {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
+  <div class="caviera-header__localization container">
+    {%- render 'localization-form', context: 'HeaderDesktop' -%}
+  </div>
+  {%- endif -%}
+</caviera-header>
+
+<div id="caviera-mobile-nav" class="caviera-mobile-nav" hidden>
+  <div class="caviera-mobile-nav__head container">
+    <span class="caviera-mobile-nav__mark">{%- render 'caviera-house-seal', mode: 'light', width: 40, alt: '' -%}</span>
+    <button type="button" class="caviera-mobile-nav__close" data-caviera-menu-close aria-label="{{ 'general.accessibility.close_menu' | t }}">
+      {% render 'icon', name: 'close' %}
+    </button>
+  </div>
+  {%- if menu != blank -%}
+  <nav class="caviera-mobile-nav__nav container" aria-label="{{ 'sections.header.menu' | t }}">
+    <ul>
+      {%- for link in menu.links -%}
+        <li class="caviera-mobile-nav__item">
+          {%- if link.links != blank -%}
+            <button type="button" class="caviera-mobile-nav__toggle" aria-expanded="false">
+              {{ link.title }}
+              {% render 'icon', name: 'chevron-down' %}
+            </button>
+            <ul class="caviera-mobile-nav__submenu" hidden>
+              {%- for child in link.links -%}
+                <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+              {%- endfor -%}
+            </ul>
+          {%- else -%}
+            <a href="{{ link.url }}">{{ link.title }}</a>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+  {%- endif -%}
+
+  {%- liquid
+    assign has_multiple_markets = false
+    if localization.available_countries.size > 1 or localization.available_languages.size > 1
+      assign has_multiple_markets = true
+    endif
+    assign has_social = false
+    if settings.social_instagram != blank or settings.social_pinterest != blank or settings.social_facebook != blank or settings.social_tiktok != blank or settings.social_youtube != blank
+      assign has_social = true
+    endif
+    assign show_mobile_localization = false
+    if section.settings.enable_country_selector and has_multiple_markets
+      assign show_mobile_localization = true
+    endif
+    assign show_mobile_utility = false
+    if section.settings.mobile_secondary_menu != blank or has_social or show_mobile_localization
+      assign show_mobile_utility = true
+    endif
+  -%}
+  {%- if show_mobile_utility -%}
+    <div class="caviera-mobile-nav__utility container">
+      {%- if section.settings.mobile_secondary_menu != blank -%}
+        <nav class="caviera-mobile-nav__secondary" aria-label="{{ 'sections.header.client_services' | t }}">
+          <ul>
+            {%- for link in section.settings.mobile_secondary_menu.links -%}
+              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+      {%- if has_social -%}
+        <div class="caviera-mobile-nav__social">
+          {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
+          {%- if settings.social_pinterest != blank -%}<a href="{{ settings.social_pinterest }}" aria-label="Pinterest">{% render 'icon', name: 'pinterest' %}</a>{%- endif -%}
+          {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>{%- endif -%}
+          {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>{%- endif -%}
+          {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>{%- endif -%}
+        </div>
+      {%- endif -%}
+      {%- if show_mobile_localization -%}
+        <div class="caviera-mobile-nav__localization">
+          {%- render 'localization-form', context: 'HeaderMobile' -%}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+<div class="caviera-mobile-nav__scrim" data-caviera-menu-close hidden></div>
+
+<script src="{{ 'caviera-header.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "link_list", "id": "main_menu", "label": "Menu" },
+    { "type": "checkbox", "id": "transparent_over_hero", "label": "Transparent over hero on homepage", "default": true },
+    { "type": "checkbox", "id": "sticky_header", "label": "Sticky header on scroll", "default": true },
+    {
+      "type": "select", "id": "sticky_logo_mode", "label": "Sticky logo mode", "default": "seal",
+      "options": [
+        { "value": "wordmark", "label": "Keep full wordmark" },
+        { "value": "seal", "label": "Transition to House Seal (recommended)" }
+      ]
+    },
+    {
+      "type": "select", "id": "logo_scheme", "label": "Logo colour version", "default": "light",
+      "info": "Match this to the header's actual background. \"For light backgrounds\" shows the dark/obsidian wordmark (correct for the default solid Warm Bone header bar); \"For dark backgrounds\" shows the bone-coloured wordmark, for a header left transparent over a dark hero image.",
+      "options": [
+        { "value": "light", "label": "For light backgrounds" },
+        { "value": "dark", "label": "For dark backgrounds" }
+      ]
+    },
+    { "type": "range", "id": "logo_width_desktop", "label": "Desktop wordmark width", "min": 160, "max": 320, "step": 10, "default": 220, "unit": "px" },
+    { "type": "range", "id": "logo_width_mobile", "label": "Mobile seal width", "min": 32, "max": 56, "step": 2, "default": 40, "unit": "px" },
+    { "type": "checkbox", "id": "enable_search", "label": "Show search", "default": true },
+    { "type": "checkbox", "id": "enable_account", "label": "Show account", "default": true },
+    { "type": "checkbox", "id": "enable_country_selector", "label": "Show country/language selector", "default": false },
+    { "type": "header", "content": "Mega menu" },
+    { "type": "image_picker", "id": "megamenu_image", "label": "Default editorial image", "info": "Shown in every mega menu that has no matching \"Mega menu feature\" block below." },
+    { "type": "header", "content": "Mobile menu" },
+    { "type": "link_list", "id": "mobile_secondary_menu", "label": "Client services menu (optional)", "info": "A short secondary list shown below the main mobile menu — e.g. Contact, FAQ, Bespoke. Social links and the localization control (if enabled above) appear alongside it automatically when configured." }
+  ],
+  "blocks": [
+    {
+      "type": "megamenu_feature",
+      "name": "Mega menu feature",
+      "settings": [
+        { "type": "paragraph", "content": "Shopify menus have no way to attach a block directly to one item, so this matches by title instead — enter the exact top-level menu item title (e.g. \"Jewellery\") this feature should appear under." },
+        { "type": "text", "id": "match_title", "label": "Menu item title to match" },
+        {
+          "type": "select", "id": "feature_type", "label": "Feature type", "default": "image",
+          "options": [
+            { "value": "image", "label": "Custom image" },
+            { "value": "collection", "label": "Featured collection" },
+            { "value": "article", "label": "Featured article" }
+          ]
+        },
+        { "type": "collection", "id": "collection", "label": "Collection (when feature type is Collection)" },
+        { "type": "article", "id": "article", "label": "Article (when feature type is Article)" },
+        { "type": "image_picker", "id": "image", "label": "Image", "info": "Required for Custom image; optional override for Collection/Article (their own featured image is used otherwise)." }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,60 @@
+{%- comment -%}
+  Featured collection grid — a standard, reliable product grid (2 columns mobile, 3–4 desktop).
+  For the non-standard "one focused product + navigable rail" presentation, see
+  sections/caviera-signature-products.liquid instead — these are deliberately two separate
+  sections, not one section wearing two layouts, since the two patterns behave quite differently.
+
+  CRITICAL FIX (see docs/final-caviera-consolidated-audit.md): this used to fall back to
+  `collections.all` whenever no collection was selected, silently surfacing the entire legacy
+  catalogue (~344 products) under a curated-sounding heading like "New arrivals." There is now no
+  catalogue fallback: with no collection selected (or an empty one), the whole section — heading
+  included — stays out of the published page entirely; only the Theme Editor sees a note naming
+  the required action. See docs/merchant-actions-required.md.
+{%- endcomment -%}
+{%- liquid
+  assign col = collections[section.settings.collection]
+  assign products = col.products
+-%}
+{%- if products.size > 0 -%}
+  <section class="caviera-section caviera-featured-collection">
+    <div class="container caviera-featured-collection__head" data-reveal>
+      <div>
+        {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+      </div>
+      {%- if col.url -%}
+        <a href="{{ col.url }}" class="link-underline">{{ section.settings.view_all_text | default: 'View all' }}</a>
+      {%- endif -%}
+    </div>
+    <div class="caviera-product-grid caviera-product-grid--{{ section.settings.columns_desktop }} container--full">
+      {%- for product in products limit: section.settings.product_limit -%}
+        {%- render 'product-card', product: product, image_ratio: settings.card_image_ratio -%}
+      {%- endfor -%}
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <section class="caviera-section caviera-featured-collection">
+    <div class="container"><div class="caviera-editor-note">Select a collection with products above — this section stays hidden from customers until then. It no longer falls back to the full catalogue.</div></div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Featured collection",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "New arrivals" },
+    { "type": "collection", "id": "collection", "label": "Collection", "info": "Required to publish this section — it stays hidden from customers until a collection with products is chosen. Never falls back to the full catalogue." },
+    { "type": "range", "id": "product_limit", "label": "Product limit", "min": 4, "max": 16, "step": 4, "default": 8 },
+    {
+      "type": "select", "id": "columns_desktop", "label": "Desktop columns", "default": "4",
+      "options": [
+        { "value": "3", "label": "3 columns" },
+        { "value": "4", "label": "4 columns" }
+      ]
+    },
+    { "type": "text", "id": "view_all_text", "label": "View-all link text", "default": "View all" }
+  ],
+  "presets": [{ "name": "Featured collection" }]
+}
+{% endschema %}

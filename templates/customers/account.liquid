@@ -1,0 +1,42 @@
+<div class="caviera-page container container--narrow">
+  <h1 class="heading-h1">{{ 'customer.account.title' | t }}</h1>
+  <p class="body-text caviera-customer__meta">{{ 'customer.account.logged_in_as' | t: email: customer.email }}</p>
+
+  <div class="caviera-account__actions">
+    <a href="{{ routes.account_addresses_url }}" class="link-underline">{{ 'customer.account.view_addresses' | t }}</a>
+    {%- comment -%}
+      "customer_logout" is not a registered Shopify {% form %} tag type — logout is a plain GET
+      request to a dedicated route, not a form submission (confirmed against the same live
+      valid-types list that caught the predictive_search and product-form issues during hosted QA).
+    {%- endcomment -%}
+    <a href="{{ routes.account_logout_url }}" class="link-underline">{{ 'customer.log_out' | t }}</a>
+  </div>
+
+  <h2 class="heading-h3">{{ 'customer.orders.title' | t }}</h2>
+  {%- if customer.orders.size > 0 -%}
+    <table class="caviera-cart-page__table caviera-customer__table">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'customer.orders.order_number' | t }}</th>
+          <th scope="col">{{ 'customer.orders.date' | t }}</th>
+          <th scope="col">{{ 'customer.orders.payment_status' | t }}</th>
+          <th scope="col">{{ 'customer.orders.fulfillment_status' | t }}</th>
+          <th scope="col">{{ 'customer.orders.total' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for order in customer.orders -%}
+          <tr class="caviera-cart-page__row">
+            <td data-label="{{ 'customer.orders.order_number' | t }}"><a href="{{ order.customer_url }}">{{ order.name }}</a></td>
+            <td data-label="{{ 'customer.orders.date' | t }}">{{ order.created_at | date: '%B %d, %Y' }}</td>
+            <td data-label="{{ 'customer.orders.payment_status' | t }}">{{ order.financial_status_label }}</td>
+            <td data-label="{{ 'customer.orders.fulfillment_status' | t }}">{{ order.fulfillment_status_label }}</td>
+            <td data-label="{{ 'customer.orders.total' | t }}">{{ order.total_price | money }}</td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+    </table>
+  {%- else -%}
+    <p class="body-text caviera-customer__meta">{{ 'customer.orders.none' | t }}</p>
+  {%- endif -%}
+</div>

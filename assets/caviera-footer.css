@@ -1,0 +1,106 @@
+/* CAVIERA Grand Theme 2026 — Footer */
+
+/* Height: no min-height/fixed-height anywhere in this file — the footer has always been purely
+   content-driven. The previous "too much empty Obsidian space" was a direct consequence of the
+   navigation grid having nothing to show; with real content (formal signature + navigation +
+   utility row) now always present, natural height grows to fit it without any explicit floor. */
+.caviera-footer { padding-block: calc(var(--section-spacing) * 0.75) calc(var(--section-spacing) * 0.35); }
+
+/* Formal signature — the footer's own opening moment (Master Signature + heading + statement),
+   centred and restrained rather than a repeat of the homepage's closing section above it. */
+.caviera-footer__signature { text-align: center; padding-bottom: clamp(32px, 5vw, 56px); }
+.caviera-footer__signature-heading { margin-bottom: 24px; }
+.caviera-footer__signature-mark { display: flex; justify-content: center; }
+.caviera-footer__signature .caviera-footer__statement { margin: 20px auto 0; max-width: 46ch; color: var(--text-muted); }
+
+/* Thin Rhodium boundary — marks the seam between the signature/nav/utility bands without a thick
+   border or card-like separation. */
+.caviera-footer__rule { display: block; height: 1px; background: var(--caviera-rhodium); opacity: 0.35; }
+
+.caviera-footer__top { padding-block: clamp(40px, 6vw, 64px); }
+
+/* Navigation grid — auto-fit redistributes evenly across however many of the four columns
+   actually have content (a merchant menu or a detected fallback — see the has_*_menu/
+   *_has_fallback guards in the Liquid); no column-count tracking needed here. A lone remaining
+   column gets a sensible width rather than stretching edge to edge, matching "1 menu: 1 restrained
+   column" from the brief. */
+.caviera-footer__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 220px));
+  gap: 32px 48px;
+}
+.caviera-footer__column-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.caviera-footer__column-list a { font-size: 0.875rem; color: var(--text-muted); }
+.caviera-footer__column-list a:hover { color: var(--text-primary); }
+
+.caviera-footer__column-toggle {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  padding-right: 24px;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  /* The theme's global button reset sets cursor: pointer unconditionally — override back to
+     default here since this button is genuinely inert at desktop (no click handler is attached
+     there; see caviera-footer.js), and a pointer cursor would suggest otherwise. Set back to
+     pointer only within the mobile media query below, where it's real. */
+  cursor: default;
+}
+/* Plus/minus accordion icon — mobile only. At desktop this whole rule set is removed by the media
+   query and the button reads as a plain column heading, with no toggle affordance shown — the
+   accompanying JS also never attaches a click handler there (see caviera-footer.js), so the
+   inert appearance matches inert behaviour. */
+@media (max-width: 899px) {
+  .caviera-footer__column-toggle { cursor: pointer; }
+  .caviera-footer__column-toggle::before,
+  .caviera-footer__column-toggle::after {
+    content: "";
+    position: absolute;
+    right: 7px; top: 50%;
+    background: currentColor;
+    transform: translate(50%, -50%);
+  }
+  .caviera-footer__column-toggle::before { width: 10px; height: 1px; }
+  .caviera-footer__column-toggle::after {
+    width: 1px; height: 10px;
+    transition: transform var(--motion-fast) var(--ease-caviera);
+  }
+  .caviera-footer__column-toggle[aria-expanded="true"]::after { transform: translate(50%, -50%) scaleY(0); }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .caviera-footer__column-toggle::after { transition: none; }
+}
+
+.caviera-footer__newsletter { margin-top: clamp(32px, 5vw, 56px); }
+/* Base row/input rule lives in caviera-components.css — this only overrides context-specific layout. */
+.caviera-newsletter-form__row { margin-top: 16px; max-width: 360px; }
+.caviera-footer__consent { font-size: 0.75rem; color: var(--text-muted); margin-top: 10px; max-width: 340px; }
+
+/* Bottom utility row — the smaller, secondary wordmark plus social/localization/copyright/payment,
+   with the tiny House Seal as the final closing mark. Wraps on narrow desktop/tablet rather than
+   overflowing; stacks cleanly on mobile via the wrap + centred alignment below. */
+.caviera-footer__bottom {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 24px;
+  flex-wrap: wrap;
+}
+.caviera-footer__bottom-mark { flex-shrink: 0; max-width: 140px; line-height: 0; }
+.caviera-footer__social { display: flex; gap: 16px; }
+.caviera-footer__social svg { width: 18px; height: 18px; }
+/* --text-primary is reassigned per data-scheme (see caviera-base.css), so this hover always has
+   safe contrast against the footer's own chosen background — a hardcoded Cinnabar hover would
+   risk becoming invisible if a merchant ever chose the Cinnabar colour scheme for this section. */
+.caviera-footer__social a:hover { color: var(--text-primary); }
+.caviera-footer__copyright { font-size: 0.75rem; color: var(--text-muted); }
+.caviera-footer__payment { display: flex; gap: 8px; }
+.caviera-footer__payment img, .caviera-footer__payment svg { height: 20px; width: auto; }
+.caviera-footer__seal { margin-left: auto; flex-shrink: 0; }
+@media (max-width: 599px) {
+  .caviera-footer__bottom { justify-content: center; text-align: center; }
+  .caviera-footer__seal { margin-left: 0; }
+}

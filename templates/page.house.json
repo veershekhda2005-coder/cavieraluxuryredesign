@@ -1,0 +1,88 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "caviera-page-hero",
+      "settings": {
+        "eyebrow": "The House",
+        "heading": "Composure made visible.",
+        "intro": "<p>A modern jewellery house — architectural in form, ceremonial in detail.</p>",
+        "color_scheme": "obsidian",
+        "height": "cinematic"
+      }
+    },
+    "opening-signature": {
+      "type": "caviera-house-signature",
+      "settings": { "color_scheme": "obsidian", "line": "" }
+    },
+    "statement": {
+      "type": "caviera-house-statement",
+      "settings": {
+        "eyebrow": "Brand idea",
+        "heading": "Grace without display.",
+        "body": "<p>Rarity without explanation. CAVIERA is shaped by four ideas that govern every object we make.</p>"
+      }
+    },
+    "pillars": {
+      "type": "caviera-craftsmanship",
+      "blocks": {
+        "p-1": { "type": "chapter", "settings": { "title": "Rarity", "body": "<p>Unexpected, never ornamental for its own sake.</p>" } },
+        "p-2": { "type": "chapter", "settings": { "title": "Precision", "body": "<p>Every cut, line and word earns its place.</p>" } },
+        "p-3": { "type": "chapter", "settings": { "title": "Ritual", "body": "<p>Discovery is paced, tactile and memorable.</p>" } },
+        "p-4": { "type": "chapter", "settings": { "title": "Longevity", "body": "<p>Objects and identity are made to age well.</p>" } }
+      },
+      "block_order": ["p-1", "p-2", "p-3", "p-4"],
+      "settings": { "eyebrow": "House pillars", "heading": "Four ideas, one house.", "show_hallmark": true }
+    },
+    "seal-story": {
+      "type": "caviera-editorial-media",
+      "settings": {
+        "media_source": "house_seal",
+        "eyebrow": "The House Seal",
+        "heading": "A mark, held in reserve.",
+        "body": "<p>The angular oryx-head seal is CAVIERA's most formal signature — used sparingly, never as decoration.</p>",
+        "image_position": "left"
+      }
+    },
+    "mascot-story": {
+      "type": "caviera-editorial-media",
+      "settings": {
+        "media_source": "oryx",
+        "eyebrow": "The Living Oryx",
+        "heading": "Composure, in motion.",
+        "body": "<p>The full-bodied CAVIERA oryx moves with long sight and decisive intent — rarity without fragility.</p>",
+        "image_position": "right"
+      }
+    },
+    "material-language": {
+      "type": "caviera-editorial-media",
+      "settings": {
+        "eyebrow": "Visual language",
+        "heading": "Material, light and form.",
+        "image_position": "left"
+      }
+    },
+    "signature": {
+      "type": "caviera-house-signature",
+      "disabled": true,
+      "settings": { "line": "Sculpted for a lifetime." }
+    },
+    "collection-cta": {
+      "type": "caviera-bespoke-banner",
+      "settings": {
+        "heading": "Discover the collection.",
+        "cta_text": "Shop the collection",
+        "cta_url": "/collections/all"
+      }
+    }
+  },
+  "order": ["hero", "opening-signature", "statement", "pillars", "seal-story", "mascot-story", "material-language", "signature", "collection-cta"]
+}

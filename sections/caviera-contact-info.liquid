@@ -1,0 +1,103 @@
+{%- comment -%}
+  Contact page: a native Shopify contact form plus merchant-configured detail rows (email, phone,
+  hours) that each hide individually when left blank — nothing here is invented. Social links reuse
+  the existing global settings rather than duplicating them. An appointment CTA is optional and
+  links to the Bespoke page rather than implying ordinary contact requires an appointment.
+{%- endcomment -%}
+<section class="caviera-section caviera-contact">
+  <div class="container container--narrow">
+    {%- if section.settings.intro != blank -%}
+      <div class="body-text--wide caviera-contact__intro">{{ section.settings.intro }}</div>
+    {%- endif -%}
+
+    {%- liquid
+      assign has_details = false
+      if section.settings.email != blank or section.settings.phone != blank or section.settings.hours != blank
+        assign has_details = true
+      endif
+    -%}
+    {%- if has_details -%}
+      <dl class="caviera-contact__details">
+        {%- if section.settings.email != blank -%}
+          <div class="caviera-contact__detail">
+            <dt class="label">{{ 'templates.contact.form.email' | t }}</dt>
+            <dd><a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a></dd>
+          </div>
+        {%- endif -%}
+        {%- if section.settings.phone != blank -%}
+          <div class="caviera-contact__detail">
+            <dt class="label">{{ 'templates.contact.form.phone' | t }}</dt>
+            <dd><a href="tel:{{ section.settings.phone }}">{{ section.settings.phone }}</a></dd>
+          </div>
+        {%- endif -%}
+        {%- if section.settings.hours != blank -%}
+          <div class="caviera-contact__detail">
+            <dt class="label">{{ 'templates.contact.hours' | t }}</dt>
+            <dd>{{ section.settings.hours }}</dd>
+          </div>
+        {%- endif -%}
+      </dl>
+    {%- endif -%}
+
+    {%- if section.settings.show_social -%}
+      <div class="caviera-contact__social">
+        {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
+        {%- if settings.social_pinterest != blank -%}<a href="{{ settings.social_pinterest }}" aria-label="Pinterest">{% render 'icon', name: 'pinterest' %}</a>{%- endif -%}
+        {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>{%- endif -%}
+        {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>{%- endif -%}
+        {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- form 'contact', class: 'caviera-contact__form' -%}
+      {%- if form.posted_successfully? -%}
+        <p class="form-status" data-state="success">{{ 'templates.contact.form.success' | t }}</p>
+      {%- elsif form.errors -%}
+        <p class="form-status" data-state="error">{{ 'templates.contact.form.error' | t }}</p>
+        <ul class="caviera-contact__errors">
+          {%- for field in form.errors -%}
+            <li>{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      <div class="field">
+        <label for="ContactName">{{ 'templates.contact.form.name' | t }}</label>
+        <input type="text" id="ContactName" name="contact[name]" autocomplete="name" required value="{{ form.name }}">
+      </div>
+      <div class="field">
+        <label for="ContactEmail">{{ 'templates.contact.form.email' | t }}</label>
+        <input type="email" id="ContactEmail" name="contact[email]" autocomplete="email" required value="{{ form.email }}">
+      </div>
+      <div class="field">
+        <label for="ContactMessage">{{ 'templates.contact.form.message' | t }}</label>
+        <textarea id="ContactMessage" name="contact[body]" rows="5" required>{{ form.body }}</textarea>
+      </div>
+
+      <button type="submit" class="btn btn--primary">{{ 'templates.contact.form.submit' | t }}</button>
+    {%- endform -%}
+
+    {%- if section.settings.show_appointment_cta -%}
+      <div class="caviera-contact__appointment">
+        <p class="body-text">{{ 'templates.contact.appointment_intro' | t }}</p>
+        <a href="{{ section.settings.appointment_url | default: '/pages/bespoke' }}" class="link-underline">{{ 'templates.contact.appointment_link' | t }}</a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact details & form",
+  "settings": [
+    { "type": "richtext", "id": "intro", "label": "Introduction" },
+    { "type": "text", "id": "email", "label": "Email (optional)", "info": "Shown only when filled in." },
+    { "type": "text", "id": "phone", "label": "Telephone (optional)" },
+    { "type": "richtext", "id": "hours", "label": "Hours (optional)" },
+    { "type": "checkbox", "id": "show_social", "label": "Show social links", "default": true },
+    { "type": "checkbox", "id": "show_appointment_cta", "label": "Show bespoke-appointment link", "default": false },
+    { "type": "url", "id": "appointment_url", "label": "Appointment page link" }
+  ],
+  "presets": [{ "name": "Contact details & form" }]
+}
+{% endschema %}

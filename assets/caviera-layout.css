@@ -1,0 +1,73 @@
+/* CAVIERA Grand Theme 2026 — Layout primitives */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter-desktop);
+}
+@media (max-width: 599px) {
+  .container { padding-inline: var(--gutter-mobile); }
+}
+
+.container--narrow { max-width: var(--container-narrow); }
+.container--full { max-width: none; padding-inline: 0; }
+
+.caviera-section {
+  padding-block: var(--section-spacing);
+  position: relative;
+}
+.caviera-section--tight { padding-block: calc(var(--section-spacing) * 0.55); }
+.caviera-section[hidden] { display: none; }
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter-mobile);
+}
+@media (min-width: 600px) {
+  .grid-12 { gap: 24px; }
+}
+@media (min-width: 1024px) {
+  .grid-12 { gap: 32px; }
+}
+
+.stack { display: flex; flex-direction: column; }
+.cluster { display: flex; flex-wrap: wrap; align-items: center; }
+
+.eyebrow {
+  display: block;
+  font-size: var(--step-eyebrow);
+  letter-spacing: var(--nav-tracking);
+  text-transform: uppercase;
+  color: var(--caviera-cinnabar);
+  margin-bottom: 0.75em;
+}
+[data-scheme="cinnabar"] .eyebrow,
+[data-scheme="obsidian"] .eyebrow { color: var(--caviera-rhodium); }
+
+.heading-display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: var(--line-height-display);
+  font-size: var(--step-display);
+  letter-spacing: -0.01em;
+}
+.heading-h1 { font-family: var(--font-display); font-weight: 300; font-size: var(--step-h1); line-height: var(--line-height-display); }
+.heading-h2 { font-family: var(--font-display); font-weight: 300; font-size: var(--step-h2); line-height: var(--line-height-display); }
+.heading-h3 { font-family: var(--font-display); font-weight: 400; font-size: var(--step-h3); line-height: 1.2; }
+
+.body-text { max-width: 42ch; line-height: var(--line-height-body); }
+.body-text--wide { max-width: 60ch; }
+
+.label {
+  font-size: 0.75rem;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+}
+
+.sr-only { position: absolute !important; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+@media (min-width: 320px) and (max-width: 1920px) {
+  html { overflow-x: hidden; }
+}

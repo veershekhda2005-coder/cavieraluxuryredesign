@@ -1,0 +1,47 @@
+{%- comment -%} Article reading template — real content only, related articles, share, back-to-journal. {%- endcomment -%}
+{%- render 'structured-data-article' -%}
+<article class="caviera-article container container--narrow">
+  {%- render 'breadcrumbs' -%}
+  <header class="caviera-article__header">
+    {%- if blog.title != blank -%}<a href="{{ blog.url }}" class="eyebrow caviera-article__category">{{ blog.title }}</a>{%- endif -%}
+    <h1 class="heading-h1">{{ article.title }}</h1>
+    <span class="label caviera-article__meta">
+      {{ article.published_at | date: '%B %d, %Y' }}{% if article.author != blank %} &middot; {{ article.author }}{% endif %}
+    </span>
+  </header>
+
+  {%- if article.image -%}
+    <div class="caviera-article__image">
+      <img
+        src="{{ article.image | image_url: width: 1400 }}"
+        srcset="{{ article.image | image_url: width: 700 }} 700w, {{ article.image | image_url: width: 1400 }} 1400w"
+        sizes="(min-width: 900px) 860px, 100vw"
+        width="{{ article.image.width }}" height="{{ article.image.height }}"
+        alt="{{ article.image.alt | default: article.title | escape }}"
+        loading="eager"
+      >
+    </div>
+  {%- endif -%}
+
+  <div class="caviera-article__body body-text--wide">
+    {{ article.content }}
+  </div>
+
+  <div class="caviera-article__footer">
+    <button type="button" class="link-underline" data-share-button data-share-url="{{ shop.url }}{{ article.url }}" data-share-title="{{ article.title | escape }}">
+      {{ 'general.share.share' | t }}
+    </button>
+    <a href="{{ blog.url }}" class="link-underline">{{ 'templates.article.back_to_journal' | t }}</a>
+  </div>
+
+  {%- if blog.next_article or blog.previous_article -%}
+    <nav class="caviera-article__adjacent" aria-label="More from the Journal">
+      {%- if blog.previous_article -%}<a href="{{ blog.previous_article.url }}">&larr; {{ blog.previous_article.title }}</a>{%- endif -%}
+      {%- if blog.next_article -%}<a href="{{ blog.next_article.url }}">{{ blog.next_article.title }} &rarr;</a>{%- endif -%}
+    </nav>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{ "name": "Article" }
+{% endschema %}

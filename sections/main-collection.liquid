@@ -1,0 +1,152 @@
+{%- comment -%}
+  Main collection template: editorial header, native filters/sort, responsive grid, pagination,
+  empty state.
+
+  Header media priority: dedicated desktop/mobile campaign image (this section's own settings),
+  never a fallback to a product or another section's image. With no image, the header is a clean
+  Cinnabar/Bone/Obsidian colour field at a compact height — never a giant reserved empty area.
+{%- endcomment -%}
+{%- liquid
+  assign header_image = section.settings.image_desktop
+  assign header_image_mobile = section.settings.image_mobile | default: section.settings.image_desktop
+-%}
+<section class="caviera-collection">
+  <header
+    class="caviera-collection__header{% if header_image != blank %} caviera-collection__header--media{% endif %}"
+    data-scheme="{{ section.settings.color_scheme }}"
+    data-height="{{ section.settings.header_height }}"
+    data-align="{{ section.settings.text_align }}"
+  >
+    {%- if header_image != blank -%}
+      <div class="caviera-collection__header-media" aria-hidden="true">
+        <img
+          class="caviera-collection__header-media-el caviera-collection__header-media-el--desktop"
+          src="{{ header_image | image_url: width: 1920 }}"
+          srcset="{{ header_image | image_url: width: 960 }} 960w, {{ header_image | image_url: width: 1920 }} 1920w"
+          sizes="100vw"
+          width="{{ header_image.width }}" height="{{ header_image.height }}"
+          alt=""
+          loading="eager"
+          style="object-position: {{ header_image.presentation.focal_point | default: 'center' }};"
+        >
+        {%- if header_image_mobile != blank -%}
+          <img
+            class="caviera-collection__header-media-el caviera-collection__header-media-el--mobile"
+            src="{{ header_image_mobile | image_url: width: 900 }}"
+            srcset="{{ header_image_mobile | image_url: width: 600 }} 600w, {{ header_image_mobile | image_url: width: 900 }} 900w"
+            sizes="100vw"
+            width="{{ header_image_mobile.width }}" height="{{ header_image_mobile.height }}"
+            alt=""
+            loading="eager"
+            style="object-position: {{ header_image_mobile.presentation.focal_point | default: 'center' }};"
+          >
+        {%- endif -%}
+        <div class="caviera-collection__header-overlay"></div>
+      </div>
+    {%- endif -%}
+    <div class="container caviera-collection__header-inner">
+      {%- render 'breadcrumbs' -%}
+      <h1 class="heading-h1">{{ collection.title }}</h1>
+      {%- if collection.description != blank -%}
+        <div class="body-text--wide caviera-collection__description">{{ collection.description }}</div>
+      {%- endif -%}
+      <p class="label caviera-collection__count">
+        {%- if collection.products_count == 1 -%}
+          {{ 'collections.general.product_count.one' | t: count: collection.products_count }}
+        {%- else -%}
+          {{ 'collections.general.product_count.other' | t: count: collection.products_count }}
+        {%- endif -%}
+      </p>
+    </div>
+  </header>
+
+  {%- paginate collection.products by section.settings.products_per_page -%}
+    {%- render 'facets', results: collection -%}
+
+    {%- if collection.products.size > 0 -%}
+      <div class="container caviera-product-grid caviera-product-grid--{{ section.settings.columns_desktop }}" data-collection-grid>
+        {%- for product in collection.products -%}
+          {%- render 'product-card', product: product -%}
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="container caviera-collection__empty">
+        <p class="body-text">{{ 'collections.general.empty' | t }}</p>
+        <div class="caviera-collection__empty-actions">
+          <a href="{{ collection.url }}" class="link-underline">{{ 'collections.general.clear_filters' | t }}</a>
+          {%- if settings.predictive_search_enabled -%}
+            <a href="{{ routes.search_url }}" class="link-underline">{{ 'collections.general.search_instead' | t }}</a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="container">
+      {%- render 'pagination', paginate: paginate -%}
+    </div>
+  {%- endpaginate -%}
+
+  {%- if section.settings.editorial_heading != blank or section.settings.editorial_body != blank -%}
+    <div class="container container--narrow caviera-collection__editorial" data-reveal>
+      {%- if section.settings.editorial_heading != blank -%}<h2 class="heading-h3">{{ section.settings.editorial_heading }}</h2>{%- endif -%}
+      {%- if section.settings.editorial_body != blank -%}<div class="body-text">{{ section.settings.editorial_body }}</div>{%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.subcollections_menu != blank -%}
+    <nav class="container caviera-collection__subcollections" aria-label="Related collections">
+      <ul>
+        {%- for link in section.settings.subcollections_menu.links -%}
+          <li><a href="{{ link.url }}" class="link-underline">{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+  {%- endif -%}
+</section>
+
+<script src="{{ 'caviera-facets.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Collection pages",
+  "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Header colour (used only when no image is set below)", "default": "bone",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    {
+      "type": "select", "id": "text_align", "label": "Text alignment", "default": "center",
+      "options": [
+        { "value": "center", "label": "Centred" },
+        { "value": "left", "label": "Left-aligned" }
+      ]
+    },
+    {
+      "type": "select", "id": "header_height", "label": "Height (only when an image is set below)", "default": "compact",
+      "options": [
+        { "value": "compact", "label": "Compact" },
+        { "value": "cinematic", "label": "Cinematic" }
+      ]
+    },
+    { "type": "image_picker", "id": "image_desktop", "label": "Desktop image (optional)", "info": "No marketplace badges, review stars or promotional text. Set a focal point on the image itself in Shopify Admin to control cropping." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Mobile image (falls back to desktop image)" },
+    {
+      "type": "select", "id": "columns_desktop", "label": "Desktop columns", "default": "4",
+      "options": [
+        { "value": "3", "label": "3 columns" },
+        { "value": "4", "label": "4 columns" }
+      ]
+    },
+    { "type": "range", "id": "products_per_page", "label": "Products per page", "min": 8, "max": 48, "step": 4, "default": 24 },
+    { "type": "header", "content": "Editorial content" },
+    { "type": "text", "id": "editorial_heading", "label": "Heading" },
+    { "type": "richtext", "id": "editorial_body", "label": "Body" },
+    { "type": "header", "content": "Subcollections" },
+    { "type": "link_list", "id": "subcollections_menu", "label": "Related collections menu" }
+  ]
+}
+{% endschema %}

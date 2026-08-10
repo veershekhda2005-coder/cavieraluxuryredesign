@@ -1,0 +1,60 @@
+{%- comment -%}
+  Quiet trust signals. Fully merchant-editable — nothing is hard-coded globally, no loud badges.
+{%- endcomment -%}
+{%- liquid
+  assign has_items = false
+  for block in section.blocks
+    if block.settings.title != blank
+      assign has_items = true
+    endif
+  endfor
+-%}
+{%- if has_items -%}
+<section class="caviera-section caviera-section--tight caviera-services">
+  <div class="container">
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h3 caviera-services__heading" data-reveal>{{ section.settings.heading }}</h2>{%- endif -%}
+    <ul class="caviera-services__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.title != blank -%}
+          <li class="caviera-services__item" data-reveal {{ block.shopify_attributes }}>
+            <h3 class="label">{{ block.settings.title }}</h3>
+            {%- if block.settings.body != blank -%}<p class="body-text">{{ block.settings.body }}</p>{%- endif -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+{%- elsif request.design_mode -%}
+<section class="caviera-section caviera-section--tight"><div class="container"><div class="caviera-editor-note">Add service blocks (e.g. Made to order, Tracked delivery, Client support).</div></div></section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "House services",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "In service of the object" }
+  ],
+  "blocks": [
+    {
+      "type": "service",
+      "name": "Service",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "textarea", "id": "body", "label": "Description" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "House services",
+      "blocks": [
+        { "type": "service", "settings": { "title": "Made to order" } },
+        { "type": "service", "settings": { "title": "Tracked delivery" } },
+        { "type": "service", "settings": { "title": "Client support" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

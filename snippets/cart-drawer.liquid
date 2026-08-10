@@ -1,0 +1,95 @@
+{%- comment -%}
+  Cart drawer: opens without page reload, focus trap, Escape close, focus restoration, accessible
+  quantity controls, ARIA live updates. Checkout remains fully Shopify-hosted.
+{%- endcomment -%}
+{%- if settings.cart_drawer_enabled -%}
+<div id="caviera-cart-drawer" class="caviera-cart-drawer" role="dialog" aria-modal="true" aria-label="{{ 'general.cart.title' | t }}" hidden>
+  <div class="caviera-cart-drawer__scrim" data-cart-close></div>
+  <div class="caviera-cart-drawer__panel">
+    <div class="caviera-cart-drawer__head">
+      <h2 class="heading-h3">{{ 'general.cart.title' | t }}</h2>
+      <button type="button" class="caviera-cart-drawer__close" data-cart-close aria-label="{{ 'general.accessibility.close' | t }}">
+        {% render 'icon', name: 'close' %}
+      </button>
+    </div>
+
+    <div class="caviera-cart-drawer__body" data-cart-items aria-live="polite">
+      {%- if cart.item_count == 0 -%}
+        <div class="caviera-cart-drawer__empty">
+          <p class="body-text">{{ 'general.cart.empty' | t }}</p>
+          <button type="button" class="link-underline" data-cart-close>{{ 'general.cart.empty_action' | t }}</button>
+        </div>
+      {%- else -%}
+        <ul class="caviera-cart-drawer__list">
+          {%- for item in cart.items -%}
+            <li class="caviera-cart-drawer__item" data-cart-item data-line="{{ forloop.index }}">
+              <a href="{{ item.url }}" class="caviera-cart-drawer__item-media">
+                {%- if item.image -%}
+                  <img src="{{ item.image | image_url: width: 160 }}" width="80" height="80" alt="{{ item.image.alt | default: item.title | escape }}" loading="lazy">
+                {%- endif -%}
+              </a>
+              <div class="caviera-cart-drawer__item-info">
+                <a href="{{ item.url }}" class="caviera-cart-drawer__item-title">{{ item.product.title }}</a>
+                {%- unless item.variant.title == 'Default Title' -%}
+                  <p class="label caviera-cart-drawer__item-variant">{{ item.variant.title }}</p>
+                {%- endunless -%}
+                {%- if item.selling_plan_allocation -%}
+                  <p class="label">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+                {%- endif -%}
+                {%- for property in item.properties -%}
+                  {%- unless property.first == blank or property.first.first == '_' -%}
+                    <p class="label">{{ property.first }}: {{ property.last }}</p>
+                  {%- endunless -%}
+                {%- endfor -%}
+                <div class="caviera-cart-drawer__item-row">
+                  <div class="caviera-cart-drawer__qty">
+                    <button type="button" class="caviera-product-form__qty-btn" data-cart-qty-decrease data-line="{{ forloop.index }}" aria-label="{{ 'general.cart.decrease_quantity' | t: title: item.title }}">{% render 'icon', name: 'minus' %}</button>
+                    <span data-cart-qty>{{ item.quantity }}</span>
+                    <button type="button" class="caviera-product-form__qty-btn" data-cart-qty-increase data-line="{{ forloop.index }}" aria-label="{{ 'general.cart.increase_quantity' | t: title: item.title }}">{% render 'icon', name: 'plus' %}</button>
+                  </div>
+                  {%- render 'product-price', variant: item.variant -%}
+                </div>
+              </div>
+              <button type="button" class="caviera-cart-drawer__remove" data-cart-remove data-line="{{ forloop.index }}">
+                {{ 'general.cart.remove' | t }}
+              </button>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    {%- if cart.item_count > 0 -%}
+      <div class="caviera-cart-drawer__footer">
+        <ul class="caviera-cart-drawer__discounts" data-cart-discounts {% if cart.cart_level_discount_applications.size == 0 %}hidden{% endif %}>
+          {%- for discount in cart.cart_level_discount_applications -%}
+            <li>{{ discount.title }}</li>
+          {%- endfor -%}
+        </ul>
+
+        {%- if settings.cart_shipping_message and settings.cart_shipping_threshold > 0 -%}
+          <p class="caviera-cart-drawer__shipping-message" data-shipping-message data-threshold="{{ settings.cart_shipping_threshold | times: 100 }}"></p>
+        {%- endif -%}
+
+        {%- if settings.cart_note_enabled -%}
+          <details class="caviera-cart-drawer__note">
+            <summary class="label">{{ 'general.cart.note' | t }}</summary>
+            <textarea name="note" data-cart-note placeholder="{{ 'general.cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+          </details>
+        {%- endif -%}
+
+        <div class="caviera-cart-drawer__subtotal">
+          <span>{{ 'general.cart.subtotal' | t }}</span>
+          <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+        </div>
+        <p class="label caviera-cart-drawer__tax-note">{{ 'general.cart.taxes_included_shipping_at_checkout' | t }}</p>
+
+        <a href="{{ routes.cart_url }}" class="link-underline">{{ 'general.cart.view_cart' | t }}</a>
+        <a href="{{ routes.cart_url }}/checkout" class="btn btn--primary btn--full">{{ 'general.cart.checkout' | t }}</a>
+      </div>
+    {%- endif -%}
+
+    <div class="visually-hidden" role="status" aria-live="polite" data-cart-status></div>
+  </div>
+</div>
+{%- endif -%}

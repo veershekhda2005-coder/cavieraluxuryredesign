@@ -1,0 +1,264 @@
+{%- comment -%}
+  Editorial statement: controlled negative space, one dominant colour, compact overall height —
+  matched against a merchant-approved visual reference, not an open-ended redesign. "Composure made
+  visible." remains the section's identity. The headline and the short House statement sit side by
+  side on one line of reading (caviera-statement__copy is a two-column grid at desktop, stacked on
+  mobile) rather than stacked as separate paragraphs — this alone recovers most of the vertical
+  space the stacked version used, on top of tightened section/element spacing throughout.
+
+  Palace image: assets/26_oryx_palace_concept.png is the bundled default (approved first-screen
+  House environment image), used only when no Theme Editor image is selected in its place — a real
+  selection there always wins. Same bundled-default-with-override pattern as the hero's own image
+  (see sections/caviera-hero.liquid) — not a product/collection fallback, a deliberate bundled
+  asset. Clearly visible (per an explicit merchant correction — an earlier, much fainter round had
+  made it read as almost vanished) and spans the full section, behind the statement AND the feature
+  columns below it, not just the top portion.
+
+  A House Seal watermark remains available as an alternative when the palace image is switched off
+  (mutually exclusive by design — a large palace plus a large Seal plus the headline would compete).
+
+  content_layout controls what renders under the statement: "pillars" is the original four official
+  House pillars (Rarity / Precision / Ritual / Longevity) — unchanged, and still what The House page
+  uses by not setting this field at all, so it keeps the four-pillar system regardless of what this
+  homepage instance is set to. "features" is three homepage-only editorial columns, matching the
+  approved reference for this specific placement; it does not replace or remove the pillar system,
+  which remains fully intact above in this same file for any instance that wants it.
+
+  The transition band's text matches the eyebrow/heading defaults of sections/caviera-category-
+  reveal.liquid (the very next homepage section) — this is deliberate, not incidental duplication:
+  templates/index.json sets that section's own eyebrow/heading to blank (its markup already
+  guards both with `{% if ... != blank %}`, so nothing further needed there) so the two texts
+  don't both render back to back. No code in caviera-category-reveal.liquid was touched.
+{%- endcomment -%}
+{%- liquid
+  assign mark_mode = 'light'
+  unless section.settings.color_scheme == 'bone'
+    assign mark_mode = 'dark'
+  endunless
+
+  assign palace_image = section.settings.palace_image
+  assign has_palace = false
+  if section.settings.show_palace_image
+    assign has_palace = true
+  endif
+  assign bundled_palace_file = '26_oryx_palace_concept.png'
+
+  assign content_layout = section.settings.content_layout | default: 'pillars'
+
+  assign has_pillars = false
+  if content_layout == 'pillars' and section.settings.show_pillars
+    for i in (1..4)
+      case i
+        when 1
+          if section.settings.pillar_1_title != blank or section.settings.pillar_1_body != blank
+            assign has_pillars = true
+          endif
+        when 2
+          if section.settings.pillar_2_title != blank or section.settings.pillar_2_body != blank
+            assign has_pillars = true
+          endif
+        when 3
+          if section.settings.pillar_3_title != blank or section.settings.pillar_3_body != blank
+            assign has_pillars = true
+          endif
+        when 4
+          if section.settings.pillar_4_title != blank or section.settings.pillar_4_body != blank
+            assign has_pillars = true
+          endif
+      endcase
+    endfor
+  endif
+
+  assign has_features = false
+  if content_layout == 'features' and section.settings.show_features
+    if section.settings.feature_1_title != blank or section.settings.feature_1_body != blank or section.settings.feature_2_title != blank or section.settings.feature_2_body != blank or section.settings.feature_3_title != blank or section.settings.feature_3_body != blank
+      assign has_features = true
+    endif
+  endif
+
+  assign has_transition = false
+  if section.settings.discover_label != blank or section.settings.category_transition_heading != blank
+    assign has_transition = true
+  endif
+-%}
+<section class="caviera-section caviera-statement" data-scheme="{{ section.settings.color_scheme }}">
+  {%- if has_palace -%}
+    <div class="caviera-statement__palace" style="--palace-opacity: {{ section.settings.palace_image_opacity | default: 20 }}%;" aria-hidden="true">
+      {%- if palace_image != blank -%}
+        <img
+          class="caviera-statement__palace-img"
+          src="{{ palace_image | image_url: width: 1600 }}"
+          srcset="{{ palace_image | image_url: width: 800 }} 800w, {{ palace_image | image_url: width: 1200 }} 1200w, {{ palace_image | image_url: width: 1600 }} 1600w, {{ palace_image | image_url: width: 2000 }} 2000w"
+          sizes="100vw"
+          width="{{ palace_image.width }}" height="{{ palace_image.height }}"
+          alt=""
+          loading="lazy"
+        >
+      {%- else -%}
+        {%- comment -%} Bundled default — a plain theme asset, not a transformable Shopify image, so there is one file rather than width variants. {%- endcomment -%}
+        <img class="caviera-statement__palace-img" src="{{ bundled_palace_file | asset_url }}" width="1672" height="941" alt="" loading="lazy">
+      {%- endif -%}
+    </div>
+  {%- elsif section.settings.show_seal_watermark -%}
+    <div class="caviera-statement__watermark" style="--seal-watermark-opacity: {{ section.settings.seal_watermark_opacity | default: 8 }}%;" aria-hidden="true">
+      {%- render 'caviera-house-seal', mode: mark_mode, width: 320, alt: '' -%}
+    </div>
+  {%- endif -%}
+
+  <div class="container container--narrow caviera-statement__inner" data-reveal>
+    <span class="caviera-statement__rule" aria-hidden="true"></span>
+    <div class="caviera-statement__copy">
+      <div class="caviera-statement__heading-col">
+        {%- if section.settings.editorial_label != blank -%}<span class="caviera-statement__label">{{ section.settings.editorial_label }}</span>{%- endif -%}
+        {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="caviera-statement__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+      </div>
+      <div class="caviera-statement__body-col">
+        {%- if section.settings.body != blank -%}<div class="body-text--wide caviera-statement__body">{{ section.settings.body }}</div>{%- endif -%}
+        {%- if section.settings.cta_text != blank -%}
+          <a href="{{ section.settings.cta_url | default: '#' }}" class="link-underline caviera-statement__cta">{{ section.settings.cta_text }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+    {%- if section.settings.show_seal -%}
+      <span class="caviera-statement__seal">{%- render 'caviera-house-seal', mode: mark_mode, width: 48 -%}</span>
+    {%- endif -%}
+  </div>
+
+  {%- if has_features -%}
+    <div class="container caviera-statement__features">
+      <ol class="caviera-statement__feature-list">
+        {%- for i in (1..3) -%}
+          {%- liquid
+            case i
+              when 1
+                assign f_title = section.settings.feature_1_title
+                assign f_body = section.settings.feature_1_body
+              when 2
+                assign f_title = section.settings.feature_2_title
+                assign f_body = section.settings.feature_2_body
+              when 3
+                assign f_title = section.settings.feature_3_title
+                assign f_body = section.settings.feature_3_body
+            endcase
+          -%}
+          {%- if f_title != blank or f_body != blank -%}
+            <li class="caviera-statement__feature">
+              <span class="caviera-statement__feature-number label" aria-hidden="true">0{{ i }}</span>
+              {%- if f_title != blank -%}<h3 class="caviera-statement__feature-title">{{ f_title }}</h3>{%- endif -%}
+              {%- if f_body != blank -%}<p class="caviera-statement__feature-body">{{ f_body }}</p>{%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ol>
+    </div>
+  {%- endif -%}
+
+  {%- if has_pillars -%}
+    <div class="container caviera-statement__pillars">
+      <ol class="caviera-statement__pillar-list">
+        {%- for i in (1..4) -%}
+          {%- liquid
+            case i
+              when 1
+                assign p_title = section.settings.pillar_1_title
+                assign p_body = section.settings.pillar_1_body
+              when 2
+                assign p_title = section.settings.pillar_2_title
+                assign p_body = section.settings.pillar_2_body
+              when 3
+                assign p_title = section.settings.pillar_3_title
+                assign p_body = section.settings.pillar_3_body
+              when 4
+                assign p_title = section.settings.pillar_4_title
+                assign p_body = section.settings.pillar_4_body
+            endcase
+          -%}
+          {%- if p_title != blank or p_body != blank -%}
+            <li class="caviera-statement__pillar">
+              <span class="caviera-statement__pillar-number label" aria-hidden="true">0{{ i }}</span>
+              {%- if p_title != blank -%}<h3 class="caviera-statement__pillar-title">{{ p_title }}</h3>{%- endif -%}
+              {%- if p_body != blank -%}<p class="caviera-statement__pillar-body">{{ p_body }}</p>{%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ol>
+    </div>
+  {%- endif -%}
+
+  {%- if has_transition -%}
+    <div class="container caviera-statement__transition">
+      {%- if section.settings.discover_label != blank -%}<span class="caviera-statement__transition-label eyebrow">{{ section.settings.discover_label }}</span>{%- endif -%}
+      {%- if section.settings.category_transition_heading != blank -%}<h3 class="caviera-statement__transition-heading">{{ section.settings.category_transition_heading }}</h3>{%- endif -%}
+      <span class="caviera-statement__transition-rule" aria-hidden="true"></span>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "House statement",
+  "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",
+      "options": [
+        { "value": "bone", "label": "Warm Bone" },
+        { "value": "cinnabar", "label": "Cinnabar" },
+        { "value": "obsidian", "label": "Obsidian" }
+      ]
+    },
+    { "type": "text", "id": "editorial_label", "label": "Editorial label (optional)", "default": "The House / 01", "info": "A small, restrained label above the statement — e.g. \"The House / 01\" or \"House principle / 01\"." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Composure made visible." },
+    { "type": "richtext", "id": "body", "label": "Body", "default": "<p>CAVIERA is a modern jewellery house shaped by precision, material and ritual.</p>" },
+    { "type": "text", "id": "cta_text", "label": "Action link text (optional)" },
+    { "type": "url", "id": "cta_url", "label": "Action link URL" },
+    { "type": "checkbox", "id": "show_seal", "label": "Show small House Seal beside the statement", "default": false },
+
+    { "type": "header", "content": "Palace architecture" },
+    { "type": "checkbox", "id": "show_palace_image", "label": "Show palace architecture behind the statement", "default": true, "info": "A clearly visible but soft architectural image behind the statement and feature columns — House identity, not a dominant photo. Uses the bundled default image when no image is chosen below." },
+    { "type": "image_picker", "id": "palace_image", "label": "Palace image (optional override)", "info": "Leave blank to use the bundled default House environment image." },
+    { "type": "range", "id": "palace_image_opacity", "label": "Palace image opacity", "min": 15, "max": 30, "step": 1, "default": 20, "unit": "%" },
+
+    { "type": "header", "content": "House Seal watermark" },
+    { "type": "checkbox", "id": "show_seal_watermark", "label": "Show House Seal watermark", "default": true, "info": "A large, very subtle House Seal embedded in the section's negative space — an atmospheric brand element, not a logo. Shown only when the palace architecture image above is off, so the two never compete for attention." },
+    { "type": "range", "id": "seal_watermark_opacity", "label": "Watermark opacity", "min": 5, "max": 12, "step": 1, "default": 8, "unit": "%" },
+
+    {
+      "type": "select", "id": "content_layout", "label": "Content below the statement", "default": "pillars",
+      "info": "\"Four House pillars\" is the official CAVIERA House system (Rarity/Precision/Ritual/Longevity) — used on The House page and available here too. \"Three homepage features\" is a compact, homepage-specific alternative matching the approved first-screen reference; it does not remove or replace the pillar system, which stays fully available by switching back.",
+      "options": [
+        { "value": "pillars", "label": "Four House pillars" },
+        { "value": "features", "label": "Three homepage features" }
+      ]
+    },
+
+    { "type": "header", "content": "Three homepage features" },
+    { "type": "paragraph", "content": "Only shown when \"Content below the statement\" above is set to \"Three homepage features.\"" },
+    { "type": "checkbox", "id": "show_features", "label": "Show homepage features", "default": true },
+    { "type": "text", "id": "feature_1_title", "label": "Feature 1 title", "default": "Sculptural design" },
+    { "type": "textarea", "id": "feature_1_body", "label": "Feature 1 description", "default": "Forms shaped by proportion, line and restraint." },
+    { "type": "text", "id": "feature_2_title", "label": "Feature 2 title", "default": "Material precision" },
+    { "type": "textarea", "id": "feature_2_body", "label": "Feature 2 description", "default": "Stone and metal details are considered as part of the complete object." },
+    { "type": "text", "id": "feature_3_title", "label": "Feature 3 title", "default": "Considered craft" },
+    { "type": "textarea", "id": "feature_3_body", "label": "Feature 3 description", "default": "Every visible line is treated as part of the design." },
+
+    { "type": "header", "content": "House pillars" },
+    { "type": "paragraph", "content": "The official four-pillar House system. Only shown when \"Content below the statement\" above is set to \"Four House pillars.\"" },
+    { "type": "checkbox", "id": "show_pillars", "label": "Show House pillars", "default": true },
+    { "type": "text", "id": "pillar_1_title", "label": "Pillar 1 title", "default": "Rarity" },
+    { "type": "textarea", "id": "pillar_1_body", "label": "Pillar 1 description", "default": "Unexpected, never ornamental for its own sake." },
+    { "type": "text", "id": "pillar_2_title", "label": "Pillar 2 title", "default": "Precision" },
+    { "type": "textarea", "id": "pillar_2_body", "label": "Pillar 2 description", "default": "Every cut, line and word earns its place." },
+    { "type": "text", "id": "pillar_3_title", "label": "Pillar 3 title", "default": "Ritual" },
+    { "type": "textarea", "id": "pillar_3_body", "label": "Pillar 3 description", "default": "Discovery is paced, tactile and memorable." },
+    { "type": "text", "id": "pillar_4_title", "label": "Pillar 4 title", "default": "Longevity" },
+    { "type": "textarea", "id": "pillar_4_body", "label": "Pillar 4 description", "default": "Objects and identity are made to age well." },
+
+    { "type": "header", "content": "Transition into categories" },
+    { "type": "text", "id": "discover_label", "label": "Discover label", "default": "Discover" },
+    { "type": "text", "id": "category_transition_heading", "label": "Category transition heading", "default": "Shaped by category" }
+  ],
+  "presets": [{ "name": "House statement" }]
+}
+{% endschema %}
