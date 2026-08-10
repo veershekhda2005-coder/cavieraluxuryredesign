@@ -197,6 +197,8 @@
   background: var(--caviera-cinnabar);
   color: var(--caviera-bone);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   transform: translateX(-100%);
   transition: transform var(--motion-base) var(--ease-caviera);
 }
@@ -235,13 +237,23 @@
   font-family: var(--font-display); font-weight: 300; font-size: 1.375rem;
 }
 /* Large, editorial-scale navigation at tablet width and up — "feel like entering another room",
-   not a resized mobile list. --step-h2 is the same clamp() token used for on-page H2 headings
-   elsewhere in the theme, so this stays in step with the rest of the type system rather than
-   inventing a one-off size. */
+   not a resized mobile list, and not a small block centred in a huge empty screen either: the nav
+   itself takes the confident central-lower portion of the viewport (flex:1 + justify-content:
+   center within the column layout set on .caviera-mobile-nav above), with the House Seal staying
+   put near the top and the secondary utility block staying near the bottom. --step-h1 is the same
+   clamp() token used for on-page H1 headings elsewhere in the theme — deliberately larger than the
+   --step-h2 used before, so primary items actually read as the visual focus of the room rather
+   than a slightly-enlarged list. */
 @media (min-width: 700px) {
-  .caviera-mobile-nav__nav { padding-block: clamp(24px, 6vh, 64px); }
+  .caviera-mobile-nav__nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: clamp(24px, 6vh, 64px);
+  }
   .caviera-mobile-nav__item > a,
-  .caviera-mobile-nav__toggle { padding-block: 28px; font-size: var(--step-h2); }
+  .caviera-mobile-nav__toggle { padding-block: 20px; font-size: var(--step-h1); }
 }
 .caviera-mobile-nav__submenu { padding-bottom: 16px; }
 .caviera-mobile-nav__submenu a { display: block; padding: 10px 0; font-size: 1rem; color: var(--caviera-rhodium); }
