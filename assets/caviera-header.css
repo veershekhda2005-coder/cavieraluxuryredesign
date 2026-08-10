@@ -25,6 +25,24 @@
   border-bottom-color: var(--border-subtle);
 }
 
+/* "Solid header colour" setting (resolved_scheme) — Obsidian variant. Governs the header's normal
+   resting state, and (combined with the rule above) what a transparent header resolves to once
+   scrolled. Defaults stay exactly as before (Warm Bone) when the setting is left at its default. */
+.caviera-header[data-resolved-scheme="obsidian"] {
+  background: var(--caviera-obsidian);
+  color: var(--text-inverse);
+  border-bottom-color: var(--border-subtle-on-dark);
+}
+.caviera-header--transparent[data-resolved-scheme="obsidian"].is-scrolled {
+  background: var(--caviera-obsidian);
+  color: var(--text-inverse);
+  border-bottom-color: var(--border-subtle-on-dark);
+}
+.caviera-header[data-resolved-scheme="obsidian"] .caviera-header__cart-count {
+  background: var(--caviera-cinnabar);
+  color: var(--caviera-bone);
+}
+
 .caviera-header__bar {
   display: flex;
   align-items: center;

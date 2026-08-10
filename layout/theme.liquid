@@ -44,6 +44,7 @@
   {{ 'caviera-layout.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-components.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-motion.css' | asset_url | stylesheet_tag }}
+  {{ 'caviera-page-transition.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-header.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-footer.css' | asset_url | stylesheet_tag }}
 
@@ -86,19 +87,41 @@
       --gutter-mobile: {{ settings.gutter_mobile | default: 20 }}px;
       --section-spacing: clamp(56px, 8vw, {{ settings.section_spacing | default: 128 }}px);
       {%- if settings.enable_motion == false -%}
-      --motion-fast: 1ms; --motion-base: 1ms; --motion-slow: 1ms;
+      --motion-fast: 1ms; --motion-base: 1ms; --motion-slow: 1ms; --motion-cinematic: 1ms;
       {%- else -%}
         {%- case settings.transition_speed -%}
           {%- when 'fast' -%}
-      --motion-fast: 160ms; --motion-base: 320ms; --motion-slow: 480ms;
+      --motion-fast: 160ms; --motion-base: 320ms; --motion-slow: 480ms; --motion-cinematic: 700ms;
           {%- when 'slow' -%}
-      --motion-fast: 320ms; --motion-base: 700ms; --motion-slow: 900ms;
+      --motion-fast: 320ms; --motion-base: 700ms; --motion-slow: 900ms; --motion-cinematic: 1100ms;
           {%- else -%}
-      --motion-fast: 240ms; --motion-base: 520ms; --motion-slow: 700ms;
+      --motion-fast: 240ms; --motion-base: 520ms; --motion-slow: 700ms; --motion-cinematic: 900ms;
         {%- endcase -%}
       {%- endif %}
     }
   </style>
+
+  {%- comment -%}
+    CAVIERA Curtain — arrival state, set synchronously before first paint so a page reached via a
+    "covered" internal navigation (see assets/caviera-page-transition.js) never flashes visible
+    before the curtain is ready to resolve it. Reads then immediately clears its own sessionStorage
+    flag, and carries its own hard safety-net timeout completely independent of
+    caviera-page-transition.js — if that file is ever blocked or fails to load, this line alone
+    guarantees the curtain still clears itself and never hides content permanently.
+  {%- endcomment -%}
+  <script>
+    (function () {
+      try {
+        if (sessionStorage.getItem('caviera_transition_pending') === '1') {
+          sessionStorage.removeItem('caviera_transition_pending');
+          document.documentElement.classList.add('caviera-transition-pending');
+          setTimeout(function () {
+            document.documentElement.classList.remove('caviera-transition-pending');
+          }, 1500);
+        }
+      } catch (e) { /* storage unavailable — fail open, no curtain, normal page load */ }
+    })();
+  </script>
 
   <script>
     window.theme = window.theme || {};
@@ -148,9 +171,11 @@
 
   {%- render 'cart-drawer' -%}
   {%- render 'search-overlay' -%}
+  {%- render 'caviera-page-transition' -%}
 
   <script src="{{ 'caviera-global.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'caviera-cart.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'caviera-page-transition.js' | asset_url }}" defer="defer"></script>
   <script>document.documentElement.classList.remove('no-js');</script>
 </body>
 </html>

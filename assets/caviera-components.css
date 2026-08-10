@@ -37,6 +37,35 @@
   text-transform: uppercase;
 }
 
+/* ---- Editorial CTA language (Phase 1) ----
+   For understated actions like "ENTER EDITION", "DISCOVER THE HOUSE", "VIEW THE OBJECT" — text +
+   a fine rule + a small directional arrow that shifts subtly on hover/focus. Deliberately not used
+   for commerce actions like "ADD TO BAG", which stay on .btn/.btn--primary for unambiguous
+   usability. Not yet applied to any section markup in this phase — foundation only. */
+.caviera-link-editorial {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 4px;
+  border-bottom: var(--border-width) solid currentColor;
+  font-size: 0.8125rem;
+  letter-spacing: var(--button-tracking);
+  text-transform: uppercase;
+}
+.caviera-link-editorial svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform var(--motion-fast) var(--ease-caviera);
+}
+@media (hover: hover) {
+  .caviera-link-editorial:hover svg { transform: translateX(4px); }
+}
+.caviera-link-editorial:focus-visible svg { transform: translateX(4px); }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-link-editorial svg { transition: none; }
+}
+
 .field {
   display: flex;
   flex-direction: column;

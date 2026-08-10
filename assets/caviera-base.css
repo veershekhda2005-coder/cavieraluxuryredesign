@@ -78,10 +78,17 @@
   --button-height: 48px;
   --input-height: 48px;
 
-  /* ---- Motion ---- */
+  /* ---- Motion ----
+     Shared timing tokens — reference these, never a one-off ms value in a section file.
+     micro interaction (--motion-fast): 180–300ms · normal reveal (--motion-base): 400–700ms ·
+     cinematic transition (--motion-cinematic): 700–1100ms maximum. --motion-slow sits at the
+     boundary between reveal and cinematic and is kept for existing consumers (header/drawer/cart
+     slides); new cinematic-only work (e.g. the page-transition curtain) should reach for
+     --motion-cinematic instead of inventing a new value. */
   --motion-fast: 240ms;
   --motion-base: 520ms;
   --motion-slow: 700ms;
+  --motion-cinematic: 900ms;
   --ease-caviera: cubic-bezier(0.22, 0.61, 0.15, 1);
 
   /* ---- Z-index scale ---- */
@@ -89,6 +96,7 @@
   --z-drawer: 60;
   --z-overlay: 70;
   --z-loader: 90;
+  --z-transition: 95;
   --z-skip-link: 100;
 }
 
@@ -104,7 +112,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --motion-fast: 1ms; --motion-base: 1ms; --motion-slow: 1ms; }
+  :root { --motion-fast: 1ms; --motion-base: 1ms; --motion-slow: 1ms; --motion-cinematic: 1ms; }
 }
 
 /* ---- Reset (minimal, deliberate) ---- */

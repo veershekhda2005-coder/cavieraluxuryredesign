@@ -14,22 +14,25 @@
   IMPORTANT — two independent layers of "always present":
     1. The root `[data-caviera-loader]` always renders on the homepage, regardless of
        settings.enable_loader, session state, or asset availability.
-    2. Both child stage wrappers, `[data-loader-oryx]` and `[data-loader-seal]`, ALSO always render
-       inside the root, regardless of asset availability. Only the actual `<img>` *inside* each
-       wrapper is conditional. This keeps "does the markup exist" (Liquid's job) fully separate
-       from "does it visibly run" (assets/caviera-loader.css hides it by default;
-       assets/caviera-loader.js decides at runtime whether to activate, and which stage(s) have
-       real artwork to show). `document.querySelector('[data-loader-oryx]')` /
-       `[data-loader-seal]` therefore always resolve on the homepage, even when a wrapper's image
-       is empty.
+    2. All three child stage wrappers — `[data-loader-oryx]`, `[data-loader-seal]`, and
+       `[data-loader-signature]` — ALSO always render inside the root, regardless of asset
+       availability. Only the actual `<img>` *inside* each wrapper is conditional. This keeps "does
+       the markup exist" (Liquid's job) fully separate from "does it visibly run"
+       (assets/caviera-loader.css hides it by default; assets/caviera-loader.js decides at runtime
+       whether to activate, and which stage(s) have real artwork to show). Each stage selector
+       therefore always resolves on the homepage, even when a wrapper's image is empty.
 
-  Asset cascade (see docs/required-brand-assets.md for the full policy):
-    1. Oryx (walk asset preferred, else the documented static-fallback progression) + House Seal
-       → full ceremonial sequence: oryx stage → crossfade to seal → fade into the hero.
-    2. Oryx only, no seal        → walk stage only, then fades straight into the hero.
-    3. House Seal only, no oryx → the seal alone, held briefly and static — never an unofficial
-       substitute mascot.
-    4. Neither approved          → both wrappers exist (empty) for inspection/dev tooling; the
+  Asset cascade (see docs/required-brand-assets.md for the full policy). The Master Signature stage
+  (Phase 1 addition) only ever plays as the closing beat of a sequence that already has something
+  to resolve from — it never appears alone with neither oryx nor seal configured:
+    1. Oryx + House Seal + Master Signature → oryx walk → crossfade to seal → crossfade to the
+       Master Signature → fade into the hero.
+    2. Oryx + House Seal, no Master Signature → oryx walk → crossfade to seal → fade into the hero
+       (unchanged from before this stage existed).
+    3. Oryx only, no seal        → walk stage only, then fades straight into the hero.
+    4. House Seal only, no oryx → the seal alone, held briefly and static — never an unofficial
+       substitute mascot. Master Signature may still follow if configured.
+    5. Neither Oryx nor Seal approved → all wrappers exist (empty) for inspection/dev tooling; the
        loader stays inert on the public storefront. A Theme-Editor-only note (request.design_mode)
        names the exact missing setting(s) — never shown to real visitors.
 {%- endcomment -%}
@@ -49,6 +52,11 @@
   unless seal_mode == blank
     assign has_seal = true
   endunless
+
+  assign has_signature = false
+  if settings.master_signature_on_dark or settings.master_signature_on_light
+    assign has_signature = true
+  endif
 -%}
 <div
   class="caviera-loader"
@@ -60,6 +68,7 @@
   data-design-mode="{{ request.design_mode }}"
   data-has-oryx="{{ has_oryx }}"
   data-has-seal="{{ has_seal }}"
+  data-has-signature="{{ has_signature }}"
   style="--loader-bg: {{ settings.loader_background | default: '#8F261F' }};"
   aria-hidden="true"
 >
@@ -75,10 +84,17 @@
     {%- endif -%}
   </div>
 
-  {%- if request.design_mode and has_oryx == false and has_seal == false -%}
+  <div class="caviera-loader__stage caviera-loader__signature" data-loader-signature>
+    {%- if has_signature -%}
+      {%- render 'caviera-master-signature', mode: 'dark', width: 220, loading: 'eager', fetchpriority: 'high' -%}
+    {%- endif -%}
+  </div>
+
+  {%- if request.design_mode and has_oryx == false and has_seal == false and has_signature == false -%}
     <p class="caviera-loader__editor-note">
-      Ceremonial loader is wired but has nothing to show yet — upload a Full-body oryx or House
-      Seal under Theme settings → CAVIERA Identity. (Visible only here, inside the Theme Editor.)
+      Ceremonial loader is wired but has nothing to show yet — upload a Full-body oryx, House Seal,
+      or Master Signature under Theme settings → CAVIERA Identity. (Visible only here, inside the
+      Theme Editor.)
     </p>
   {%- endif -%}
 </div>

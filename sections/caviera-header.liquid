@@ -8,11 +8,13 @@
   assign transparent = section.settings.transparent_over_hero
   assign sticky = section.settings.sticky_header
   assign sticky_logo_mode = section.settings.sticky_logo_mode
+  assign resolved_scheme = section.settings.resolved_scheme | default: 'bone'
 -%}
 <caviera-header
   class="caviera-header{% if transparent %} caviera-header--transparent{% endif %}"
   data-sticky="{{ sticky }}"
   data-sticky-logo-mode="{{ sticky_logo_mode }}"
+  data-resolved-scheme="{{ resolved_scheme }}"
   role="banner"
 >
   <div class="caviera-header__bar container">
@@ -264,6 +266,14 @@
       "options": [
         { "value": "wordmark", "label": "Keep full wordmark" },
         { "value": "seal", "label": "Transition to House Seal (recommended)" }
+      ]
+    },
+    {
+      "type": "select", "id": "resolved_scheme", "label": "Solid header colour", "default": "bone",
+      "info": "Used whenever the header is not left transparent — its normal resting state, and what a transparent header resolves to once scrolled. Pair \"Obsidian\" with a Logo colour set to \"For dark backgrounds\" below.",
+      "options": [
+        { "value": "bone", "label": "Warm Bone (default)" },
+        { "value": "obsidian", "label": "Obsidian" }
       ]
     },
     {

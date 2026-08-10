@@ -74,10 +74,21 @@
 }
 
 /* The oryx stage appears first (visible as soon as the loader is .is-active, since it carries no
-   opacity override of its own); the House Seal stage starts hidden until resolution. */
+   opacity override of its own); the House Seal and Master Signature stages start hidden until
+   their own resolution step. Three-beat sequence, each a plain crossfade (opacity only, no
+   transform) at --motion-base: oryx → seal (.is-resolving) → Master Signature
+   (.is-resolving-signature). Either later beat is simply skipped in JS if not configured — see
+   assets/caviera-loader.js — so this CSS never has to know which combination is active. */
 .caviera-loader__seal { opacity: 0; }
+.caviera-loader__signature { opacity: 0; }
 .caviera-loader.is-resolving .caviera-loader__oryx { opacity: 0; }
 .caviera-loader.is-resolving .caviera-loader__seal { opacity: 1; }
+.caviera-loader.is-resolving-signature .caviera-loader__seal { opacity: 0; }
+.caviera-loader.is-resolving-signature .caviera-loader__signature { opacity: 1; }
+/* Oryx-only-plus-signature (no seal configured) skips the seal beat entirely — this covers that
+   direct crossfade so the oryx doesn't linger underneath the signature. A no-op when the seal beat
+   already ran first, since .is-resolving has already faded the oryx out by then. */
+.caviera-loader.is-resolving-signature .caviera-loader__oryx { opacity: 0; }
 
 /* Restrained walk: horizontal progression + max 2% body-height vertical bob, capped at two loops
    by the animation's iteration-count (JS timing also enforces this independently as a safety net,
@@ -103,6 +114,7 @@
 @media (max-width: 380px) {
   .caviera-loader__oryx img { max-width: 160px !important; }
   .caviera-loader__seal img { max-width: 56px !important; }
+  .caviera-loader__signature img { max-width: 160px !important; }
 }
 
 /* Editor-only missing-asset guidance — never reaches the public storefront (guarded by

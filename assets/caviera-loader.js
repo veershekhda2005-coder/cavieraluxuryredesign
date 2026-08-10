@@ -20,15 +20,20 @@
  * resolving before, during and after the sequence runs — whether or not either stage actually has
  * an image inside it.
  *
- * Modes, chosen from the data-has-oryx / data-has-seal attributes AND a real DOM check
- * (`stage.querySelector('img, picture, video, svg')`) — a stage only counts as available if both
- * agree, so a blank stage is never activated (see the snippet for the asset cascade policy):
- *   1. Oryx + Seal — walk stage (max 2 loops, ~1.2s each, restrained/no bounce), crossfades to the
- *      House Seal, holds briefly, fades into the hero.
- *   2. Oryx only   — walk stage only, then fades straight into the hero.
- *   3. Seal only   — static House Seal held briefly, then fades into the hero.
- *   4. Neither     — stays inert, no visible flash, nothing added/removed beyond class no-ops
- *      (both wrapper elements remain in the DOM, empty, for dev inspection).
+ * Modes, chosen from the data-has-oryx / data-has-seal / data-has-signature attributes AND a real
+ * DOM check (`stage.querySelector('img, picture, video, svg')`) — a stage only counts as available
+ * if both agree, so a blank stage is never activated (see the snippet for the asset cascade
+ * policy). The Master Signature (Phase 1 addition) is always the closing beat and only ever
+ * appears after an oryx and/or seal beat — never on its own:
+ *   1. Oryx + Seal (+ Signature) — walk stage (max 2 loops, ~1.2s each, restrained/no bounce),
+ *      crossfades to the House Seal, holds briefly, crossfades to the Master Signature if
+ *      configured, holds briefly, fades into the hero.
+ *   2. Oryx only (+ Signature)   — walk stage only, then straight to the Signature if configured,
+ *      otherwise straight into the hero.
+ *   3. Seal only (+ Signature)   — static House Seal held briefly, then the Signature if
+ *      configured, otherwise straight into the hero.
+ *   4. Neither Oryx nor Seal     — stays inert, no visible flash, nothing added/removed beyond
+ *      class no-ops (all three wrapper elements remain in the DOM, empty, for dev inspection).
  *
  * Safety guarantees:
  * - If this script never runs (blocked/failed), the loader stays `display:none` per
@@ -49,10 +54,12 @@
 
   var oryxStage = loader.querySelector('[data-loader-oryx]');
   var sealStage = loader.querySelector('[data-loader-seal]');
+  var signatureStage = loader.querySelector('[data-loader-signature]');
 
   var STEP_CYCLE_MS = 1200; // one full step ≈ 1.2s, per brand motion spec
   var MAX_LOOPS = 2;
   var CROSSFADE_MS = 450;
+  var SIGNATURE_HOLD_MS = 500; // Phase 1 addition: brief hold on the closing Master Signature beat
   var BODY_ACTIVE_CLASS = 'caviera-loader-active';
 
   // ?loader_test=1 — forces a replay for QA even when sessionStorage says it was already seen.
@@ -86,8 +93,13 @@
   // a blank stage is never shown even if that ever drifted out of sync for any reason.
   var oryxHasMedia = Boolean(oryxStage && oryxStage.querySelector('img, picture, video, svg'));
   var sealHasMedia = Boolean(sealStage && sealStage.querySelector('img, picture, video, svg'));
+  var signatureHasMedia = Boolean(signatureStage && signatureStage.querySelector('img, picture, video, svg'));
   var hasOryx = loader.dataset.hasOryx === 'true' && oryxHasMedia;
   var hasSeal = loader.dataset.hasSeal === 'true' && sealHasMedia;
+  // The Master Signature is only ever the closing beat of a sequence that already has an oryx or
+  // seal beat to resolve from (see the "asset cascade" comment in snippets/caviera-loader.liquid) —
+  // it never activates the loader by itself, so it's not part of the activation gate just below.
+  var hasSignature = loader.dataset.hasSignature === 'true' && signatureHasMedia && (hasOryx || hasSeal);
 
   // Disabled in Theme settings (currently the case — see file header), or no approved asset to
   // show at all: stay inert, no flash. This check runs before the ?loader_test=1 override below,
@@ -109,21 +121,27 @@
   var saveData = navigator.connection && navigator.connection.saveData;
   if (saveData && !isDesignMode) { return; }
 
-  // Failure handling: the House Seal is always the last stage, so its image failing to load has
-  // nothing further to fall back to — dismiss outright. The oryx image failing to load, however,
-  // falls through to whatever stage would normally come next (the seal, or the hero) — see advance().
-  function onSealError() { dismiss(); }
+  // Failure handling: any stage's image failing to load falls through to whatever would normally
+  // come next (oryx → seal-or-signature-or-hero; seal → signature-or-hero) rather than holding on
+  // a broken visual — see advance()/resolveSignature() below. The Master Signature is always the
+  // true last stage now, so its own image failing to load has nothing further to fall back to and
+  // dismisses outright.
+  //
+  // Reduced motion deliberately does NOT add the Master Signature beat — the brand rule there is
+  // "static House Seal held briefly, or skip", kept intentionally short; on error it dismisses
+  // directly rather than resolving forward.
 
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Reduced motion: brand rule is "static House Seal held briefly, or skip" — never the walk.
+  // Reduced motion: brand rule is "static House Seal held briefly, or skip" — never the walk, and
+  // never the Master Signature beat (kept to the full sequence only, see file header).
   function runReduced() {
     lockScroll();
     loader.classList.add('is-active', 'is-reduced');
     if (hasSeal) {
       loader.classList.add('is-resolving');
       var sealImg = sealStage.querySelector('img');
-      if (sealImg) { sealImg.addEventListener('error', onSealError, { once: true }); }
+      if (sealImg) { sealImg.addEventListener('error', dismiss, { once: true }); }
     }
     // hasOryx-only (no seal) falls through with neither modifier: the oryx sits still for the
     // brief hold below (caviera-loader.css strips its animation in this media query) rather than
@@ -133,18 +151,31 @@
     loader._safety = setTimeout(function () { clearTimeout(t); dismiss(); }, duration);
   }
 
+  // Master Signature — the closing beat, only ever reached from oryx and/or seal (see hasSignature
+  // above; it never activates the loader on its own). Fails open to dismiss() if not configured or
+  // if its own image errors.
+  function resolveSignature() {
+    if (!hasSignature) { dismiss(); return; }
+    loader.classList.add('is-resolving-signature');
+    var sigImg = signatureStage.querySelector('img');
+    if (sigImg) { sigImg.addEventListener('error', dismiss, { once: true }); }
+    setTimeout(dismiss, SIGNATURE_HOLD_MS);
+  }
+
   function runFull() {
     lockScroll();
     loader.classList.add('is-active');
 
     if (!hasOryx && hasSeal) {
-      // Seal-only fallback: no approved oryx asset yet. Hold the static seal briefly, then reveal
-      // the hero — no walk stage to run. The (empty) oryx wrapper is simply never populated.
+      // Seal-only fallback: no approved oryx asset yet. Hold the static seal briefly, then either
+      // resolve to the Master Signature (if configured) or reveal the hero directly. No walk stage
+      // to run — the (empty) oryx wrapper is simply never populated.
       loader.classList.add('is-resolving');
       var sealImgOnly = sealStage.querySelector('img');
-      if (sealImgOnly) { sealImgOnly.addEventListener('error', onSealError, { once: true }); }
-      var holdTime = Math.min(900, duration);
-      var t0 = setTimeout(dismiss, holdTime);
+      if (sealImgOnly) { sealImgOnly.addEventListener('error', resolveSignature, { once: true }); }
+      var reserved = hasSignature ? SIGNATURE_HOLD_MS + CROSSFADE_MS : 0;
+      var holdTime = Math.max(300, Math.min(900, duration - reserved));
+      var t0 = setTimeout(resolveSignature, holdTime);
       loader._safety = setTimeout(function () { clearTimeout(t0); dismiss(); }, duration);
       return;
     }
@@ -162,16 +193,19 @@
       if (hasSeal) {
         loader.classList.add('is-resolving');
         var sealImg = sealStage.querySelector('img');
-        if (sealImg) { sealImg.addEventListener('error', onSealError, { once: true }); }
+        if (sealImg) { sealImg.addEventListener('error', resolveSignature, { once: true }); }
         // Hold the seal for whatever remains of the configured duration budget after the walk and
-        // the closing fade, so the hero reveals within the brand's ~2.4–2.8s window by
-        // construction — never a glimpse shorter than 300ms, never open-ended.
-        var sealHold = Math.max(300, duration - walkDuration - CROSSFADE_MS);
-        setTimeout(dismiss, sealHold);
+        // the closing fade(s), so the hero reveals within the brand's duration window by
+        // construction — never a glimpse shorter than 300ms, never open-ended. Reserves extra
+        // budget for the Master Signature beat when one is configured.
+        var reserved = hasSignature ? SIGNATURE_HOLD_MS + CROSSFADE_MS : 0;
+        var sealHold = Math.max(300, duration - walkDuration - CROSSFADE_MS - reserved);
+        setTimeout(resolveSignature, sealHold);
       } else {
-        // No approved House Seal yet — fade straight from the oryx stage into the hero rather
-        // than resolving into anything unofficial.
-        dismiss();
+        // No approved House Seal yet — resolve straight from the oryx stage to the Master
+        // Signature if one is configured, otherwise straight into the hero. Never fabricates
+        // anything unofficial in between.
+        resolveSignature();
       }
     }
 

@@ -17,6 +17,63 @@
   [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 
+/* ---- Image reveal family (Phase 1) ----
+   Opt-in variants of the same [data-reveal]/.is-visible mechanism above — one shared
+   IntersectionObserver (assets/caviera-global.js), no second observer to maintain. Add
+   data-reveal-style="crop|mask|fade" alongside data-reveal on any element; the base rule already
+   handles the default (fade + rise). Each section should pick ONE dominant behaviour, never several
+   at once — see the CAVIERA motion principle: a small family, repeated intelligently, not a menu of
+   effects applied everywhere. Not yet applied to any section markup in this phase. */
+
+/* crop: a slow, restrained scale-in on the media itself (1.02 → 1.00), rise/fade on the wrapper
+   unchanged from the base [data-reveal] rule above. */
+[data-reveal][data-reveal-style="crop"] img,
+[data-reveal][data-reveal-style="crop"] picture,
+[data-reveal][data-reveal-style="crop"] video {
+  transform: scale(1.02);
+  transition: transform var(--motion-slow) var(--ease-caviera);
+}
+[data-reveal][data-reveal-style="crop"].is-visible img,
+[data-reveal][data-reveal-style="crop"].is-visible picture,
+[data-reveal][data-reveal-style="crop"].is-visible video {
+  transform: scale(1);
+}
+
+/* mask: a vertical clip-path reveal instead of the default opacity/translate — the wrapper itself
+   is fully opaque throughout, only its visible area grows. */
+[data-reveal][data-reveal-style="mask"] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  clip-path: inset(0 0 100% 0);
+}
+[data-reveal][data-reveal-style="mask"]:not(.is-visible) {
+  transition: clip-path var(--motion-slow) var(--ease-caviera);
+}
+[data-reveal][data-reveal-style="mask"].is-visible {
+  clip-path: inset(0 0 0% 0);
+  transition: clip-path var(--motion-slow) var(--ease-caviera);
+}
+
+/* fade: opacity-only crossfade, no rise — for compositions where even a 16px translate would read
+   as too much movement (e.g. a full-bleed image sitting directly under still text). */
+[data-reveal][data-reveal-style="fade"] {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal][data-reveal-style="crop"] img,
+  [data-reveal][data-reveal-style="crop"] picture,
+  [data-reveal][data-reveal-style="crop"] video {
+    transform: none;
+    transition: none;
+  }
+  [data-reveal][data-reveal-style="mask"] {
+    clip-path: none;
+    transition: none;
+  }
+}
+
 /* ---- Shared transition helpers ---- */
 .caviera-fade { transition: opacity var(--motion-base) var(--ease-caviera); }
 .caviera-crossfade-out { opacity: 0; }
