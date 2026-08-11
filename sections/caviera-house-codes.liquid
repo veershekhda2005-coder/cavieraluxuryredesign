@@ -1,48 +1,55 @@
 {%- comment -%}
-  House Codes — the Rumaya-inspired scroll principle (large visual rooms + a central chapter title
-  that automatically changes as the user scrolls from one room into the next), translated into an
-  entirely original CAVIERA experience. NOT a copy of Rumaya's branding, imagery, layout, or rounded
-  visual language — see assets/caviera-home.css for the architectural (near-square-edged) treatment.
+  House Codes — REBUILD (previous attempt collapsed the surrounding homepage layout; see below for
+  root cause). Rumaya's core interaction principle only — large visual rooms + one stable central
+  chapter title that automatically changes as the user scrolls between them — translated into an
+  original CAVIERA experience. No Rumaya branding, imagery, rounded cards, or layout copied.
 
-  Four House Codes, from the existing official CAVIERA House pillars (sections/caviera-house-
-  statement.liquid) — same names, same approved short copy, not invented here: Rarity, Precision,
-  Ritual, Longevity.
+  ROOT CAUSE OF THE PREVIOUS FAILURE: the old build gave its sticky overlay a manually-guessed
+  negative top-margin (-340vh) to cancel its own flow contribution, WITHOUT the outer section ever
+  having an explicit height to anchor that arithmetic against (unlike the hero/Edition I, which set
+  an explicit `height` on their own outer wrapper). A block element's auto height is the sum of its
+  in-flow children's margins/heights — summing four 85vh panels (+340vh) with a sibling contributing
+  height(100vh) + margin-top(-340vh) = -240vh collapsed the SECTION's own computed height down to
+  roughly 100vh, even though the panels themselves still visually occupied ~340vh — so that ~240vh
+  of real visual content spilled straight through the bottom of its own now-too-short parent and
+  into Edition I beneath it, compressing everything that followed.
 
-  ARCHITECTURE (deliberately NOT another tall pin-wrapper like the hero/Edition I): the four rooms
-  are plain, full-bleed sections stacked in NORMAL document flow (.caviera-house-codes__rooms,
-  85vh each, contiguous — no gaps between them, so the image handoff the brief asks for is simply
-  the natural, contiguous result of stacking, not a choreographed transform). A sticky central
-  overlay (.caviera-house-codes__overlay) is a SIBLING of the rooms wrapper, using the exact same
-  "two sticky siblings + a negative top-margin equal to the other's height" technique already
-  proven in the hero and Edition I (see the comment above .caviera-hero in caviera-home.css) — it
-  stays centred in the viewport for the entire scroll distance of the four rooms, then releases
-  the instant they end. assets/caviera-house-codes.js uses one IntersectionObserver (same pattern
-  as caviera-object-focus.js/caviera-packaging-ritual.js) to decide which room is nearest the
-  reading centre and writes data-active-code onto the stage; CSS crossfades the matching overlay
-  frame in response — no scroll-jacking, no wheel interception, no forced scroll position.
+  THE FIX — no negative-margin arithmetic anywhere: .caviera-house-codes__overlay-shell is
+  `position: absolute; inset: 0;` inside this section (`position: relative`) — an absolutely
+  positioned box with inset: 0 always matches its positioned ancestor's box exactly, automatically,
+  with no height to compute or guess. The section's own height is determined ONLY by
+  .caviera-house-codes__panels (real, in-flow, four min-height: 100vh panels) — the overlay-shell
+  contributes nothing to that calculation at all, so it can never distort it. Inside the shell,
+  .caviera-house-codes__overlay is position: sticky; top: 0; height: 100vh — its sticky range is
+  bounded by the shell's box, i.e. the section's real height, whatever that naturally turns out to
+  be. See assets/caviera-house-codes.css for the full implementation; all rules there are strictly
+  scoped under .caviera-house-codes, nothing global.
 
-  ACCESSIBILITY / NO-JS / REDUCED-MOTION: every room ALSO carries its own real, always-visible
-  semantic heading + copy (.caviera-house-codes__room-caption) — not a screen-reader-only duplicate.
-  The sticky overlay is aria-hidden and is the one thing hidden outright under prefers-reduced-
-  motion and below the section's own motion breakpoint (900px) — at which point the per-room
-  captions are already the whole story, so nothing is lost, nothing needs a fallback path of its
-  own. Below 900px each room is simply its own vertical image chapter, exactly per brief.
+  The four House Codes are CAVIERA's existing official House pillars (sections/caviera-house-
+  statement.liquid) — same four names and approved short copy, not invented here: Rarity,
+  Precision, Ritual, Longevity. Theme Editor settings (image + short line per code) are unchanged
+  from the previous build, so any values a merchant already entered are preserved.
 
-  IMAGE FALLBACKS (Theme Editor image_picker per room; every fallback below is a deliberate CAVIERA
+  PROGRESSIVE ENHANCEMENT: every panel carries its own real, always-visible local heading + copy
+  (.caviera-house-codes__local-label) — not a screen-reader-only duplicate. assets/caviera-house-
+  codes.js adds `is-ready` to the section only once its IntersectionObserver has actually attached;
+  only THEN does desktop CSS visually hide the local labels in favour of the sticky overlay (see the
+  `.caviera-house-codes.is-ready` gate in the CSS) — so a slow/blocked/failed script never leaves a
+  panel with no visible title at all. The overlay itself is aria-hidden and is hidden outright below
+  900px and under prefers-reduced-motion, at which point the local labels are already the whole
+  story.
+
+  IMAGE FALLBACKS (Theme Editor image_picker per House Code; every fallback is a deliberate CAVIERA
   composition, never a placeholder rectangle):
-    Rarity     — the bundled campaign photograph (assets/15_oryx_necklace_on_model.png), the same
-                 bundled default the hero/Edition I use, cropped tight and off-centre here for a
-                 "rare presence in negative space" reading distinct from its use elsewhere.
-    Precision  — an original CSS-only faceted/geometric composition (nested rotated Rhodium-edged
-                 squares suggesting a cut stone) — no photograph exists yet for a real diamond/
-                 setting macro.
-    Ritual     — an original CSS-only material study reusing the same "Obsidian outer → Cinnabar
-                 case → Warm Bone interior" nested-panel language already established in Packaging
-                 ritual's own no-photo fallback — thematically exact for an "opening" moment.
-    Longevity  — the official House Seal (bundled artwork), presented large and ceremonial —
-                 "maker's mark / provenance" is explicitly what the Seal already represents
-                 elsewhere in this theme (see Packaging ritual's "Unseal" step, Maker's Mark
-                 section).
+    Rarity     — the bundled campaign photograph (assets/15_oryx_necklace_on_model.png), cropped
+                 tight and off-centre for a "rare presence in negative space" reading distinct from
+                 its use in the hero/Edition I.
+    Precision  — an original CSS-only faceted/geometric field — no diamond/setting macro exists yet.
+    Ritual     — an original CSS-only material study reusing Packaging ritual's own "Obsidian outer
+                 / Cinnabar case / Warm Bone interior" language — thematically exact for an opening
+                 moment.
+    Longevity  — the official House Seal, large and ceremonial — provenance/maker's mark is already
+                 the Seal's established role elsewhere in this theme.
 {%- endcomment -%}
 {%- liquid
   assign rarity_img = section.settings.rarity_image
@@ -68,151 +75,146 @@
     assign longevity_derived = true
   endif
 -%}
-<section class="caviera-section caviera-house-codes" data-scheme="obsidian">
-  <div class="container container--narrow caviera-house-codes__head" data-reveal>
-    {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
-    {%- if section.settings.heading != blank -%}<h2 class="heading-h1">{{ section.settings.heading }}</h2>{%- endif -%}
+{{ 'caviera-house-codes.css' | asset_url | stylesheet_tag }}
+<section class="caviera-house-codes" data-scheme="obsidian" data-house-code-active="0">
+  <div class="caviera-house-codes__panels">
+    {%- comment -%} 01 RARITY {%- endcomment -%}
+    <article class="caviera-house-codes__panel" data-house-code-index="0" data-derived="{{ rarity_derived }}">
+      <div class="caviera-house-codes__media">
+        {%- if rarity_img != blank -%}
+          <img
+            src="{{ rarity_img | image_url: width: 1600 }}"
+            srcset="{{ rarity_img | image_url: width: 800 }} 800w, {{ rarity_img | image_url: width: 1600 }} 1600w, {{ rarity_img | image_url: width: 2200 }} 2200w"
+            sizes="100vw"
+            width="{{ rarity_img.width }}" height="{{ rarity_img.height }}"
+            alt="{{ rarity_img.alt | default: 'Rarity' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Rarity" loading="lazy">
+        {%- endif -%}
+      </div>
+      <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
+      <div class="caviera-house-codes__local-label">
+        <span class="caviera-house-codes__local-index">01 / 04</span>
+        <h3>Rarity</h3>
+        {%- if section.settings.rarity_copy != blank -%}<p>{{ section.settings.rarity_copy }}</p>{%- endif -%}
+      </div>
+    </article>
+
+    {%- comment -%} 02 PRECISION — no photograph exists yet; an original CAVIERA geometric field. {%- endcomment -%}
+    <article class="caviera-house-codes__panel" data-house-code-index="1" data-derived="{{ precision_derived }}">
+      <div class="caviera-house-codes__media">
+        {%- if precision_img != blank -%}
+          <img
+            src="{{ precision_img | image_url: width: 1600 }}"
+            srcset="{{ precision_img | image_url: width: 800 }} 800w, {{ precision_img | image_url: width: 1600 }} 1600w, {{ precision_img | image_url: width: 2200 }} 2200w"
+            sizes="100vw"
+            width="{{ precision_img.width }}" height="{{ precision_img.height }}"
+            alt="{{ precision_img.alt | default: 'Precision' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <div class="caviera-house-codes__facet-field" aria-hidden="true">
+            <span class="caviera-house-codes__facet"></span>
+            <span class="caviera-house-codes__facet"></span>
+            <span class="caviera-house-codes__facet"></span>
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
+      <div class="caviera-house-codes__local-label">
+        <span class="caviera-house-codes__local-index">02 / 04</span>
+        <h3>Precision</h3>
+        {%- if section.settings.precision_copy != blank -%}<p>{{ section.settings.precision_copy }}</p>{%- endif -%}
+      </div>
+    </article>
+
+    {%- comment -%} 03 RITUAL — no packaging photograph exists yet; reuses Packaging ritual's own nested-panel material study. {%- endcomment -%}
+    <article class="caviera-house-codes__panel" data-house-code-index="2" data-derived="{{ ritual_derived }}">
+      <div class="caviera-house-codes__media">
+        {%- if ritual_img != blank -%}
+          <img
+            src="{{ ritual_img | image_url: width: 1600 }}"
+            srcset="{{ ritual_img | image_url: width: 800 }} 800w, {{ ritual_img | image_url: width: 1600 }} 1600w, {{ ritual_img | image_url: width: 2200 }} 2200w"
+            sizes="100vw"
+            width="{{ ritual_img.width }}" height="{{ ritual_img.height }}"
+            alt="{{ ritual_img.alt | default: 'Ritual' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <div class="caviera-house-codes__ritual-field" aria-hidden="true">
+            <span class="caviera-house-codes__ritual-panel" data-panel="cinnabar"></span>
+            <span class="caviera-house-codes__ritual-panel" data-panel="bone"></span>
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
+      <div class="caviera-house-codes__local-label">
+        <span class="caviera-house-codes__local-index">03 / 04</span>
+        <h3>Ritual</h3>
+        {%- if section.settings.ritual_copy != blank -%}<p>{{ section.settings.ritual_copy }}</p>{%- endif -%}
+      </div>
+    </article>
+
+    {%- comment -%} 04 LONGEVITY — the official House Seal: provenance/maker's mark, already its established role elsewhere in this theme. {%- endcomment -%}
+    <article class="caviera-house-codes__panel" data-house-code-index="3" data-derived="{{ longevity_derived }}">
+      <div class="caviera-house-codes__media">
+        {%- if longevity_img != blank -%}
+          <img
+            src="{{ longevity_img | image_url: width: 1600 }}"
+            srcset="{{ longevity_img | image_url: width: 800 }} 800w, {{ longevity_img | image_url: width: 1600 }} 1600w, {{ longevity_img | image_url: width: 2200 }} 2200w"
+            sizes="100vw"
+            width="{{ longevity_img.width }}" height="{{ longevity_img.height }}"
+            alt="{{ longevity_img.alt | default: 'Longevity' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <div class="caviera-house-codes__seal-field" aria-hidden="true">
+            {%- render 'caviera-house-seal', mode: 'dark', width: 220, alt: '' -%}
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
+      <div class="caviera-house-codes__local-label">
+        <span class="caviera-house-codes__local-index">04 / 04</span>
+        <h3>Longevity</h3>
+        {%- if section.settings.longevity_copy != blank -%}<p>{{ section.settings.longevity_copy }}</p>{%- endif -%}
+      </div>
+    </article>
   </div>
 
-  <div class="caviera-house-codes__stage" data-caviera-house-codes data-active-code="rarity">
-    <div class="caviera-house-codes__rooms">
-      {%- comment -%} 01 RARITY {%- endcomment -%}
-      <article class="caviera-house-codes__room" data-house-code="rarity" data-index="0" data-derived="{{ rarity_derived }}">
-        <div class="caviera-house-codes__room-media">
-          {%- if rarity_img != blank -%}
-            <img
-              src="{{ rarity_img | image_url: width: 1600 }}"
-              srcset="{{ rarity_img | image_url: width: 800 }} 800w, {{ rarity_img | image_url: width: 1600 }} 1600w, {{ rarity_img | image_url: width: 2200 }} 2200w"
-              sizes="100vw"
-              width="{{ rarity_img.width }}" height="{{ rarity_img.height }}"
-              alt="{{ rarity_img.alt | default: 'Rarity' | escape }}"
-              loading="lazy"
-            >
-          {%- else -%}
-            <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Rarity" loading="lazy">
-          {%- endif -%}
-        </div>
-        <div class="caviera-house-codes__room-scrim" aria-hidden="true"></div>
-        <div class="caviera-house-codes__room-caption">
-          <span class="label">01</span>
-          <h3>Rarity</h3>
-          {%- if section.settings.rarity_copy != blank -%}<p>{{ section.settings.rarity_copy }}</p>{%- endif -%}
-        </div>
-      </article>
-
-      {%- comment -%} 02 PRECISION — no photograph exists yet; an original CAVIERA geometric field. {%- endcomment -%}
-      <article class="caviera-house-codes__room" data-house-code="precision" data-index="1" data-derived="{{ precision_derived }}">
-        <div class="caviera-house-codes__room-media">
-          {%- if precision_img != blank -%}
-            <img
-              src="{{ precision_img | image_url: width: 1600 }}"
-              srcset="{{ precision_img | image_url: width: 800 }} 800w, {{ precision_img | image_url: width: 1600 }} 1600w, {{ precision_img | image_url: width: 2200 }} 2200w"
-              sizes="100vw"
-              width="{{ precision_img.width }}" height="{{ precision_img.height }}"
-              alt="{{ precision_img.alt | default: 'Precision' | escape }}"
-              loading="lazy"
-            >
-          {%- else -%}
-            <div class="caviera-house-codes__facet-field" aria-hidden="true">
-              <span class="caviera-house-codes__facet"></span>
-              <span class="caviera-house-codes__facet"></span>
-              <span class="caviera-house-codes__facet"></span>
-            </div>
-          {%- endif -%}
-        </div>
-        <div class="caviera-house-codes__room-scrim" aria-hidden="true"></div>
-        <div class="caviera-house-codes__room-caption">
-          <span class="label">02</span>
-          <h3>Precision</h3>
-          {%- if section.settings.precision_copy != blank -%}<p>{{ section.settings.precision_copy }}</p>{%- endif -%}
-        </div>
-      </article>
-
-      {%- comment -%} 03 RITUAL — no packaging photograph exists yet; reuses Packaging ritual's own nested-panel material study. {%- endcomment -%}
-      <article class="caviera-house-codes__room" data-house-code="ritual" data-index="2" data-derived="{{ ritual_derived }}">
-        <div class="caviera-house-codes__room-media">
-          {%- if ritual_img != blank -%}
-            <img
-              src="{{ ritual_img | image_url: width: 1600 }}"
-              srcset="{{ ritual_img | image_url: width: 800 }} 800w, {{ ritual_img | image_url: width: 1600 }} 1600w, {{ ritual_img | image_url: width: 2200 }} 2200w"
-              sizes="100vw"
-              width="{{ ritual_img.width }}" height="{{ ritual_img.height }}"
-              alt="{{ ritual_img.alt | default: 'Ritual' | escape }}"
-              loading="lazy"
-            >
-          {%- else -%}
-            <div class="caviera-house-codes__ritual-field" aria-hidden="true">
-              <span class="caviera-house-codes__ritual-panel" data-panel="cinnabar"></span>
-              <span class="caviera-house-codes__ritual-panel" data-panel="bone"></span>
-            </div>
-          {%- endif -%}
-        </div>
-        <div class="caviera-house-codes__room-scrim" aria-hidden="true"></div>
-        <div class="caviera-house-codes__room-caption">
-          <span class="label">03</span>
-          <h3>Ritual</h3>
-          {%- if section.settings.ritual_copy != blank -%}<p>{{ section.settings.ritual_copy }}</p>{%- endif -%}
-        </div>
-      </article>
-
-      {%- comment -%} 04 LONGEVITY — the official House Seal: provenance/maker's mark, already its established role elsewhere in this theme. {%- endcomment -%}
-      <article class="caviera-house-codes__room" data-house-code="longevity" data-index="3" data-derived="{{ longevity_derived }}">
-        <div class="caviera-house-codes__room-media">
-          {%- if longevity_img != blank -%}
-            <img
-              src="{{ longevity_img | image_url: width: 1600 }}"
-              srcset="{{ longevity_img | image_url: width: 800 }} 800w, {{ longevity_img | image_url: width: 1600 }} 1600w, {{ longevity_img | image_url: width: 2200 }} 2200w"
-              sizes="100vw"
-              width="{{ longevity_img.width }}" height="{{ longevity_img.height }}"
-              alt="{{ longevity_img.alt | default: 'Longevity' | escape }}"
-              loading="lazy"
-            >
-          {%- else -%}
-            <div class="caviera-house-codes__seal-field" aria-hidden="true">
-              {%- render 'caviera-house-seal', mode: 'dark', width: 220, alt: '' -%}
-            </div>
-          {%- endif -%}
-        </div>
-        <div class="caviera-house-codes__room-scrim" aria-hidden="true"></div>
-        <div class="caviera-house-codes__room-caption">
-          <span class="label">04</span>
-          <h3>Longevity</h3>
-          {%- if section.settings.longevity_copy != blank -%}<p>{{ section.settings.longevity_copy }}</p>{%- endif -%}
-        </div>
-      </article>
-    </div>
-
-    {%- comment -%}
-      Sticky central overlay — decorative duplicate of the per-room captions above, so it can be
-      safely aria-hidden and hidden outright under reduced motion / below 900px without losing any
-      information. Every frame renders unconditionally (no [data-reveal], no JS dependency) so the
-      Rarity frame is what's on screen even if assets/caviera-house-codes.js never runs at all.
-    {%- endcomment -%}
-    <div class="caviera-house-codes__overlay" aria-hidden="true">
-      <div class="caviera-house-codes__overlay-inner">
-        <span class="caviera-house-codes__overlay-eyebrow">The House Codes</span>
-        <div class="caviera-house-codes__overlay-frame" data-code="rarity">
-          <span class="caviera-house-codes__overlay-number">01</span>
-          <p class="caviera-house-codes__overlay-title">Rarity</p>
-          {%- if section.settings.rarity_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.rarity_copy }}</p>{%- endif -%}
-        </div>
-        <div class="caviera-house-codes__overlay-frame" data-code="precision">
-          <span class="caviera-house-codes__overlay-number">02</span>
-          <p class="caviera-house-codes__overlay-title">Precision</p>
-          {%- if section.settings.precision_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.precision_copy }}</p>{%- endif -%}
-        </div>
-        <div class="caviera-house-codes__overlay-frame" data-code="ritual">
-          <span class="caviera-house-codes__overlay-number">03</span>
-          <p class="caviera-house-codes__overlay-title">Ritual</p>
-          {%- if section.settings.ritual_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.ritual_copy }}</p>{%- endif -%}
-        </div>
-        <div class="caviera-house-codes__overlay-frame" data-code="longevity">
-          <span class="caviera-house-codes__overlay-number">04</span>
-          <p class="caviera-house-codes__overlay-title">Longevity</p>
-          {%- if section.settings.longevity_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.longevity_copy }}</p>{%- endif -%}
-        </div>
-        <span class="caviera-house-codes__line" aria-hidden="true"></span>
+  {%- comment -%}
+    Sticky central overlay — decorative duplicate of the local labels above; safely aria-hidden
+    since the same heading/copy already exists, in reading order, inside each panel. Every item
+    renders unconditionally (no [data-reveal], no JS dependency) so the Rarity item is what's on
+    screen even if assets/caviera-house-codes.js never runs at all (see data-house-code-active="0"
+    above, set as a static default directly in the markup).
+  {%- endcomment -%}
+  <div class="caviera-house-codes__overlay-shell" aria-hidden="true">
+    <div class="caviera-house-codes__overlay">
+      <span class="caviera-house-codes__overlay-label">The House / Codes</span>
+      <div class="caviera-house-codes__overlay-item" data-house-code-index="0">
+        <span class="caviera-house-codes__overlay-progress">01 / 04</span>
+        <p class="caviera-house-codes__overlay-title">Rarity</p>
+        {%- if section.settings.rarity_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.rarity_copy }}</p>{%- endif -%}
       </div>
+      <div class="caviera-house-codes__overlay-item" data-house-code-index="1">
+        <span class="caviera-house-codes__overlay-progress">02 / 04</span>
+        <p class="caviera-house-codes__overlay-title">Precision</p>
+        {%- if section.settings.precision_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.precision_copy }}</p>{%- endif -%}
+      </div>
+      <div class="caviera-house-codes__overlay-item" data-house-code-index="2">
+        <span class="caviera-house-codes__overlay-progress">03 / 04</span>
+        <p class="caviera-house-codes__overlay-title">Ritual</p>
+        {%- if section.settings.ritual_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.ritual_copy }}</p>{%- endif -%}
+      </div>
+      <div class="caviera-house-codes__overlay-item" data-house-code-index="3">
+        <span class="caviera-house-codes__overlay-progress">04 / 04</span>
+        <p class="caviera-house-codes__overlay-title">Longevity</p>
+        {%- if section.settings.longevity_copy != blank -%}<p class="caviera-house-codes__overlay-copy">{{ section.settings.longevity_copy }}</p>{%- endif -%}
+      </div>
+      <span class="caviera-house-codes__line" aria-hidden="true"></span>
     </div>
   </div>
 </section>
@@ -223,8 +225,6 @@
 {
   "name": "House Codes",
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Label", "default": "The House Codes" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Four principles, one House." },
     { "type": "header", "content": "01 Rarity" },
     { "type": "image_picker", "id": "rarity_image", "label": "Rarity image", "info": "Jewellery isolated in strong negative space — unusual composition, object-led, not a styled lifestyle shot. Falls back to a bundled CAVIERA image when left blank." },
     { "type": "text", "id": "rarity_copy", "label": "Short line", "default": "Unexpected, never ornamental for its own sake." },
