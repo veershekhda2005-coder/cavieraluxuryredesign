@@ -1455,6 +1455,64 @@
   }
 }
 
+/* ---- Editorial media & text: Oryx threshold crossing (opt-in, oryx_crossing_motion) ----
+   Independent of the scroll_progression system above — its own wrapper attribute
+   ([data-caviera-oryx-progress], never [data-caviera-editorial-progress]) and its own,
+   separately-named CSS custom properties (--oryx-*, never --maker-*-progress) — per this
+   project's rule that every section keeps its own progress channel. See assets/caviera-oryx-
+   crossing.js for how each value is written, continuously, while scrolling.
+
+   Every custom property below is read with a fallback equal to the COMPOSED/final state
+   (opacity 1, translateX(-2vw), translateY(0), scale(1.02), heading/body progress 1) — so with no
+   JS, or under prefers-reduced-motion (the script returns immediately in both cases), the section
+   renders its complete final composition with zero flash. html already carries
+   overflow-x: hidden (assets/caviera-layout.css) as a sitewide safety net; the artwork's own
+   rightmost position (+7vw, at its most transparent, 0.35 opacity) moves inward — never further
+   out — as it becomes more visible, so no meaningful clipping is ever visible in practice. */
+.caviera-editorial__stage[data-caviera-oryx-progress] { position: relative; }
+@media (min-width: 900px) {
+  .caviera-editorial__stage[data-caviera-oryx-progress] { height: 120svh; }
+}
+
+/* The artwork itself — moved and faded as one object via transform/opacity only. Never redrawn,
+   replaced or cropped; see snippets/caviera-oryx.liquid, unchanged. */
+[data-caviera-oryx-progress] .caviera-editorial__media[data-media-source="oryx"] {
+  opacity: var(--oryx-opacity, 1);
+  transform:
+    translateX(var(--oryx-x, -2vw))
+    translateY(var(--oryx-y, 0px))
+    scale(var(--oryx-scale, 1.02));
+  transition: opacity 200ms linear, transform 200ms linear;
+}
+/* THE HOUSE label + headline — resolve earlier and more quietly than the artwork itself. */
+[data-caviera-oryx-progress] .caviera-editorial__text .eyebrow {
+  opacity: calc(0.35 + var(--oryx-heading-progress, 1) * 0.65);
+  transform: translateY(calc(10px * (1 - var(--oryx-heading-progress, 1))));
+  transition: opacity 200ms linear, transform 200ms linear;
+}
+[data-caviera-oryx-progress] .caviera-editorial__text .heading-h2 {
+  opacity: calc(0.5 + var(--oryx-heading-progress, 1) * 0.5);
+  transform: translateY(calc(22px * (1 - var(--oryx-heading-progress, 1))));
+  transition: opacity 200ms linear, transform 200ms linear;
+}
+/* Body copy — resolves after the heading, alongside the artwork's own crossing. */
+[data-caviera-oryx-progress] .caviera-editorial__text .body-text {
+  opacity: calc(0.25 + var(--oryx-body-progress, 1) * 0.75);
+  transform: translateY(calc(14px * (1 - var(--oryx-body-progress, 1))));
+  transition: opacity 200ms linear, transform 200ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-caviera-oryx-progress] .caviera-editorial__media[data-media-source="oryx"],
+  [data-caviera-oryx-progress] .caviera-editorial__text .eyebrow,
+  [data-caviera-oryx-progress] .caviera-editorial__text .heading-h2,
+  [data-caviera-oryx-progress] .caviera-editorial__text .body-text {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 /* ---- Craftsmanship ---- */
 .caviera-craftsmanship__head { text-align: center; margin-bottom: 48px; }
 .caviera-craftsmanship__head .body-text--wide { margin: 16px auto 0; }

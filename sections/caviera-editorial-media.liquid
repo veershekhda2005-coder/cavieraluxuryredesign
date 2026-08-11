@@ -40,6 +40,18 @@
   Provenance block (opt-in, default off) — a small, neutral "Edition Record" line, never a
   fabricated production count (no "017/100"-style denominator unless a real Edition quantity is
   ever confirmed).
+
+  ORYX THRESHOLD CROSSING (opt-in, default off, and further guarded to media_source == 'oryx' only
+  — it can never accidentally engage on the Maker's Mark/House Seal instance even if the setting
+  were toggled on there by mistake). A second, independent continuous scroll system alongside
+  scroll_progression above — deliberately NOT sharing its --maker-*-progress channels or its
+  .caviera-editorial__stage[data-caviera-editorial-progress] wrapper attribute, per this project's
+  own rule that every section keeps its own independently-named progress variable. See assets/
+  caviera-oryx-crossing.js: one continuous 0-1 progress value drives the Oryx artwork through three
+  authored keyframes (arrival → crossing → composure) as --oryx-x/--oryx-y/--oryx-scale/--oryx-
+  opacity, and two narrower windows of that same progress drive the label/heading and body copy at
+  their own, calmer deltas. The artwork itself is never redrawn, replaced or cropped — only moved
+  and faded as one object via transform/opacity.
 {%- endcomment -%}
 {%- liquid
   assign media_source = section.settings.media_source | default: 'custom_image'
@@ -48,19 +60,23 @@
     assign seal_mode = 'dark'
   endunless
   assign use_progress = section.settings.scroll_progression
+  assign use_oryx_crossing = false
+  if section.settings.oryx_crossing_motion and media_source == 'oryx'
+    assign use_oryx_crossing = true
+  endif
 -%}
 <section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}">
   {%- comment -%}
-    Stage/stage-inner only exists when scroll_progression is on (same wrapper pattern used by
-    Material Truth: an in-flow ancestor with an explicit height, a sticky inner that pins for that
-    height, giving assets/caviera-makers-mark.js a real scroll distance to compute continuous
-    progress from). Every other instance of this section renders the grid directly, byte-for-byte
-    as before.
+    Stage/stage-inner only exists when scroll_progression or oryx_crossing_motion is on (same
+    wrapper pattern used by Material Truth: an in-flow ancestor with an explicit height, a sticky
+    inner that pins for that height, giving the matching JS a real scroll distance to compute
+    continuous progress from). Every other instance of this section renders the grid directly,
+    byte-for-byte as before. The two features carry distinct attributes so they never collide.
   {%- endcomment -%}
-  {%- if use_progress -%}<div class="caviera-editorial__stage" data-caviera-editorial-progress>
+  {%- if use_progress or use_oryx_crossing -%}<div class="caviera-editorial__stage"{% if use_progress %} data-caviera-editorial-progress{% endif %}{% if use_oryx_crossing %} data-caviera-oryx-progress{% endif %}>
   <div class="caviera-editorial__stage-inner">{%- endif -%}
   <div class="container--full caviera-editorial__grid">
-    <div class="caviera-editorial__media" data-media-source="{{ media_source }}"{% if section.settings.media_motion and use_progress == false %} data-reveal data-reveal-style="seal-resolve"{% endif %}>
+    <div class="caviera-editorial__media" data-media-source="{{ media_source }}"{% if section.settings.media_motion and use_progress == false and use_oryx_crossing == false %} data-reveal data-reveal-style="seal-resolve"{% endif %}>
       {%- if use_progress and media_source == 'house_seal' -%}
         {%- comment -%}
           Optional Bureau Nine depth cue: one faint, always-static-opacity impression of the same
@@ -92,15 +108,16 @@
           {%- endif -%}
       {%- endcase -%}
     </div>
-    <div class="caviera-editorial__text"{% unless use_progress %} data-reveal{% endunless %}>
+    <div class="caviera-editorial__text"{% unless use_progress or use_oryx_crossing %} data-reveal{% endunless %}>
       {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
       {%- if section.settings.heading != blank -%}
         {%- comment -%}
           Drkst-style typographic moment, opt-in per instance (see heading_motion below) — off by
           default since this same section also renders the calmer, ceremonial Oryx moment; only used
-          when scroll_progression is off (the continuous system drives the heading itself otherwise).
+          when neither continuous system (scroll_progression / oryx_crossing_motion) is on, since
+          each of those drives the heading itself instead.
         {%- endcomment -%}
-        <h2 class="heading-h2"{% if section.settings.heading_motion and use_progress == false %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
+        <h2 class="heading-h2"{% if section.settings.heading_motion and use_progress == false and use_oryx_crossing == false %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
       {%- endif -%}
       {%- if section.settings.body != blank -%}<div class="body-text">{{ section.settings.body }}</div>{%- endif -%}
       {%- if section.settings.link_text != blank -%}
@@ -116,11 +133,12 @@
       {%- endif -%}
     </div>
   </div>
-  {%- if use_progress -%}</div>
+  {%- if use_progress or use_oryx_crossing -%}</div>
 </div>{%- endif -%}
 </section>
 
 <script src="{{ 'caviera-makers-mark.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'caviera-oryx-crossing.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
@@ -156,6 +174,7 @@
     { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Ignored when scroll progression (below) is on. Off by default — this section is reused for the calmer, ceremonial Oryx moment." },
     { "type": "checkbox", "id": "media_motion", "label": "Quiet resolve-on-scroll for the mark", "default": false, "info": "A restrained opacity/position settle as the mark enters view. Ignored when scroll progression (below) is on. Off by default." },
     { "type": "checkbox", "id": "scroll_progression", "label": "Continuous scroll-linked reveal", "default": false, "info": "Replaces the entrance reveals above with a slow, formal, continuously scroll-linked sequence for the mark, heading and Edition record. Off by default; the homepage's Maker's Mark instance turns it on explicitly." },
+    { "type": "checkbox", "id": "oryx_crossing_motion", "label": "Oryx threshold crossing (scroll-linked)", "default": false, "info": "Moves the Oryx artwork itself — never redrawn — through the space as the section is read. Only ever applies when Media source above is the official full-body Oryx; off by default." },
     { "type": "richtext", "id": "body", "label": "Body" },
     { "type": "text", "id": "link_text", "label": "Link text" },
     { "type": "url", "id": "link_url", "label": "Link URL" },

@@ -134,6 +134,7 @@
         "image_position": "right",
         "eyebrow": "The House",
         "heading": "The Oryx walks first. The House follows.",
+        "oryx_crossing_motion": true,
         "body": "<p>A quiet emblem of arrival and discovery — the House's own way of marking a threshold.</p>"
       }
     },
