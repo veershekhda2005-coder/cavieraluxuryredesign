@@ -88,6 +88,51 @@
       el.addEventListener('click', closeMenu);
     });
 
+    // Primary navigation links (EDITION I / THE HOUSE / JOURNAL, etc.) — ROOT-CAUSE FIX: these are
+    // real <a href> elements (see sections/caviera-header.liquid) and always were, so nothing here
+    // was ever missing an href/pointer-events/etc. The actual problem was that openMenu() adds
+    // `no-scroll` to <html> and nothing ever removed it again for a same-page hash click (closeMenu
+    // was only ever wired to the explicit close button and the scrim) — so clicking EDITION I while
+    // the menu was open did technically navigate (the hash changed), but with scrolling locked and
+    // the full-screen menu still covering the viewport, nothing ever became visible: indistinguishable
+    // from "the link doesn't work". Cross-page links (THE HOUSE, JOURNAL) never showed this symptom
+    // because a full page load replaces the DOM (and its no-scroll class) regardless.
+    root.querySelectorAll('.caviera-mobile-nav__primary-link[href]').forEach(function (link) {
+      if (link.dataset.clickBound) return;
+      link.dataset.clickBound = 'true';
+      link.addEventListener('click', function (e) {
+        var url;
+        try { url = new URL(link.href, window.location.href); } catch (err) { closeMenu(); return; }
+        var samePage = url.pathname === window.location.pathname && url.search === window.location.search && url.hash;
+        var target = samePage ? document.querySelector(url.hash) : null;
+        if (target) {
+          // In-page destination (e.g. #edition-i): take over the whole sequence ourselves so the
+          // menu is guaranteed closed (and scrolling unlocked) BEFORE we scroll, rather than hoping
+          // the browser's native hash-jump happens to land correctly against a still-locked page.
+          e.preventDefault();
+          closeMenu();
+          var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+          if (window.history && window.history.pushState) {
+            window.history.pushState(null, '', url.hash);
+          } else {
+            window.location.hash = url.hash;
+          }
+          // Move focus to the destination so keyboard/screen-reader users land where a sighted
+          // mouse user's eye would — never left behind on a now-hidden menu item. tabindex="-1"
+          // makes an otherwise non-interactive section programmatically focusable without adding a
+          // permanent tab stop for mouse/normal reading-order users.
+          if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+        } else {
+          // Cross-page destination, or an in-page hash with no matching element (fail open): just
+          // close the menu — native navigation (or the page-transition ceremony) proceeds exactly
+          // as it would for any other link, unlocking scroll naturally via the full page load.
+          closeMenu();
+        }
+      });
+    });
+
     // Mobile submenu accordions
     root.querySelectorAll('.caviera-mobile-nav__toggle').forEach(function (btn) {
       if (btn.dataset.clickBound) return;

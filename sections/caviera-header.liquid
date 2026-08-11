@@ -214,11 +214,21 @@
         {%- for block in edition_blocks -%}
           {%- liquid
             assign index_label = forloop.index | prepend: '0' | slice: -2, 2
+            assign primary_link = block.settings.link
+            # Same-page anchor destinations (e.g. the homepage Edition I section, before it has its
+            # own dedicated page — see sections/caviera-edition-teaser.liquid#edition-i) are
+            # rebuilt from routes.root_url rather than trusted as a merchant-typed literal domain-
+            # relative string, so this still resolves correctly on a locale-subfolder store
+            # (routes.root_url is "/en" etc there, not always "/"). Any other destination (a real
+            # page, once one exists) passes through untouched.
+            if primary_link contains '#edition-i'
+              assign primary_link = routes.root_url | append: '#edition-i'
+            endif
           -%}
           <li class="caviera-mobile-nav__item" data-primary-item="{{ forloop.index }}" {{ block.shopify_attributes }}>
             <span class="caviera-mobile-nav__primary-index" aria-hidden="true">{{ index_label }}</span>
-            {%- if block.settings.link != blank -%}
-              <a href="{{ block.settings.link }}" class="caviera-mobile-nav__primary-link">{{ block.settings.title }}</a>
+            {%- if primary_link != blank -%}
+              <a href="{{ primary_link }}" class="caviera-mobile-nav__primary-link">{{ block.settings.title }}</a>
             {%- else -%}
               {%- comment -%}
                 No link configured — rendered as a quiet, honest "upcoming" entry rather than a
