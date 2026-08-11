@@ -129,8 +129,11 @@
   margin-top: -100vh;
   pointer-events: none;
 }
-.caviera-hero__field-inner,
-.caviera-hero__tokens { pointer-events: auto; }
+/* .caviera-hero__tokens (the small per-artifact anchor wrappers) deliberately NOT listed here —
+   only .caviera-hero__field-inner and the token itself (.caviera-drag-token, see its own rule)
+   opt back into pointer-events: auto, so an anchor wrapper's box never becomes an invisible click
+   blocker over the hero image beyond the token's own actual visible footprint. */
+.caviera-hero__field-inner { pointer-events: auto; }
 .caviera-hero[data-media-position="right"] .caviera-hero__field { justify-content: flex-end; }
 /* Scrim — a soft directional gradient rising from the bottom edge, coloured to the section's own
    scheme (Cinnabar/Obsidian/Bone) so text stays legible over any photograph without a hard block
@@ -192,29 +195,42 @@
 [data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
 .caviera-hero__secondary { color: inherit; }
 
-/* Toasted Buns-inspired draggable House artifacts — each bounded to its own dedicated region,
-   clear of both the bottom-anchored editorial field and the centred scroll cue. Sized explicitly
-   (rather than left to shrink-to-fit its own content) so assets/caviera-drag-token.js has a real
-   region to compute drag bounds against — see .caviera-drag-token's own default corner position in
-   the shared token styling below, which each of these boxes exists to contain. Three separate
-   zones (rather than one large shared region) keep each artifact's roam range well clear of the
-   other two and of the headline column, without needing any exclusion-zone math. */
-.caviera-hero__tokens { position: absolute; z-index: 1; }
+/* ---- Toasted Buns-inspired draggable House artifacts ----
+   DRAG-RANGE FIX: previously each artifact's own small positioning wrapper WAS the drag zone,
+   bounding travel to little more than its own footprint. .caviera-hero__artifact-layer is now the
+   single shared drag surface — almost the entire pinned hero, inset only enough to keep a token
+   retrievable at the very edge — and assets/caviera-drag-token.js resolves bounds against THIS
+   layer (via token.closest('[data-caviera-drag-zone]'), which now lives here, not on the wrappers
+   below), so all three artifacts share one large movable canvas: the whole hero composition. */
+.caviera-hero__artifact-layer {
+  position: absolute;
+  inset: 24px;
+  z-index: 1;
+  /* Inherits pointer-events: none from .caviera-hero__field — never a full-hero click blocker over
+     the headline/CTA/scroll cue. .caviera-drag-token below explicitly opts itself back into
+     pointer-events: auto, which is the only part of this layer that's ever actually clickable. */
+}
+/* Each wrapper below sets an artifact's INITIAL resting corner only (unchanged from the previous
+   pass — Seal top right, plaque top left, tag right-middle) — no longer a bounded drag zone, no
+   z-index of its own (a per-wrapper z-index would trap its token inside a separate stacking
+   context, defeating "actively dragged artifact rises above the other two" — see .is-dragging
+   below, which now competes directly against its siblings inside the shared layer's one context). */
+.caviera-hero__tokens { position: absolute; }
 .caviera-hero__tokens--seal {
-  top: clamp(88px, 16vh, 176px);
-  right: clamp(24px, 6vw, 72px);
+  top: clamp(64px, 12vh, 152px);
+  right: clamp(0px, 2vw, 48px);
   width: clamp(160px, 22vw, 260px);
   height: clamp(160px, 22vh, 260px);
 }
 .caviera-hero__tokens--plaque {
-  top: clamp(88px, 16vh, 176px);
-  left: clamp(24px, 6vw, 72px);
+  top: clamp(64px, 12vh, 152px);
+  left: clamp(0px, 2vw, 48px);
   width: clamp(150px, 20vw, 230px);
   height: clamp(140px, 18vh, 220px);
 }
 .caviera-hero__tokens--tag {
   top: 50%;
-  right: clamp(20px, 5vw, 56px);
+  right: clamp(-4px, 1vw, 32px);
   width: clamp(120px, 16vw, 190px);
   height: clamp(120px, 16vh, 190px);
   transform: translateY(-50%);
@@ -253,6 +269,10 @@
   top: 28px;
   right: 28px;
   z-index: 2;
+  /* Explicit opt-back-in — its ancestor chain (.caviera-hero__field -> .caviera-hero__artifact-
+     layer -> .caviera-hero__tokens--*) is pointer-events: none by inheritance, so without this the
+     token itself would be unclickable, not just its wrapper's empty space. */
+  pointer-events: auto;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -320,10 +340,13 @@
 .caviera-drag-token:focus-visible { outline: 1px solid var(--caviera-bone); outline-offset: 6px; }
 .caviera-drag-token.is-dragging {
   cursor: grabbing;
-  /* Rises above nearby decorative media/masks while actively held, same as every other token, but
-     never above global nav/overlays (those live in entirely separate, much higher stacking
-     contexts — header/menu/cart — so a local bump here can never reach them). */
-  z-index: 3;
+  /* Rises above BOTH nearby decorative media/masks AND the other two artifacts (all three now
+     share one stacking context — .caviera-hero__artifact-layer — since none of the small anchor
+     wrappers carries its own z-index; see the drag-range fix above), so overlapping House Seal
+     over the Edition plaque, or the reverse, always shows whichever one is actively being moved
+     on top. Never above global nav/overlays (those live in entirely separate, much higher
+     stacking contexts — header/menu/cart — so a local bump here can never reach them). */
+  z-index: 5;
 }
 .caviera-drag-token.is-dragging .caviera-drag-token__face {
   transform: scale(1.06) translateY(-3px);

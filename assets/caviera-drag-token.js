@@ -43,19 +43,23 @@
     var dragging = false;
     var lastBounds = null;
 
-    // A generous, non-aggressive roam range: token can travel roughly its own width/height past
-    // its resting position in every direction, so the composition can be meaningfully rearranged
-    // without ever leaving the drag zone's meaningful area or feeling "stuck" a few pixels in.
+    // DRAG-RANGE FIX: `zone` now resolves to .caviera-hero__artifact-layer (or, in the Edition I
+    // teaser, .caviera-edition-teaser__media) — one shared, hero/composition-wide surface — rather
+    // than each artifact's own small positioning wrapper, so this naturally computes a range
+    // spanning nearly the whole composition regardless of where the token started. `pad` is a
+    // small fixed safety allowance (not token-size-relative — a 1x-token-width pad was previously
+    // adding real range on paper but negligible range in practice once the zone itself was tiny;
+    // now that the zone is large, a small fixed pad is enough to keep the token comfortably
+    // retrievable at the very edge without needing "more room" to compensate for a small zone).
     function bounds() {
       var zr = zone.getBoundingClientRect();
       var tr = token.getBoundingClientRect();
-      var padX = tr.width;
-      var padY = tr.height;
+      var pad = 28;
       return {
-        minX: -(tr.left - zr.left) - padX,
-        maxX: (zr.right - tr.right) + padX,
-        minY: -(tr.top - zr.top) - padY,
-        maxY: (zr.bottom - tr.bottom) + padY
+        minX: -(tr.left - zr.left) - pad,
+        maxX: (zr.right - tr.right) + pad,
+        minY: -(tr.top - zr.top) - pad,
+        maxY: (zr.bottom - tr.bottom) + pad
       };
     }
 

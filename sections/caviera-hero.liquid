@@ -201,35 +201,40 @@
       Toasted Buns' "movable sticker" idea, translated into a trio of luxury CAVIERA House
       artifacts, each nested inside the sticky .caviera-hero__field (not a sibling of it) so they
       ride along with the pinned viewport while the hero is pinned, rather than sitting fixed at
-      one point in the tall scroll wrapper. Each gets its own bounded drag zone, positioned clear of
-      the headline/CTA column (bottom-left/bottom-centre) and the scroll cue (bottom-centre):
+      one point in the tall scroll wrapper.
 
-        1) House Seal medallion  — top right (existing zone, unchanged position)
-        2) Edition plaque        — top left  ("01 / EDITION I / 2026", a rectangular archival plaque,
-                                    quantity-neutral — never implies a real production count)
-        3) Provenance tag        — right, vertically centred ("No. __ / __", same neutrality)
+      DRAG-RANGE FIX: all three now share ONE hero-wide drag surface — .caviera-hero__artifact-layer
+      (data-caviera-drag-zone lives there now, not on each artifact's own small positioning
+      wrapper) — covering almost the entire pinned hero, so a token's travel is bounded by the
+      hero itself, not by the small box it happens to start in. The three .caviera-hero__tokens--*
+      wrappers below still set each artifact's own INITIAL resting corner (unchanged: Seal top
+      right, plaque top left, tag right-middle) but no longer define the draggable region — see
+      assets/caviera-drag-token.js's bounds(), which now resolves the shared layer via
+      token.closest('[data-caviera-drag-zone]') skipping straight past these small wrappers.
 
       Desktop pointer only — static and fully visible (not hidden) on touch/reduced-motion/JS-
       blocked, per assets/caviera-drag-token.js. The two secondary artifacts are hidden on mobile
       (see caviera-home.css) to keep a small viewport uncluttered; the House Seal alone remains as
       a small, static House artifact there. Each has its own merchant toggle.
     {%- endcomment -%}
-    {%- if section.settings.show_token -%}
-      <div class="caviera-hero__tokens caviera-hero__tokens--seal" data-caviera-drag-zone>
-        {%- comment -%} mode: 'dark' (Bone-coloured seal) regardless of text_mode — the token floats over the photograph itself, not the editorial scrim, and campaign photography is overwhelmingly darker-toned. {%- endcomment -%}
-        {%- render 'caviera-drag-token', type: 'seal', mode: 'dark', face_size: 76, cue: 'Drag' -%}
-      </div>
-    {%- endif -%}
-    {%- if section.settings.show_edition_token -%}
-      <div class="caviera-hero__tokens caviera-hero__tokens--plaque" data-caviera-drag-zone>
-        {%- render 'caviera-drag-token', type: 'plaque', line1: section.settings.edition_token_number, line2: section.settings.edition_token_heading, line3: section.settings.edition_token_year, cue: 'Move' -%}
-      </div>
-    {%- endif -%}
-    {%- if section.settings.show_provenance_token -%}
-      <div class="caviera-hero__tokens caviera-hero__tokens--tag" data-caviera-drag-zone>
-        {%- render 'caviera-drag-token', type: 'number', text: 'No. __ / __', cue: 'Move' -%}
-      </div>
-    {%- endif -%}
+    <div class="caviera-hero__artifact-layer" data-caviera-drag-zone>
+      {%- if section.settings.show_token -%}
+        <div class="caviera-hero__tokens caviera-hero__tokens--seal">
+          {%- comment -%} mode: 'dark' (Bone-coloured seal) regardless of text_mode — the token floats over the photograph itself, not the editorial scrim, and campaign photography is overwhelmingly darker-toned. {%- endcomment -%}
+          {%- render 'caviera-drag-token', type: 'seal', mode: 'dark', face_size: 76, cue: 'Drag' -%}
+        </div>
+      {%- endif -%}
+      {%- if section.settings.show_edition_token -%}
+        <div class="caviera-hero__tokens caviera-hero__tokens--plaque">
+          {%- render 'caviera-drag-token', type: 'plaque', line1: section.settings.edition_token_number, line2: section.settings.edition_token_heading, line3: section.settings.edition_token_year, cue: 'Move' -%}
+        </div>
+      {%- endif -%}
+      {%- if section.settings.show_provenance_token -%}
+        <div class="caviera-hero__tokens caviera-hero__tokens--tag">
+          {%- render 'caviera-drag-token', type: 'number', text: 'No. __ / __', cue: 'Move' -%}
+        </div>
+      {%- endif -%}
+    </div>
 
     {%- comment -%}
       Nested inside .caviera-hero__field (not a sibling of it, see assets/caviera-home.css) for the
