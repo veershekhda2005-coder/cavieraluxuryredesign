@@ -1109,10 +1109,13 @@
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 650ms var(--ease-caviera);
+  /* "Almost feels like the photographer changed the lens" — a crossfade plus a very small
+     positional settle (scale 1.015 -> 1), never a wipe/spin/flip/slide. */
+  transform: scale(1.015);
+  transition: opacity 600ms var(--ease-caviera), transform 600ms var(--ease-caviera);
 }
 .caviera-object-focus__media-state img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.caviera-object-focus__media-state[data-state-index="0"] { opacity: 1; z-index: 1; }
+.caviera-object-focus__media-state[data-state-index="0"] { opacity: 1; transform: scale(1); z-index: 1; }
 .caviera-object-focus__media[data-active-chapter="0"] .caviera-object-focus__media-state[data-state-index="0"],
 .caviera-object-focus__media[data-active-chapter="1"] .caviera-object-focus__media-state[data-state-index="1"],
 .caviera-object-focus__media[data-active-chapter="2"] .caviera-object-focus__media-state[data-state-index="2"],
@@ -1120,6 +1123,7 @@
 .caviera-object-focus__media[data-active-chapter="4"] .caviera-object-focus__media-state[data-state-index="4"],
 .caviera-object-focus__media[data-active-chapter="5"] .caviera-object-focus__media-state[data-state-index="5"] {
   opacity: 1;
+  transform: scale(1);
   z-index: 1;
 }
 @media (prefers-reduced-motion: reduce) { .caviera-object-focus__media-state { transition: none; } }
@@ -1127,11 +1131,15 @@
 /* Single-image fallback crops: a chapter with no dedicated image of its own (data-derived="true",
    see sections/caviera-object-focus.liquid) reuses the section's base image — these object-
    position/scale values give each reused instance a visibly distinct "macro crop" of that same
-   photo (e.g. Stone/Setting/Gold reading as three different studies), rather than three identical
-   copies of it in sequence. A chapter with its own dedicated image never carries this attribute. */
-.caviera-object-focus__media-state[data-state-index="0"][data-derived="true"] img { object-position: 42% 36%; transform: scale(1.5); }
-.caviera-object-focus__media-state[data-state-index="1"][data-derived="true"] img { object-position: 58% 62%; transform: scale(1.65); }
-.caviera-object-focus__media-state[data-state-index="2"][data-derived="true"] img { object-position: 50% 78%; transform: scale(1.4); }
+   photo (Stone/Setting/Gold reading as three different studies), rather than three identical
+   copies of it in sequence. A chapter with its own dedicated image never carries this attribute.
+   Index 0/1/2 = Stone/Setting/Gold, tuned per their own directional zoom ranges (Stone tightest —
+   the diamond itself; Setting a little wider — stone + gold interface; Gold widest of the three —
+   the metal structure/form). 3-5 are spare states for any additional chapter blocks a merchant
+   adds beyond the default three, left at their original values. */
+.caviera-object-focus__media-state[data-state-index="0"][data-derived="true"] img { object-position: 42% 36%; transform: scale(1.55); }
+.caviera-object-focus__media-state[data-state-index="1"][data-derived="true"] img { object-position: 55% 58%; transform: scale(1.35); }
+.caviera-object-focus__media-state[data-state-index="2"][data-derived="true"] img { object-position: 32% 72%; transform: scale(1.25); }
 .caviera-object-focus__media-state[data-state-index="3"][data-derived="true"] img { object-position: 30% 55%; transform: scale(1.55); }
 .caviera-object-focus__media-state[data-state-index="4"][data-derived="true"] img { object-position: 68% 40%; transform: scale(1.45); }
 .caviera-object-focus__media-state[data-state-index="5"][data-derived="true"] img { object-position: 50% 20%; transform: scale(1.6); }
@@ -1198,10 +1206,22 @@
   gap: 16px;
   padding-block: 24px;
   border-bottom: 1px solid var(--caviera-rhodium);
+  /* Quiet active/inactive cue — opacity only, no boxes/pills/background, gated behind
+     [data-observing="true"] below so every chapter reads at full strength until
+     assets/caviera-object-focus.js has actually confirmed detection is running. */
+  transition: opacity 450ms var(--ease-caviera);
 }
 .caviera-object-focus__chapter:first-child { padding-top: 0; }
 .caviera-object-focus__chapter:last-child { border-bottom: none; }
-.caviera-object-focus__chapter-number { color: var(--caviera-cinnabar); padding-top: 0.2em; }
+.caviera-object-focus__chapters[data-observing="true"] .caviera-object-focus__chapter { opacity: 0.46; }
+.caviera-object-focus__chapters[data-observing="true"] .caviera-object-focus__chapter.is-active { opacity: 1; }
+.caviera-object-focus__chapter-number {
+  color: var(--caviera-cinnabar);
+  padding-top: 0.2em;
+  opacity: 0.7;
+  transition: opacity 450ms var(--ease-caviera);
+}
+.caviera-object-focus__chapter.is-active .caviera-object-focus__chapter-number { opacity: 1; }
 .caviera-object-focus__chapter-title {
   font-family: var(--font-display);
   font-weight: 400;
@@ -1209,8 +1229,21 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   margin-bottom: 8px;
+  transition: transform 450ms var(--ease-caviera);
 }
+.caviera-object-focus__chapter.is-active .caviera-object-focus__chapter-title { transform: translateX(3px); }
 .caviera-object-focus__chapter .body-text { max-width: 420px; line-height: 1.65; }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-object-focus__chapter,
+  .caviera-object-focus__chapter-number,
+  .caviera-object-focus__chapter-title { transition: none; }
+}
+@media (min-width: 1024px) {
+  /* Lets the right-side chapter content itself create the natural scroll distance the sticky
+     media column holds through — no separate tall pin wrapper. Content stays vertically centred
+     within the taller row rather than pinned to its top. */
+  .caviera-object-focus__chapter { min-height: 52vh; align-items: center; }
+}
 /* Editorial text link, not a filled button — the arrow nudges on hover/focus only, never a
    continuous animation, and the transition is disabled under reduced motion below. */
 .caviera-object-focus__cta { display: inline-flex; align-items: baseline; margin-top: 32px; }
