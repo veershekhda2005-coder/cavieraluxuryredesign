@@ -1,253 +1,229 @@
 {%- comment -%}
-  Edition I — Bureau Nine-style horizontal exhibition. Vertical scroll drives horizontal movement
-  through five pre-launch editorial studies; House Principles (Rarity/Precision/Ritual/Longevity,
-  sections/caviera-house-codes.liquid) is a completely separate, independent experience — this
-  section never reads or writes anything from that system, and never reuses its names.
+  Edition I — the homepage's signature "entering an Edition" moment, not a text-left/image-right
+  teaser. One pinned cinematic composition, four scroll states, released directly into Object in
+  focus. CAVIERA is Edition-based, not a permanent catalogue — no product grid, no prices, no Add
+  to Bag, no /collections/all. Informational by design while Edition I has no dedicated page yet —
+  cta_text/cta_url are both blank by default; the section reads as complete with no action at all.
 
-  CAVIERA is Edition-based, not a permanent catalogue — no product grid, no prices, no Add to Bag.
-  Edition I's real 10-12 creations don't exist yet, so this shows five editorial STUDIES (Form /
-  Light / Material / The Seal / Edition I) that communicate the future Edition world without
-  pretending products are available. #edition-i (the menu's landing target) is unchanged, on this
-  same outer <section>, exactly as before.
+  FOUR SCROLL STATES (see the --edition-* custom properties in caviera-home.css, all derived from
+  the one --caviera-progress value assets/caviera-scroll-progress.js already writes onto this
+  [data-caviera-pin] section — no second scroll engine):
+    01 ARRIVAL     (progress 0.00–0.20)  calm resting composition, nothing moving yet.
+    02 APPROACHES  (progress 0.20–0.45)  media 01 tightens toward a closer crop (scale up to
+                                          ~1.14, object-position drifting toward the object).
+    03 ENTERS      (progress 0.45–0.72)  media 02 recomposes into the frame beside media 01 — an
+                                          editorial choreography (Toasted Buns, translated), not a
+                                          static crossfade.
+    04 RESOLUTION  (progress 0.72–1.00)  media 02 grows toward dominance, media 01 partially
+                                          retreats, metadata stays anchored, then the section
+                                          releases into Object in focus.
+  EDITION I itself drifts a further few vw horizontally throughout (Drkst), continuously, not in
+  discrete steps.
 
-  ARCHITECTURE (progressive enhancement — the SAME DOM works in both modes, only CSS/JS behaviour
-  differs):
-    < 1024px, no-JS, or prefers-reduced-motion: .caviera-edition-teaser__track is a plain vertical
-      stack in normal document flow — intro, then all five studies, full width, no horizontal
-      movement, no sticky viewport. Complete and readable on its own.
-    >= 1024px with motion allowed: assets/caviera-edition-exhibition.js turns
-      .caviera-edition-teaser__wrapper into a tall vertical scroll distance (measured from the
-      track's actual rendered width, not a guessed number — see the JS for the exact calculation),
-      .caviera-edition-teaser__viewport becomes position: sticky; top: 0; height: 100svh; overflow:
-      hidden, and .caviera-edition-teaser__track receives transform: translate3d(x, 0, 0) mapped
-      directly from vertical scroll progress — normal page scroll is the only input; nothing here
-      intercepts the wheel or prevents default scrolling. This is an entirely separate system from
-      the hero/House Principles' own progress variables (--edition-exhibition-progress here, never
-      --caviera-progress or --house-code-progress).
+  Media architecture ("Edition media 01/02/03" in the Theme Editor — edition_image_1/2/3 as
+  settings IDs, unchanged, to preserve any values already saved): media 01 is the primary image,
+  falling back to the same bundled default the hero uses (assets/15_oryx_necklace_on_model.png,
+  the only jewellery/object photograph bundled with this theme) when unset. media 02/03 are each
+  either a merchant's own dedicated image OR — when left blank — media 01 reused with a strongly
+  differentiated crop/scale/object-position (see [data-derived="true"] in caviera-home.css), so
+  there are always genuinely different-looking states even with only one real asset available, and
+  the same photo never visibly repeats identically. media 03 is a small optional detail inset only
+  (kept deliberately minor per the "no more than ~3 visual frames, 2 most of the time" brief).
 
-  Theme Editor settings preserved from the previous build: edition_number/edition_status/heading/
-  year_label/body/structure_line (same IDs, same defaults) — "01 / Upcoming", "EDITION I", "2026",
-  the supporting line, and the optional planned-structure line. The old three-image "media 01/02/03"
-  choreography settings are retired (that vertical system no longer exists) in favour of five
-  Study image/copy settings below, one per exhibition study.
+  Below 900px, under prefers-reduced-motion, or if the script never runs: no pin, no sticky, no
+  scroll-driven transforms at all — a complete static composition (title, metadata, copy, media 01,
+  media 02) in plain document flow. See the var(--caviera-progress, 0) fallback on every consumer
+  in caviera-home.css.
 {%- endcomment -%}
 {%- liquid
-  assign study_1_img = section.settings.study_1_image
-  assign study_2_img = section.settings.study_2_image
-  assign study_3_img = section.settings.study_3_image
-  assign study_4_img = section.settings.study_4_image
-  assign study_5_img = section.settings.study_5_image
+  assign img1 = section.settings.edition_image_1
+  assign img2 = section.settings.edition_image_2
+  assign img3 = section.settings.edition_image_3
   assign bundled_file = '15_oryx_necklace_on_model.png'
-
+  assign use_bundled = false
+  if img1 == blank
+    assign use_bundled = true
+  endif
   assign has_meta = false
   if section.settings.edition_number != blank or section.settings.edition_status != blank
     assign has_meta = true
   endif
+  assign edition_num = section.settings.edition_number | default: '01'
+  assign token_text = 'No. ' | append: edition_num
 
-  # Each study falls back to the SAME bundled photograph when no dedicated image is set, but never
-  # visibly repeats it identically — data-derived="true" marks exactly this case so
-  # assets/caviera-edition-exhibition.css can apply a distinct static crop per study (see that
-  # file). A merchant's own dedicated image never carries this attribute and renders untouched.
-  assign study_1_derived = false
-  if study_1_img == blank
-    assign study_1_derived = true
+  # media 02/03: a merchant's own dedicated image always wins; otherwise both reuse media 01 (or
+  # the bundled default) so there are always genuine second/third states, never one that simply
+  # never renders.
+  assign img2_derived = false
+  assign img2_render = img2
+  if img2 == blank
+    assign img2_derived = true
+    assign img2_render = img1
   endif
-  assign study_2_derived = false
-  if study_2_img == blank
-    assign study_2_derived = true
-  endif
-  assign study_3_derived = false
-  if study_3_img == blank
-    assign study_3_derived = true
-  endif
-  assign study_5_derived = false
-  if study_5_img == blank
-    assign study_5_derived = true
+  assign img3_derived = false
+  assign img3_render = img3
+  if img3 == blank
+    assign img3_derived = true
+    assign img3_render = img1
   endif
 -%}
-<section id="edition-i" class="caviera-edition-teaser" data-scheme="obsidian">
-  <div class="caviera-edition-teaser__wrapper" data-caviera-edition-exhibition>
-    <div class="caviera-edition-teaser__viewport">
-      <div class="caviera-edition-teaser__track">
-
-        {%- comment -%} INTRO — the same architectural typography as before, now living as the first item on the horizontal canvas. {%- endcomment -%}
-        <div class="caviera-edition-teaser__intro">
-          {%- if has_meta -%}
-            <span class="caviera-edition-teaser__meta label">
-              {{- section.settings.edition_number -}}
-              {%- if section.settings.edition_number != blank and section.settings.edition_status != blank %} / {% endif -%}
-              {{- section.settings.edition_status -}}
-            </span>
-          {%- endif -%}
-          {%- if section.settings.heading != blank -%}
-            <h2 class="caviera-edition-teaser__heading">
-              {{ section.settings.heading }}
-              {%- if section.settings.year_label != blank -%}
-                <span class="caviera-edition-teaser__year">{{ section.settings.year_label }}</span>
-              {%- endif -%}
-            </h2>
-          {%- endif -%}
-          {%- if section.settings.body != blank -%}
-            <p class="body-text caviera-edition-teaser__body">{{ section.settings.body }}</p>
-          {%- endif -%}
-          {%- if section.settings.structure_line != blank -%}
-            <p class="caviera-edition-teaser__structure label">{{ section.settings.structure_line }}</p>
-          {%- endif -%}
-          <span class="caviera-edition-teaser__cue" data-caviera-edition-cue aria-hidden="true">The Edition &rarr;</span>
-        </div>
-
-        {%- comment -%} 01 FORM — jewellery silhouette, proportion, geometry. {%- endcomment -%}
-        <article class="caviera-edition-teaser__study" data-study-index="0" data-study-size="small" data-derived="{{ study_1_derived }}">
-          <div class="caviera-edition-teaser__study-media">
-            {%- if study_1_img != blank -%}
-              <img
-                src="{{ study_1_img | image_url: width: 1200 }}"
-                srcset="{{ study_1_img | image_url: width: 600 }} 600w, {{ study_1_img | image_url: width: 1200 }} 1200w"
-                sizes="30vw"
-                width="{{ study_1_img.width }}" height="{{ study_1_img.height }}"
-                alt="{{ study_1_img.alt | default: 'Form' | escape }}"
-                loading="lazy"
-              >
-            {%- else -%}
-              <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Form" loading="lazy">
-            {%- endif -%}
-          </div>
-          <div class="caviera-edition-teaser__study-label">
-            <span class="caviera-edition-teaser__study-index">01 / Form</span>
-            {%- if section.settings.study_1_copy != blank -%}<p>{{ section.settings.study_1_copy }}</p>{%- endif -%}
-          </div>
-        </article>
-
-        {%- comment -%} 02 LIGHT — diamond, reflection, macro stone, brilliance. {%- endcomment -%}
-        <article class="caviera-edition-teaser__study" data-study-index="1" data-study-size="medium" data-derived="{{ study_2_derived }}">
-          <div class="caviera-edition-teaser__study-media">
-            {%- if study_2_img != blank -%}
-              <img
-                src="{{ study_2_img | image_url: width: 1400 }}"
-                srcset="{{ study_2_img | image_url: width: 700 }} 700w, {{ study_2_img | image_url: width: 1400 }} 1400w"
-                sizes="36vw"
-                width="{{ study_2_img.width }}" height="{{ study_2_img.height }}"
-                alt="{{ study_2_img.alt | default: 'Light' | escape }}"
-                loading="lazy"
-              >
-            {%- else -%}
-              <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Light" loading="lazy">
-            {%- endif -%}
-          </div>
-          <div class="caviera-edition-teaser__study-label">
-            <span class="caviera-edition-teaser__study-index">02 / Light</span>
-            {%- if section.settings.study_2_copy != blank -%}<p>{{ section.settings.study_2_copy }}</p>{%- endif -%}
-          </div>
-        </article>
-
-        {%- comment -%} 03 MATERIAL — the large hero visual of the sequence: gold, surface, setting. {%- endcomment -%}
-        <article class="caviera-edition-teaser__study" data-study-index="2" data-study-size="large" data-derived="{{ study_3_derived }}">
-          <div class="caviera-edition-teaser__study-media">
-            {%- if study_3_img != blank -%}
-              <img
-                src="{{ study_3_img | image_url: width: 1800 }}"
-                srcset="{{ study_3_img | image_url: width: 900 }} 900w, {{ study_3_img | image_url: width: 1800 }} 1800w"
-                sizes="48vw"
-                width="{{ study_3_img.width }}" height="{{ study_3_img.height }}"
-                alt="{{ study_3_img.alt | default: 'Material' | escape }}"
-                loading="lazy"
-              >
-            {%- else -%}
-              <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Material" loading="lazy">
-            {%- endif -%}
-          </div>
-          <div class="caviera-edition-teaser__study-label">
-            <span class="caviera-edition-teaser__study-index">03 / Material</span>
-            {%- if section.settings.study_3_copy != blank -%}<p>{{ section.settings.study_3_copy }}</p>{%- endif -%}
-          </div>
-        </article>
-
+<section id="edition-i" class="caviera-section caviera-edition-teaser" data-scheme="{{ section.settings.color_scheme | default: 'obsidian' }}" data-caviera-pin>
+  <div class="container caviera-edition-teaser__inner">
+    <div class="caviera-edition-teaser__copy" data-reveal>
+      {%- if has_meta -%}
+        <span class="caviera-edition-teaser__meta label" aria-hidden="true">
+          {{- section.settings.edition_number -}}
+          {%- if section.settings.edition_number != blank and section.settings.edition_status != blank %} / {% endif -%}
+          {{- section.settings.edition_status -}}
+        </span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
         {%- comment -%}
-          04 THE SEAL — a formal maker's-mark study, not a fake engraving macro. Uses the real House
-          Seal artwork on a plain Obsidian/Cinnabar card unless a merchant has uploaded a genuine
-          Seal-engraving photograph. Never the Living Oryx — that mark has no formal-authentication
-          role in this theme.
+          Drkst-style typographic moment: this heading (nested [data-reveal] of its own, independent
+          of the copy block's outer reveal above) enters oversized and settles — see [data-reveal-
+          style="drkst"] in caviera-motion.css — AND, being inside the [data-caviera-pin] wrapper
+          above, continues drifting horizontally in step with --caviera-progress for as long as the
+          section stays pinned (see .caviera-edition-teaser__heading.is-visible in caviera-motion.
+          css) — a visible, continuous, architectural movement, never split into letters, never
+          rotated. Opt-out via heading_motion below; the plain static heading renders with no code
+          change either way.
         {%- endcomment -%}
-        <article class="caviera-edition-teaser__study" data-study-index="3" data-study-size="narrow">
-          <div class="caviera-edition-teaser__study-media">
-            {%- if study_4_img != blank -%}
-              <img
-                src="{{ study_4_img | image_url: width: 1000 }}"
-                srcset="{{ study_4_img | image_url: width: 500 }} 500w, {{ study_4_img | image_url: width: 1000 }} 1000w"
-                sizes="22vw"
-                width="{{ study_4_img.width }}" height="{{ study_4_img.height }}"
-                alt="{{ study_4_img.alt | default: 'The Seal' | escape }}"
-                loading="lazy"
-              >
-            {%- else -%}
-              <div class="caviera-edition-teaser__seal-card" aria-hidden="true">
-                {%- render 'caviera-house-seal', mode: 'dark', width: 96, alt: '' -%}
-              </div>
-            {%- endif -%}
-          </div>
-          <div class="caviera-edition-teaser__study-label">
-            <span class="caviera-edition-teaser__study-index">04 / The Seal</span>
-            {%- if section.settings.study_4_copy != blank -%}<p>{{ section.settings.study_4_copy }}</p>{%- endif -%}
-          </div>
-        </article>
+        <h2
+          class="caviera-edition-teaser__heading"
+          {%- if section.settings.heading_motion %} data-reveal data-reveal-style="drkst"{% endif %}
+        >
+          {{ section.settings.heading }}
+          {%- if section.settings.year_label != blank -%}
+            <span class="caviera-edition-teaser__year">{{ section.settings.year_label }}</span>
+          {%- endif -%}
+        </h2>
+      {%- endif -%}
+      {%- if section.settings.body != blank -%}
+        <p class="body-text caviera-edition-teaser__body">{{ section.settings.body }}</p>
+      {%- endif -%}
+      {%- if section.settings.structure_line != blank -%}
+        {%- comment -%}
+          Optional, restrained — the planned Edition structure ("10–12 creations"), never framed as
+          current inventory or urgency. Blank by default; prefer leaving it blank if the composition
+          reads stronger without it.
+        {%- endcomment -%}
+        <p class="caviera-edition-teaser__structure label">{{ section.settings.structure_line }}</p>
+      {%- endif -%}
+      {%- if section.settings.cta_text != blank and section.settings.cta_url != blank -%}
+        <a href="{{ section.settings.cta_url }}" class="link-underline caviera-edition-teaser__cta">{{ section.settings.cta_text }}</a>
+      {%- endif -%}
+    </div>
 
-        {%- comment -%} 05 EDITION I — the exhibition's final pre-launch state; resolves before Object in focus enters. {%- endcomment -%}
-        <article class="caviera-edition-teaser__study" data-study-index="4" data-study-size="medium" data-derived="{{ study_5_derived }}">
-          <div class="caviera-edition-teaser__study-media">
-            {%- if study_5_img != blank -%}
-              <img
-                src="{{ study_5_img | image_url: width: 1400 }}"
-                srcset="{{ study_5_img | image_url: width: 700 }} 700w, {{ study_5_img | image_url: width: 1400 }} 1400w"
-                sizes="36vw"
-                width="{{ study_5_img.width }}" height="{{ study_5_img.height }}"
-                alt="{{ study_5_img.alt | default: 'Edition I' | escape }}"
-                loading="lazy"
-              >
-            {%- else -%}
-              <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Edition I" loading="lazy">
-            {%- endif -%}
-          </div>
-          <div class="caviera-edition-teaser__study-label">
-            <span class="caviera-edition-teaser__study-index">05 / Edition I</span>
-            {%- if section.settings.study_5_copy != blank -%}<p>{{ section.settings.study_5_copy }}</p>{%- endif -%}
-          </div>
-        </article>
-
+    <div class="caviera-edition-teaser__media"{% if section.settings.show_token %} data-caviera-drag-zone{% endif %}>
+      <div class="caviera-edition-teaser__media-primary" data-reveal data-reveal-style="crop">
+        {%- if img1 != blank -%}
+          <img
+            src="{{ img1 | image_url: width: 1000 }}"
+            srcset="{{ img1 | image_url: width: 600 }} 600w, {{ img1 | image_url: width: 1000 }} 1000w, {{ img1 | image_url: width: 1400 }} 1400w"
+            sizes="(min-width: 900px) 42vw, 84vw"
+            width="{{ img1.width }}"
+            height="{{ img1.height }}"
+            alt="{{ img1.alt | default: section.settings.heading | default: 'Edition I' | escape }}"
+            loading="lazy"
+          >
+        {%- elsif use_bundled -%}
+          <img
+            src="{{ bundled_file | asset_url }}"
+            width="521" height="358"
+            alt="{{ section.settings.heading | default: 'Edition I' | escape }}"
+            loading="lazy"
+          >
+        {%- endif -%}
       </div>
+
+      {%- comment -%}
+        STATE 03/04 — always renders (a real merchant image if provided, otherwise media 01 reused
+        with a strongly differentiated "centre macro" crop — see [data-derived="true"] in caviera-
+        home.css) so the choreographed second visual never depends on photography that doesn't
+        exist yet. Recomposes into the frame beside media 01 rather than simply crossfading in place.
+      {%- endcomment -%}
+      <div class="caviera-edition-teaser__media-secondary" data-derived="{{ img2_derived }}" data-reveal data-reveal-style="mask" style="transition-delay: 140ms;">
+        {%- if img2_render != blank -%}
+          <img
+            src="{{ img2_render | image_url: width: 700 }}"
+            srcset="{{ img2_render | image_url: width: 400 }} 400w, {{ img2_render | image_url: width: 700 }} 700w, {{ img2_render | image_url: width: 1000 }} 1000w"
+            sizes="(min-width: 900px) 28vw, 56vw"
+            width="{{ img2_render.width }}"
+            height="{{ img2_render.height }}"
+            alt="{{ img2_render.alt | default: 'Edition I — detail' | escape }}"
+            loading="lazy"
+          >
+        {%- elsif use_bundled -%}
+          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Edition I — detail" loading="lazy">
+        {%- endif -%}
+      </div>
+
+      {%- comment -%}
+        STATE 04 only — a small, minor detail inset (never more than ~3 frames total, per brief).
+        Same always-renders principle: a real merchant detail image if provided, otherwise media 01
+        reused a third time with a third, differently-centred crop.
+      {%- endcomment -%}
+      <div class="caviera-edition-teaser__media-detail" data-derived="{{ img3_derived }}">
+        {%- if img3_render != blank -%}
+          <img
+            src="{{ img3_render | image_url: width: 500 }}"
+            srcset="{{ img3_render | image_url: width: 300 }} 300w, {{ img3_render | image_url: width: 500 }} 500w, {{ img3_render | image_url: width: 700 }} 700w"
+            sizes="(min-width: 900px) 16vw, 40vw"
+            width="{{ img3_render.width }}"
+            height="{{ img3_render.height }}"
+            alt=""
+            loading="lazy"
+          >
+        {%- elsif use_bundled -%}
+          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="" loading="lazy">
+        {%- endif -%}
+      </div>
+
+      {%- comment -%}
+        Bureau Nine's Edition/spatial-progression idea — a single small, bounded, draggable Edition
+        plaque token (rectangular archival plaque, not the hero's circular medallion), floating over
+        the composition. This section stays primarily scroll choreography, not a second draggable
+        playground — see the hero for the full three-artifact interaction. Desktop pointer only;
+        fully visible and static everywhere else, per assets/caviera-drag-token.js (unchanged).
+      {%- endcomment -%}
+      {%- if section.settings.show_token -%}
+        {%- render 'caviera-drag-token', type: 'number', text: token_text, mode: 'dark', cue: 'Move' -%}
+      {%- endif -%}
     </div>
   </div>
 </section>
 
-<script src="{{ 'caviera-edition-exhibition.js' | asset_url }}" defer="defer"></script>
-
 {% schema %}
 {
-  "name": "Edition I",
+  "name": "Edition I teaser",
   "settings": [
+    {
+      "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
+      "info": "Obsidian is the intended default — night/theatre/anticipation, distinct from the hero's warmer Cinnabar energy.",
+      "options": [
+        { "value": "obsidian", "label": "Obsidian" },
+        { "value": "cinnabar", "label": "Cinnabar" }
+      ]
+    },
     { "type": "header", "content": "Content" },
     { "type": "text", "id": "edition_number", "label": "Number", "default": "01" },
     { "type": "text", "id": "edition_status", "label": "Status", "default": "Upcoming", "info": "Quiet metadata, not a sale badge — avoid hype language (\"Limited drop\", \"Only X left\", \"Coming soon!!!\")." },
     { "type": "text", "id": "heading", "label": "Heading", "default": "EDITION I" },
+    { "type": "checkbox", "id": "heading_motion", "label": "Architectural heading movement", "default": true, "info": "The heading enters slightly oversized and settles, then drifts horizontally in step with scroll while the section stays pinned. Off falls back to the plain static heading with no motion at all." },
     { "type": "text", "id": "year_label", "label": "Year", "default": "2026" },
     { "type": "textarea", "id": "body", "label": "Supporting line", "default": "The first CAVIERA Edition is in preparation." },
-    { "type": "text", "id": "structure_line", "label": "Structure line (optional)", "info": "e.g. \"10–12 creations\" — only if clearly framed as the planned Edition structure, never current inventory. Leave blank if the composition is stronger without it." },
-    { "type": "header", "content": "01 Form" },
-    { "type": "image_picker", "id": "study_1_image", "label": "Form image", "info": "Jewellery silhouette, proportion, geometry. Falls back to a bundled CAVIERA photograph when left blank." },
-    { "type": "text", "id": "study_1_copy", "label": "Short line", "default": "Proportion before ornament." },
-    { "type": "header", "content": "02 Light" },
-    { "type": "image_picker", "id": "study_2_image", "label": "Light image", "info": "Diamond, reflection, macro stone, brilliance. Falls back to the same bundled photograph (differently cropped) when left blank." },
-    { "type": "text", "id": "study_2_copy", "label": "Short line", "default": "Light held with precision." },
-    { "type": "header", "content": "03 Material" },
-    { "type": "image_picker", "id": "study_3_image", "label": "Material image", "info": "Gold, surface, edge, setting detail. Falls back to the same bundled photograph (differently cropped) when left blank." },
-    { "type": "text", "id": "study_3_copy", "label": "Short line", "default": "Material, resolved with intent." },
-    { "type": "header", "content": "04 The Seal" },
-    { "type": "image_picker", "id": "study_4_image", "label": "The Seal image (optional)", "info": "Only if a genuine House Seal engraving/authentication photograph exists. Falls back to a formal card using the official House Seal artwork when left blank." },
-    { "type": "text", "id": "study_4_copy", "label": "Short line", "default": "The House leaves its mark." },
-    { "type": "header", "content": "05 Edition I" },
-    { "type": "image_picker", "id": "study_5_image", "label": "Edition I image (optional)", "info": "A final, distinct cinematic crop. Falls back to the same bundled photograph (differently cropped) when left blank." },
-    { "type": "text", "id": "study_5_copy", "label": "Short line (optional)" }
+    { "type": "text", "id": "structure_line", "label": "Structure line (optional)", "info": "e.g. \"10–12 creations\" — only if clearly framed as the planned Edition structure, never current inventory. Leave blank if the composition is stronger without it. Avoid \"Limited drop\"/\"Exclusive\"/\"Only X available\"." },
+    { "type": "text", "id": "cta_text", "label": "Action text (optional)", "info": "Leave blank to keep the section purely informational — appropriate while Edition I has no dedicated page yet. Avoid \"Add to Bag\"/\"Shop Edition\"/\"Buy Now\"." },
+    { "type": "url", "id": "cta_url", "label": "Action link (optional)", "info": "Only shown when Action text above is also set. Never point this at /collections/all." },
+    { "type": "header", "content": "Images" },
+    { "type": "paragraph", "content": "Up to three visual states in the scroll sequence. Any left blank temporarily reuse Edition media 01 (or the bundled default) with a distinct crop, rather than never appearing — replace with real Edition campaign photography here at any time, no code change required." },
+    { "type": "image_picker", "id": "edition_image_1", "label": "Edition media 01 (primary)", "info": "Gender-neutral jewellery/object imagery preferred — this House is for both men and women. Falls back to a bundled default when left blank." },
+    { "type": "image_picker", "id": "edition_image_2", "label": "Edition media 02 (optional)", "info": "The second state the composition recomposes around. Falls back to a strongly differentiated crop of media 01 when left blank." },
+    { "type": "image_picker", "id": "edition_image_3", "label": "Edition media 03 (optional)", "info": "A small detail inset only, arriving last. Falls back to a third, differently cropped treatment of media 01 when left blank." },
+    { "type": "header", "content": "Interaction" },
+    { "type": "checkbox", "id": "show_token", "label": "Show draggable Edition plaque token", "default": true, "info": "A single small, bounded, draggable Edition-number token floating over the composition — desktop pointer input only. Stays static and fully visible on touch, keyboard-only, and reduced-motion visits." }
   ],
-  "presets": [{ "name": "Edition I" }],
+  "presets": [{ "name": "Edition I teaser" }],
   "enabled_on": {
     "templates": ["index"]
   }
