@@ -1,5 +1,12 @@
 {%- comment -%}
   Quiet trust signals. Fully merchant-editable — nothing is hard-coded globally, no loud badges.
+
+  ANIMATION VISIBILITY FIX: no longer uses the shared, one-shot [data-reveal] observer (assets/
+  caviera-global.js) — a horizontal row of three crossed its 15%-visible threshold at essentially
+  the same instant, well before the user was actually reading it, and it never fired again on a
+  return visit. Replaced with a dedicated, replayable controller (assets/caviera-quiet-interlude.js)
+  that toggles .is-active on .caviera-services itself, timed to ~20-30% visibility rather than 1px.
+  See assets/caviera-home.css for the actual entrance/stagger values.
 {%- endcomment -%}
 {%- liquid
   assign has_items = false
@@ -12,11 +19,11 @@
 {%- if has_items -%}
 <section class="caviera-section caviera-section--tight caviera-services">
   <div class="container">
-    {%- if section.settings.heading != blank -%}<h2 class="heading-h3 caviera-services__heading" data-reveal>{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h3 caviera-services__heading">{{ section.settings.heading }}</h2>{%- endif -%}
     <ul class="caviera-services__grid">
       {%- for block in section.blocks -%}
         {%- if block.settings.title != blank -%}
-          <li class="caviera-services__item" data-reveal {{ block.shopify_attributes }}>
+          <li class="caviera-services__item" {{ block.shopify_attributes }}>
             <h3 class="label">{{ block.settings.title }}</h3>
             {%- if block.settings.body != blank -%}<p class="body-text">{{ block.settings.body }}</p>{%- endif -%}
           </li>
@@ -25,6 +32,7 @@
     </ul>
   </div>
 </section>
+<script src="{{ 'caviera-quiet-interlude.js' | asset_url }}" defer="defer"></script>
 {%- elsif request.design_mode -%}
 <section class="caviera-section caviera-section--tight"><div class="container"><div class="caviera-editor-note">Add service blocks (e.g. Made to order, Tracked delivery, Client support).</div></div></section>
 {%- endif -%}

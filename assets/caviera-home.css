@@ -1929,50 +1929,72 @@
 .caviera-services__grid { display: grid; grid-template-columns: 1fr; gap: 28px; text-align: center; }
 @media (min-width: 700px) { .caviera-services__grid { grid-template-columns: repeat(3, 1fr); gap: 0; } }
 .caviera-services__item p { margin-top: 8px; color: var(--text-muted); }
-/* Subtle Rhodium dividers instead of relying on gap alone to separate the three statements. Kept
-   static (no scaleY entrance) — animating them read as more designed than the quiet interlude
-   calls for; the text reveal below carries the moment. */
+/* Subtle Rhodium dividers instead of relying on gap alone to separate the three statements.
+   Desktop uses an absolutely-positioned pseudo-element instead of a plain border so it can reveal
+   with a scaleY entrance (below); mobile keeps a plain static border — only the vertical lines are
+   asked to reveal. */
 @media (min-width: 700px) {
-  .caviera-services__item { padding-inline: 28px; border-left: var(--border-width) solid var(--border-subtle); }
-  .caviera-services__item:first-child { border-left: none; padding-left: 0; }
+  .caviera-services__item { position: relative; padding-inline: 28px; }
   .caviera-services__item:last-child { padding-right: 0; }
+  .caviera-services__item:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: var(--border-width);
+    background: var(--border-subtle);
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0;
+  }
 }
 @media (max-width: 699px) {
   .caviera-services__item { padding-top: 20px; border-top: var(--border-width) solid var(--border-subtle); }
   .caviera-services__item:first-child { border-top: none; padding-top: 0; }
 }
 
-/* Aerra-style precise sequence: heading resolves first, then the three columns in order with a
-   small stagger — still the one shared IntersectionObserver/[data-reveal] mechanism
-   (assets/caviera-global.js), no new controller. Both the heading and each item already carry
-   data-reveal independently (sections/caviera-services.liquid), so — since a horizontal row of
-   three crosses the 15%-visible threshold at essentially the same scroll moment — the ordering
-   here comes from transition-delay, not from three separate trigger times. NO-JS SAFETY: the
-   hidden starting state is scoped to html:not(.no-js), exactly like the Bespoke section above —
-   without JS these render at their plain, fully-visible resting state throughout. */
-html:not(.no-js) .caviera-services__heading[data-reveal] {
-  transform: translateY(10px);
-  transition: opacity 580ms var(--ease-caviera), transform 580ms var(--ease-caviera);
+/* ANIMATION VISIBILITY FIX — Aerra-style precise sequence: heading resolves first, then the three
+   columns left-to-right with a clearly perceptible stagger, then the dividers. Dedicated,
+   replayable controller (assets/caviera-quiet-interlude.js), not the shared one-shot [data-reveal]
+   mechanism — see the file-level comment in sections/caviera-services.liquid for why that wasn't
+   perceptible (fired once, the instant 15% of a whole three-column row was visible, and never
+   fired again). [data-motion-ready="true"] is added by that controller only once it has actually
+   initialised (skipped entirely under prefers-reduced-motion) — progressive enhancement, so
+   without JS, or under reduced motion, none of the hidden-state rules below ever match at all and
+   everything renders at its plain, fully-visible resting state; .is-active then replays on every
+   return visit once ~20-30% of the section is back in view (see the JS for the exact thresholds
+   and hysteresis). */
+.caviera-services[data-motion-ready="true"] .caviera-services__heading {
+  opacity: 0.2;
+  transform: translateY(20px);
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-html:not(.no-js) .caviera-services__heading[data-reveal].is-visible { transform: none; }
-html:not(.no-js) .caviera-services__item[data-reveal] {
-  transform: translateY(12px);
-  transition: opacity 540ms var(--ease-caviera), transform 540ms var(--ease-caviera);
+.caviera-services.is-active .caviera-services__heading { opacity: 1; transform: none; }
+
+.caviera-services[data-motion-ready="true"] .caviera-services__item {
+  opacity: 0.12;
+  transform: translateY(22px);
+  transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1), transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-html:not(.no-js) .caviera-services__item[data-reveal].is-visible { transform: none; }
-.caviera-services__item[data-reveal]:nth-child(1) { transition-delay: 80ms; }
-.caviera-services__item[data-reveal]:nth-child(2) { transition-delay: 190ms; }
-.caviera-services__item[data-reveal]:nth-child(3) { transition-delay: 300ms; }
-/* Repeats the exact selectors above (same specificity, declared after) so this correctly wins
-   over them specifically — the generic reduced-motion override in caviera-motion.css alone isn't
-   specific enough to beat the html:not(.no-js) rules above it. */
-@media (prefers-reduced-motion: reduce) {
-  html:not(.no-js) .caviera-services__heading[data-reveal],
-  html:not(.no-js) .caviera-services__item[data-reveal] {
-    opacity: 1;
-    transform: none;
-    transition: none;
+.caviera-services.is-active .caviera-services__item { opacity: 1; transform: none; }
+/* 160ms apart, comfortably above the "not below ~120ms" floor — Made to Order, then Tracked
+   Delivery, then Client Support, left to right. */
+.caviera-services__item:nth-child(2) { transition-delay: 160ms; }
+.caviera-services__item:nth-child(3) { transition-delay: 320ms; }
+
+@media (min-width: 700px) {
+  .caviera-services[data-motion-ready="true"] .caviera-services__item:not(:first-child)::before {
+    transition: transform 780ms cubic-bezier(0.22, 1, 0.36, 1) 160ms, opacity 780ms cubic-bezier(0.22, 1, 0.36, 1) 160ms;
   }
+  .caviera-services.is-active .caviera-services__item:not(:first-child)::before { transform: scaleY(1); opacity: 1; }
+}
+
+/* Defensive/documentation only — the controller never adds data-motion-ready under reduced
+   motion in the first place, so the hidden-state rules above never match; this simply keeps that
+   guarantee explicit if anything above it ever changes. */
+@media (prefers-reduced-motion: reduce) {
+  .caviera-services__heading,
+  .caviera-services__item,
+  .caviera-services__item::before { transition: none; }
 }
 
 /* ---- Bespoke banner ---- */
@@ -2003,47 +2025,82 @@ html:not(.no-js) .caviera-services__item[data-reveal].is-visible { transform: no
 .caviera-bespoke__content { position: relative; z-index: 1; max-width: 560px; }
 .caviera-bespoke__content .body-text { margin: 16px 0 28px; }
 
-/* One restrained entrance, in two quiet steps rather than one blob — see the file-level comment
-   in sections/caviera-bespoke-banner.liquid. The generic [data-reveal] fade (assets/caviera-
-   motion.css) is cancelled on the wrapper itself (higher specificity than the plain attribute
-   selector) so these two child timings are the only motion here; the shared IntersectionObserver
-   (assets/caviera-global.js) still does the one and only trigger, toggling .is-visible on the same
-   wrapper as always — no new controller.
+/* ANIMATION VISIBILITY FIX — dedicated, replayable controller (assets/caviera-quiet-interlude.js),
+   not the shared one-shot [data-reveal] mechanism (see the file-level comment in sections/
+   caviera-bespoke-banner.liquid for why that wasn't perceptible). [data-motion-ready="true"] is
+   added by that controller only once it has actually initialised (skipped entirely under
+   prefers-reduced-motion) — progressive enhancement, so without JS, or under reduced motion, none
+   of the hidden-state rules below ever match and everything renders at its plain, fully-visible
+   resting state; .is-active then replays on every return visit once ~20-30% of the section is
+   back in view (see the JS for the exact thresholds and hysteresis). */
+.caviera-bespoke[data-motion-ready="true"] .caviera-bespoke__heading {
+  opacity: 0.15;
+  transform: translateY(30px) scale(0.985);
+  transition: opacity 780ms cubic-bezier(0.22, 1, 0.36, 1), transform 780ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.caviera-bespoke.is-active .caviera-bespoke__heading { opacity: 1; transform: none; }
+/* A small "sense of passage" exit response while the section is still visible but scrolling out
+   past the top of the viewport (see the JS's is-receding logic) — never a full disappearance. */
+.caviera-bespoke.is-receding .caviera-bespoke__heading { opacity: 0.82; transform: translateY(-8px); }
 
-   NO-JS SAFETY: the hidden starting state is scoped to html:not(.no-js) — <html> carries no-js by
-   default (layout/theme.liquid) and JS removes it once caviera-global.js has actually run. Without
-   JS (or if it's blocked), that class never gets removed, so .caviera-bespoke__heading/__body/__cta
-   simply keep their plain, fully-visible resting state the whole time — progressive enhancement,
-   not a default opacity: 0. */
-.caviera-bespoke__content[data-reveal] { opacity: 1; transform: none; transition: none; }
-html:not(.no-js) .caviera-bespoke__heading {
+.caviera-bespoke[data-motion-ready="true"] .caviera-bespoke__body {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 720ms var(--ease-caviera), transform 720ms var(--ease-caviera);
+  transform: translateY(14px);
+  transition: opacity 560ms cubic-bezier(0.22, 1, 0.36, 1) 200ms, transform 560ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
 }
-html:not(.no-js) .caviera-bespoke__body {
+.caviera-bespoke.is-active .caviera-bespoke__body { opacity: 1; transform: none; }
+
+.caviera-bespoke[data-motion-ready="true"] .caviera-bespoke__cta {
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 520ms var(--ease-caviera) 150ms, transform 520ms var(--ease-caviera) 150ms;
+  transform: translateY(14px);
+  transition: opacity 560ms cubic-bezier(0.22, 1, 0.36, 1) 200ms, transform 560ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
 }
-html:not(.no-js) .caviera-bespoke__cta {
+.caviera-bespoke.is-active .caviera-bespoke__cta { opacity: 1; transform: none; }
+
+/* The fine rule beneath the CTA becomes a drawn line instead of the shared component's plain
+   static border-bottom — scoped to this one instance only; .caviera-link-editorial elsewhere
+   (assets/caviera-components.css) keeps its ordinary static rule. Default is fully drawn
+   (scaleX(1)) — safe without JS and under reduced motion; only the gated rule below pulls it back
+   to scaleX(0) as a starting state to animate from. */
+.caviera-bespoke__cta { position: relative; border-bottom: none; padding-bottom: 4px; }
+.caviera-bespoke__cta::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: var(--border-width);
+  background: currentColor;
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.caviera-bespoke[data-motion-ready="true"] .caviera-bespoke__cta::after {
+  transform: scaleX(0);
+  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1) 260ms;
+}
+.caviera-bespoke.is-active .caviera-bespoke__cta::after { transform: scaleX(1); }
+
+/* The arrow resolves slightly after the line begins drawing. */
+.caviera-bespoke[data-motion-ready="true"] .caviera-bespoke__cta svg {
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 520ms var(--ease-caviera) 150ms, transform 520ms var(--ease-caviera) 150ms;
+  transform: translateX(-8px);
+  transition: opacity 450ms cubic-bezier(0.22, 1, 0.36, 1) 380ms, transform 450ms cubic-bezier(0.22, 1, 0.36, 1) 380ms;
 }
-.caviera-bespoke__content.is-visible .caviera-bespoke__heading,
-.caviera-bespoke__content.is-visible .caviera-bespoke__body,
-.caviera-bespoke__content.is-visible .caviera-bespoke__cta {
-  opacity: 1;
-  transform: none;
-}
-/* Repeats the exact html:not(.no-js) selectors above (same specificity, declared after) so this
-   correctly wins over them — the generic reduced-motion override in caviera-motion.css alone isn't
-   specific enough to beat the rules above it. */
+.caviera-bespoke.is-active .caviera-bespoke__cta svg { opacity: 1; transform: translateX(0); }
+/* Once active, hover/focus still nudges the arrow the usual extra 4px (see .caviera-link-editorial
+   in caviera-components.css) — restated at matching specificity so the resting is-active rule
+   above doesn't win over it while a pointer/keyboard user is actually hovering/focusing the link. */
+.caviera-bespoke.is-active .caviera-bespoke__cta:hover svg,
+.caviera-bespoke.is-active .caviera-bespoke__cta:focus-visible svg { transform: translateX(4px); }
+
+/* Defensive/documentation only — the controller never adds data-motion-ready under reduced
+   motion in the first place, so the hidden-state rules above never match; this simply keeps that
+   guarantee explicit if anything above it ever changes. The underline's own default (scaleX(1))
+   already renders complete without any override needed. */
 @media (prefers-reduced-motion: reduce) {
-  html:not(.no-js) .caviera-bespoke__heading,
-  html:not(.no-js) .caviera-bespoke__body,
-  html:not(.no-js) .caviera-bespoke__cta { opacity: 1; transform: none; transition: none; }
+  .caviera-bespoke__heading,
+  .caviera-bespoke__body,
+  .caviera-bespoke__cta,
+  .caviera-bespoke__cta::after,
+  .caviera-bespoke__cta svg { transition: none; }
 }
 
 /* ---- Journal (homepage preview head only — card/grid styles are global, see caviera-components.css) ---- */

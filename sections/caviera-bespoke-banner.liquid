@@ -7,16 +7,19 @@
   in focus used to reach for) is exactly what let one temporary product image, badge included,
   repeat across the homepage. With no dedicated image, the section shows a clean Obsidian field.
 
-  QUIET INTERLUDE FIX: this is deliberately CAVIERA's calmest section — House/Editions carry the
+  QUIET INTERLUDE: this is deliberately CAVIERA's calmest section — House/Editions carry the
   homepage's major interactions; Bespoke is secondary, a private invitation, not a sales chapter.
-  data-reveal on .caviera-bespoke__content still uses the theme's one shared IntersectionObserver
-  (assets/caviera-global.js) — no new controller — but the wrapper's own generic fade is cancelled
-  in caviera-home.css in favour of two smaller, staggered child reveals (heading, then the CTA
-  ~150ms later) so the entrance reads as one restrained composition rather than a single blob
-  appearing at once. The CTA itself moved from a filled .btn to .caviera-link-editorial — an
-  existing, previously-unused shared component built for exactly this ("understated actions...
-  text + a fine rule + a small directional arrow", see assets/caviera-components.css) — matching
-  the brief's "editorial, not button-like" CTA without inventing a new style.
+  The CTA moved from a filled .btn to .caviera-link-editorial — an existing, previously-unused
+  shared component built for exactly this ("understated actions... text + a fine rule + a small
+  directional arrow", see assets/caviera-components.css) — matching the brief's "editorial, not
+  button-like" CTA without inventing a new style.
+
+  ANIMATION VISIBILITY FIX: no longer uses the shared, one-shot [data-reveal] observer (assets/
+  caviera-global.js) — it fired once, the instant a sliver of the section entered view, well
+  before the user was actually reading it, and never fired again on a return visit. Replaced with
+  a dedicated, replayable controller (assets/caviera-quiet-interlude.js) that toggles .is-active
+  (and .is-receding, for the small exit response) on .caviera-bespoke itself, timed to ~20-30%
+  visibility rather than 1px. See assets/caviera-home.css for the actual entrance values.
 {%- endcomment -%}
 {%- liquid
   assign bespoke_image = section.settings.image_desktop
@@ -50,7 +53,7 @@
   {%- elsif request.design_mode -%}
     <div class="caviera-editor-note">No dedicated bespoke image set — showing a clean Obsidian field instead of a stand-in photo. Campaign imagery must not contain marketplace badges, review stars, promotional text or watermarks.</div>
   {%- endif -%}
-  <div class="container caviera-bespoke__content" data-reveal>
+  <div class="container caviera-bespoke__content">
     {%- if section.settings.heading != blank -%}<h2 class="heading-h2 caviera-bespoke__heading">{{ section.settings.heading }}</h2>{%- endif -%}
     {%- if section.settings.body != blank -%}<p class="body-text caviera-bespoke__body">{{ section.settings.body }}</p>{%- endif -%}
     {%- if section.settings.cta_text != blank -%}
@@ -58,6 +61,8 @@
     {%- endif -%}
   </div>
 </section>
+
+<script src="{{ 'caviera-quiet-interlude.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
