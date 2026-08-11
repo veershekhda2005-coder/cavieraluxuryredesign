@@ -1987,25 +1987,88 @@
 .caviera-services__grid { display: grid; grid-template-columns: 1fr; gap: 28px; text-align: center; }
 @media (min-width: 700px) { .caviera-services__grid { grid-template-columns: repeat(3, 1fr); gap: 0; } }
 .caviera-services__item p { margin-top: 8px; color: var(--text-muted); }
-/* Subtle Rhodium dividers instead of relying on gap alone to separate the three statements. */
+/* Subtle Rhodium dividers instead of relying on gap alone to separate the three statements.
+   Desktop uses an absolutely-positioned pseudo-element (rather than a plain border) so it can be
+   driven by scroll progress below; mobile keeps a plain static border. */
 @media (min-width: 700px) {
-  .caviera-services__item { padding-inline: 28px; border-left: var(--border-width) solid var(--border-subtle); }
-  .caviera-services__item:first-child { border-left: none; padding-left: 0; }
+  .caviera-services__item { position: relative; padding-inline: 28px; }
   .caviera-services__item:last-child { padding-right: 0; }
+  .caviera-services__item:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: var(--border-width);
+    background: var(--border-subtle);
+    transform: scaleY(1);
+    transform-origin: top center;
+    opacity: 1;
+  }
 }
 @media (max-width: 699px) {
   .caviera-services__item { padding-top: 20px; border-top: var(--border-width) solid var(--border-subtle); }
   .caviera-services__item:first-child { border-top: none; padding-top: 0; }
 }
 
-/* STATIC FALLBACK (final decision): an entrance-motion controller for this heading/column reveal
-   was built and iterated on across three passes (see docs/build-progress.md-equivalent history in
-   git log for "Bespoke and service" commits). Every pass traced correctly in code review, but
-   real-browser testing twice reported no perceptible motion, and this environment has no browser
-   to verify the rendered result directly — a fourth code-only iteration had no better odds. Per
-   this task's own explicit fallback rule ("reliability is more important than forcing motion"),
-   the controller and every hidden/animated starting state have been removed; this section is back
-   to its plain, always fully-visible static state. */
+/* ARCHITECTURE REPLACEMENT — direct scroll-progress motion (assets/caviera-scroll-motion.js), not
+   an IntersectionObserver entrance trigger (see the file-level comment in sections/caviera-
+   services.liquid for why that was retired). [data-service-scroll-motion] is added only once the
+   controller has actually initialised this section (never at all under prefers-reduced-motion,
+   where the script returns immediately) — every value below is read with a fallback equal to the
+   fully-resolved state, so no-JS and reduced motion both render the complete final composition
+   with zero flash, and there is no discrete "hidden" state to gate separately.
+
+   --service-progress is one raw 0-1 value: the section's own scroll position across a narrow
+   "reading window" (top at ~80% down the viewport -> 0, top at ~30% down -> 1), written every
+   scroll frame. Desktop derives every sub-window (heading/three columns/dividers) from that one
+   value via calc()/clamp() — no JS piecewise needed, since each is a plain two-point range.
+   Mobile instead gives each stacked item its OWN --service-item-progress (from its own position,
+   set directly on the <li> by the JS, since items enter the viewport at very different times). */
+.caviera-services {
+  --heading-progress: clamp(0, calc((var(--service-progress, 1) - 0.05) / 0.35), 1);
+  --col1-progress: clamp(0, calc((var(--service-progress, 1) - 0.18) / 0.34), 1);
+  --col2-progress: clamp(0, calc((var(--service-progress, 1) - 0.33) / 0.34), 1);
+  --col3-progress: clamp(0, calc((var(--service-progress, 1) - 0.48) / 0.34), 1);
+  --divider-progress: clamp(0, calc((var(--service-progress, 1) - 0.25) / 0.47), 1);
+}
+[data-service-scroll-motion] .caviera-services__heading {
+  opacity: calc(0.2 + var(--heading-progress) * 0.8);
+  transform: translateY(calc(20px * (1 - var(--heading-progress))));
+  transition: none;
+}
+@media (min-width: 700px) {
+  [data-service-scroll-motion] .caviera-services__item:nth-child(1) {
+    opacity: calc(0.12 + var(--col1-progress) * 0.88);
+    transform: translateY(calc(24px * (1 - var(--col1-progress))));
+    transition: none;
+  }
+  [data-service-scroll-motion] .caviera-services__item:nth-child(2) {
+    opacity: calc(0.12 + var(--col2-progress) * 0.88);
+    transform: translateY(calc(24px * (1 - var(--col2-progress))));
+    transition: none;
+  }
+  [data-service-scroll-motion] .caviera-services__item:nth-child(3) {
+    opacity: calc(0.12 + var(--col3-progress) * 0.88);
+    transform: translateY(calc(24px * (1 - var(--col3-progress))));
+    transition: none;
+  }
+  [data-service-scroll-motion] .caviera-services__item:not(:first-child)::before {
+    transform: scaleY(var(--divider-progress));
+    opacity: var(--divider-progress);
+    transition: none;
+  }
+}
+@media (max-width: 699px) {
+  [data-service-scroll-motion] .caviera-services__item {
+    opacity: calc(0.2 + var(--service-item-progress, 1) * 0.8);
+    transform: translateY(calc(16px * (1 - var(--service-item-progress, 1))));
+    transition: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-services__heading,
+  .caviera-services__item,
+  .caviera-services__item::before { transition: none; }
+}
 
 /* ---- Bespoke banner ---- */
 /* VISUAL-TUNING FIX: min-height: 52vh (on top of .caviera-section's own padding-block) gave
@@ -2035,15 +2098,85 @@
 .caviera-bespoke__content { position: relative; z-index: 1; max-width: 560px; }
 .caviera-bespoke__content .body-text { margin: 16px 0 28px; }
 
-/* STATIC FALLBACK (final decision): an entrance-motion controller for this section (headline/CTA/
-   underline/arrow) was built and iterated on across three passes. Every pass traced correctly in
-   code review, but real-browser testing twice reported no perceptible motion, and this environment
-   has no browser to verify the rendered result directly — a fourth code-only iteration had no
-   better odds. Per this task's own explicit fallback rule ("reliability is more important than
-   forcing motion"), the controller and every hidden/animated starting state have been removed;
-   this section is back to its plain, always fully-visible static state — heading, body and the
-   .caviera-link-editorial CTA (fine static rule + arrow, see assets/caviera-components.css) all
-   render at rest with no JS dependency at all. */
+/* ARCHITECTURE REPLACEMENT — direct scroll-progress motion (assets/caviera-scroll-motion.js), not
+   an IntersectionObserver entrance trigger (see the file-level comment in sections/caviera-
+   bespoke-banner.liquid for why that was retired). [data-bespoke-scroll-motion] is added only
+   once the controller has actually initialised this section (never at all under prefers-reduced-
+   motion, where the script returns immediately) — every value below is read with a fallback equal
+   to the fully-resolved state, so no-JS and reduced motion both render the complete final
+   composition with zero flash, and there is no discrete "hidden" state to gate separately. No
+   CSS transition on any scroll-driven property — the scroll position itself is the only thing
+   moving these values, every frame, in either direction.
+
+   --bespoke-progress is one raw 0-1 value: the section's own scroll position across a narrow
+   "reading window" (top at ~80% down the viewport -> 0, top at ~30% down -> 1). The headline's
+   three-keyframe curve (opacity/translateY/translateX) is piecewise-interpolated in JS, since CSS
+   calc() alone can't express a non-linear three-point curve; CTA/underline/arrow are each a plain
+   two-point range, so their own sub-progress is derived here via calc()/clamp(). */
+.caviera-bespoke {
+  --cta-progress: clamp(0, calc((var(--bespoke-progress, 1) - 0.18) / 0.55), 1);
+  --underline-progress: clamp(0, calc((var(--bespoke-progress, 1) - 0.3) / 0.52), 1);
+  --arrow-progress: clamp(0, calc((var(--bespoke-progress, 1) - 0.45) / 0.45), 1);
+}
+[data-bespoke-scroll-motion] .caviera-bespoke__heading {
+  opacity: var(--bespoke-headline-opacity, 1);
+  transform:
+    translateY(var(--bespoke-headline-y, 0px))
+    translateX(var(--bespoke-headline-x, 0px))
+    scale(calc(0.985 + var(--bespoke-progress, 1) * 0.015));
+  transition: none;
+}
+[data-bespoke-scroll-motion] .caviera-bespoke__cta {
+  opacity: var(--cta-progress);
+  transform: translateY(calc(16px * (1 - var(--cta-progress)))) translateX(calc(6px * (1 - var(--cta-progress))));
+  transition: none;
+}
+/* The fine rule beneath the CTA becomes a drawn/retractable line instead of the shared
+   component's plain static border-bottom — scoped to this one instance only;
+   .caviera-link-editorial elsewhere (assets/caviera-components.css) keeps its ordinary static
+   rule. Default is fully drawn (scaleX(1)) — safe without JS and under reduced motion. */
+.caviera-bespoke__cta { position: relative; border-bottom: none; padding-bottom: 4px; }
+.caviera-bespoke__cta::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: var(--border-width);
+  background: currentColor;
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+[data-bespoke-scroll-motion] .caviera-bespoke__cta::after {
+  transform: scaleX(var(--underline-progress, 1));
+  transition: none;
+}
+[data-bespoke-scroll-motion] .caviera-bespoke__cta svg {
+  opacity: var(--arrow-progress, 1);
+  transform: translateX(calc(-8px * (1 - var(--arrow-progress, 1))));
+  transition: none;
+}
+/* Hover/focus keeps its own normal transition — this is a pointer/keyboard interaction, not
+   scroll-driven motion — and is restated at higher specificity than the resting rule above so it
+   still applies once the composed state is reached. */
+[data-bespoke-scroll-motion] .caviera-bespoke__cta:hover svg,
+[data-bespoke-scroll-motion] .caviera-bespoke__cta:focus-visible svg {
+  transform: translateX(5px);
+  transition: transform 220ms var(--ease-caviera);
+}
+@media (max-width: 699px) {
+  /* Simpler, smaller mobile range — no translateX/scale, less vertical travel. */
+  [data-bespoke-scroll-motion] .caviera-bespoke__heading {
+    transform: translateY(calc(var(--bespoke-headline-y, 0px) * 0.65));
+  }
+  [data-bespoke-scroll-motion] .caviera-bespoke__cta {
+    transform: translateY(calc(12px * (1 - var(--cta-progress))));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-bespoke__heading,
+  .caviera-bespoke__cta,
+  .caviera-bespoke__cta::after,
+  .caviera-bespoke__cta svg { transition: none; }
+}
 
 /* ---- Journal (homepage preview head only — card/grid styles are global, see caviera-components.css) ---- */
 .caviera-journal__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 40px; }

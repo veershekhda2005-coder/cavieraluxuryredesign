@@ -1,13 +1,15 @@
 {%- comment -%}
   Quiet trust signals. Fully merchant-editable — nothing is hard-coded globally, no loud badges.
 
-  STATIC FALLBACK (final decision): an entrance-motion controller (assets/caviera-quiet-
-  interlude.js) was built and iterated on across three passes to make this section's heading/
-  column reveal clearly visible while scrolling. Each pass traced correctly end to end in code
-  review, but real-browser testing twice reported no perceptible motion, and this environment has
-  no browser to verify the actual rendered result directly. Per this task's own explicit fallback
-  rule ("reliability is more important than forcing motion"), the controller has been removed and
-  this section is back to its plain, always-visible static state.
+  SCROLL-PROGRESS MOTION (architecture replacement): an earlier IntersectionObserver-driven
+  entrance trigger traced correctly in code review but was never confirmed perceptible in real-
+  browser testing, so it was retired rather than re-tuned again. assets/caviera-scroll-motion.js
+  now drives the heading/three columns/divider lines as a direct, continuous function of scroll
+  position (getBoundingClientRect(), recomputed every scroll frame) — desktop shares one section-
+  level progress value across staggered windows; mobile gives each stacked item its own
+  independent progress, since they enter the viewport at very different times. No threshold, no
+  discrete state, no CSS transition on the scroll-driven properties — motion is reversible by
+  construction.
 {%- endcomment -%}
 {%- liquid
   assign has_items = false
@@ -33,6 +35,7 @@
     </ul>
   </div>
 </section>
+<script src="{{ 'caviera-scroll-motion.js' | asset_url }}" defer="defer"></script>
 {%- elsif request.design_mode -%}
 <section class="caviera-section caviera-section--tight"><div class="container"><div class="caviera-editor-note">Add service blocks (e.g. Made to order, Tracked delivery, Client support).</div></div></section>
 {%- endif -%}

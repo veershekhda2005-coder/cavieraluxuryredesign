@@ -14,16 +14,15 @@
   directional arrow", see assets/caviera-components.css) — matching the brief's "editorial, not
   button-like" CTA without inventing a new style.
 
-  STATIC FALLBACK (final decision): an entrance-motion controller (assets/caviera-quiet-
-  interlude.js) was built and iterated on across three passes to make this section's reveal
-  clearly visible while scrolling. Each pass traced correctly end to end in code review (attribute/
-  class wiring, CSS specificity, IntersectionObserver thresholds all verified by hand) and passed
-  shopify theme check, but real-browser testing twice reported no perceptible motion — and this
-  environment has no browser to verify the actual rendered result directly, so a fourth code-only
-  iteration had no better odds than the previous ones. Per this task's own explicit fallback rule
-  ("reliability is more important than forcing motion"), the controller has been removed and this
-  section is back to its plain, always-visible static state — the same one this task confirms is
-  "already visually strong without animation."
+  SCROLL-PROGRESS MOTION (architecture replacement): three earlier passes used an
+  IntersectionObserver-driven entrance trigger (a single .is-active class added/removed at a
+  visibility threshold). Each traced correctly in code review, but real-browser testing repeatedly
+  reported no perceptible motion, so that architecture was retired entirely rather than re-tuned
+  again. assets/caviera-scroll-motion.js now drives the headline/CTA/underline/arrow as a direct,
+  continuous function of the section's own scroll position (getBoundingClientRect(), recomputed on
+  every scroll frame) — no threshold, no discrete state, no CSS transition on the scroll-driven
+  properties, so movement is reversible by construction (scrolling up runs the same function
+  backwards) rather than by a separate replay mechanism.
 {%- endcomment -%}
 {%- liquid
   assign bespoke_image = section.settings.image_desktop
@@ -65,6 +64,8 @@
     {%- endif -%}
   </div>
 </section>
+
+<script src="{{ 'caviera-scroll-motion.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
