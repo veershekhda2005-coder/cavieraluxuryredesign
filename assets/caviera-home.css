@@ -647,8 +647,20 @@
 /* Anchor-navigation fix (full-screen menu "EDITION I" link, sections/caviera-header.liquid): keeps
    the section clear of the sticky header after a #edition-i jump/scrollIntoView, whichever browser
    or JS path lands here — a plain in-page anchor target, so this applies regardless of whether the
-   section is currently in its pinned/sticky scroll-progress state or not. */
-#edition-i { scroll-margin-top: var(--header-height, 88px); }
+   section is currently in its pinned/sticky scroll-progress state or not.
+
+   LANDING FIX: must use --header-height-COMPACT, not the resting --header-height. Edition I sits
+   far enough down the page that ANY scroll to it (menu click, direct link, browser back/forward)
+   leaves window.scrollY well past the 24px threshold assets/caviera-header.js's onScroll() checks,
+   so .caviera-header is always in its .is-compact state by the time the scroll settles — and
+   .caviera-header.is-compact .caviera-header__bar is set to height: var(--header-height-compact)
+   (see caviera-header.css), not the taller resting value. Reserving the resting height here
+   over-shot the actual header by exactly (--header-height − --header-height-compact) — 24px on
+   desktop, 8px on mobile per caviera-base.css's own definitions — which read as a thin sliver of
+   House Statement still visible above Edition I. --header-height-compact is itself redefined inside
+   caviera-base.css's own mobile media query, so this one declaration already resolves correctly at
+   every breakpoint without a matching media query here. */
+#edition-i { scroll-margin-top: var(--header-height-compact, 64px); }
 
 .caviera-edition-teaser__inner {
   display: grid;
