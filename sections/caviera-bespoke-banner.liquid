@@ -6,6 +6,17 @@
   to any product image. An unrelated catalogue photo here (the same fallback the hero and object
   in focus used to reach for) is exactly what let one temporary product image, badge included,
   repeat across the homepage. With no dedicated image, the section shows a clean Obsidian field.
+
+  QUIET INTERLUDE FIX: this is deliberately CAVIERA's calmest section — House/Editions carry the
+  homepage's major interactions; Bespoke is secondary, a private invitation, not a sales chapter.
+  data-reveal on .caviera-bespoke__content still uses the theme's one shared IntersectionObserver
+  (assets/caviera-global.js) — no new controller — but the wrapper's own generic fade is cancelled
+  in caviera-home.css in favour of two smaller, staggered child reveals (heading, then the CTA
+  ~150ms later) so the entrance reads as one restrained composition rather than a single blob
+  appearing at once. The CTA itself moved from a filled .btn to .caviera-link-editorial — an
+  existing, previously-unused shared component built for exactly this ("understated actions...
+  text + a fine rule + a small directional arrow", see assets/caviera-components.css) — matching
+  the brief's "editorial, not button-like" CTA without inventing a new style.
 {%- endcomment -%}
 {%- liquid
   assign bespoke_image = section.settings.image_desktop
@@ -40,10 +51,10 @@
     <div class="caviera-editor-note">No dedicated bespoke image set — showing a clean Obsidian field instead of a stand-in photo. Campaign imagery must not contain marketplace badges, review stars, promotional text or watermarks.</div>
   {%- endif -%}
   <div class="container caviera-bespoke__content" data-reveal>
-    {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
-    {%- if section.settings.body != blank -%}<p class="body-text">{{ section.settings.body }}</p>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="heading-h2 caviera-bespoke__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.body != blank -%}<p class="body-text caviera-bespoke__body">{{ section.settings.body }}</p>{%- endif -%}
     {%- if section.settings.cta_text != blank -%}
-      <a href="{{ section.settings.cta_url | default: '/pages/bespoke' }}" class="btn btn--primary">{{ section.settings.cta_text }}</a>
+      <a href="{{ section.settings.cta_url | default: '/pages/bespoke' }}" class="caviera-link-editorial caviera-bespoke__cta">{{ section.settings.cta_text }}{%- render 'icon', name: 'arrow-right' -%}</a>
     {%- endif -%}
   </div>
 </section>
