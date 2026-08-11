@@ -644,24 +644,17 @@
    colour come from the shared [data-scheme="obsidian"|"cinnabar"] rules in caviera-base.css,
    already applied via this section's own data-scheme attribute — nothing colour-related needed
    here beyond that. */
-/* Anchor-navigation fix (full-screen menu "EDITION I" link, sections/caviera-header.liquid) — ONE
-   authoritative offset strategy per navigation path, not stacked with any other (see the audit in
-   assets/caviera-header.js):
-
-   - Same-page menu click: bypasses this rule entirely. assets/caviera-header.js's scrollToTarget()
-     computes an exact target from the header's live getBoundingClientRect().height and calls
-     window.scrollTo() with explicit coordinates, which does not consult scroll-margin-top at all —
-     so this declaration and that calculation can never double up.
-   - Cross-page landing (arriving fresh via /#edition-i from another page, or a typed/bookmarked
-     URL): this is the ONLY mechanism available — no JS runs before the browser's native fragment
-     scroll fires. A fresh load always starts at scrollY 0, before any scroll event has run
-     caviera-header.js's is-compact logic, so .caviera-header is still genuinely in its RESTING
-     state at that exact instant — var(--header-height), not the compact value, is what actually
-     matches reality then. (A brief self-correction for the header's subsequent compact-height
-     transition — see assets/caviera-header.js's #edition-i-only load handler — closes the small
-     gap that opens after landing; that gap is Edition I's own background, never the previous
-     section, so it was never the reported bug.) */
-#edition-i { scroll-margin-top: var(--header-height, 88px); }
+/* Anchor-navigation fix (full-screen menu "EDITION I" link, sections/caviera-header.liquid) — FINAL
+   pass: neutralized entirely. Every previous header-height-based value here (resting, then compact,
+   then a live-measured JS equivalent) was still an attempt to reserve space FOR the sticky header —
+   approximate by construction, and the actual source of the visible strip. assets/caviera-header.js
+   now scrolls #edition-i's own true document top to viewport y=0 directly (no header subtraction at
+   all, for either the same-page click or the cross-page load-time correction) — the sticky header
+   then simply sits on top of Edition I's own first few pixels exactly as it would over the top of
+   any section, which was never the reported problem (the previous "Composure made visible." section
+   peeking above Edition I was). scroll-margin-top must stay at 0 so nothing here can reintroduce a
+   second, conflicting offset alongside that JS. */
+#edition-i { scroll-margin-top: 0 !important; }
 
 .caviera-edition-teaser__inner {
   display: grid;

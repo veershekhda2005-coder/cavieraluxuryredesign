@@ -33,26 +33,31 @@
 
   var lastFocused = null;
 
-  // Real, live header height — NOT a CSS custom property. --header-height/--header-height-compact
-  // are static numbers that can't account for .caviera-header--transparent (position: absolute,
-  // reserving no flow space at all pre-scroll) or the mid-transition moment while .caviera-header__
-  // bar's own height animates between resting/compact (var(--motion-base), 520ms) — either of which
-  // made a purely CSS var(--header-height*)-based scroll-margin-top a moving target, not a fixed
-  // one. Measuring getBoundingClientRect().height instead always reflects whatever the header
-  // ACTUALLY is at the exact instant we're about to scroll, so the offset is exact by construction,
-  // never a guessed constant.
-  function headerHeight() {
-    var header = document.querySelector('.caviera-header');
-    return header ? header.getBoundingClientRect().height : 0;
-  }
-
-  // Scrolls so `target`'s top lands exactly at the header's real current bottom edge — one
-  // authoritative calculation, reused by both the menu-click path and the post-load correction
-  // below, so there is only ever one offset strategy in play (see the audit note on the click
-  // handler for why scroll-margin-top/scrollIntoView were dropped in favour of this).
-  function scrollToTarget(target, instant) {
-    var targetY = window.scrollY + target.getBoundingClientRect().top - headerHeight();
-    window.scrollTo({ top: Math.max(0, targetY), behavior: instant ? 'auto' : 'smooth' });
+  // FINAL LANDING FIX — ONE system, no header-height math at all. Every previous pass (CSS
+  // scroll-margin-top against var(--header-height)/--header-height-compact, then a JS
+  // getBoundingClientRect()-based header-height subtraction) was still trying to reserve space FOR
+  // the header by calculating its size — approximate by construction, and the actual source of the
+  // visible strip. The header is sticky and simply sits on top of whatever is at the top of the
+  // viewport; scrolling #edition-i's own true document top to y=0 is what makes the OUTER Edition
+  // wrapper (not any inner sticky child) the first thing at the top of the page — the header then
+  // overlaps its own few pixels of Edition I exactly as it would overlap the top of any section,
+  // never a sliver of the PREVIOUS section, which is what was actually reported. No subtraction, no
+  // constant, nothing to get subtly wrong.
+  //
+  // Two rAFs, not zero or one: the first lets the browser commit closeMenu()'s DOM changes (mobile
+  // nav hidden, `no-scroll` removed) into a real layout pass; the second runs after THAT layout is
+  // painted, so getBoundingClientRect() below reads the final, settled position — not a mid-flight
+  // one from the same task the class changes happened in.
+  function scrollToEditionTop(edition) {
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        var target = window.scrollY + edition.getBoundingClientRect().top;
+        window.scrollTo({ top: target, behavior: 'auto' });
+        if (window.history && window.history.pushState) {
+          window.history.pushState(null, '', '#edition-i');
+        }
+      });
+    });
   }
 
   function trapFocus(mobileNav, e) {
@@ -120,17 +125,11 @@
     // from "the link doesn't work". Cross-page links (THE HOUSE, JOURNAL) never showed this symptom
     // because a full page load replaces the DOM (and its no-scroll class) regardless.
     //
-    // LANDING-PRECISION FIX: originally used target.scrollIntoView() + a CSS scroll-margin-top var —
-    // correct in principle, but scroll-margin-top is a fixed CSS number and the header's REAL height
-    // is not: .caviera-header--transparent starts as position: absolute (zero flow height) until
-    // scrolled, and even once .is-compact engages, .caviera-header__bar's own height animates over
-    // var(--motion-base) (520ms) rather than changing instantly — so a static var(--header-height*)
-    // could easily be measuring a header state that no longer matches reality by the time the scroll
-    // settles. scrollToTarget() (above) measures the header's ACTUAL getBoundingClientRect().height
-    // at the moment we're about to scroll instead, so it's exact regardless of which state the
-    // header happens to be in. This is now the ONLY offset calculation in this path — no CSS
-    // scroll-margin-top is involved at all (window.scrollTo() with explicit coordinates ignores it),
-    // so there is no risk of the two stacking into a double offset.
+    // LANDING FIX (final pass) — for the EDITION I link specifically (any same-page link whose hash
+    // target actually exists — in practice only #edition-i today): prevent the native hash jump,
+    // close the menu, unlock scroll, then hand off to scrollToEditionTop() (above) for the exact,
+    // no-header-math landing. Cross-page links (THE HOUSE, JOURNAL) just get the menu closed and
+    // otherwise navigate exactly as before — unaffected by this fix.
     root.querySelectorAll('.caviera-mobile-nav__primary-link[href]').forEach(function (link) {
       if (link.dataset.clickBound) return;
       link.dataset.clickBound = 'true';
@@ -140,21 +139,12 @@
         var samePage = url.pathname === window.location.pathname && url.search === window.location.search && url.hash;
         var target = samePage ? document.querySelector(url.hash) : null;
         if (target) {
-          // In-page destination (e.g. #edition-i): take over the whole sequence ourselves so the
-          // menu is guaranteed closed (and scrolling unlocked) BEFORE we scroll, rather than hoping
-          // the browser's native hash-jump happens to land correctly against a still-locked page.
+          // In-page destination: take over the whole sequence ourselves so the menu is guaranteed
+          // closed (and scrolling unlocked) BEFORE we scroll, rather than hoping the browser's
+          // native hash-jump happens to land correctly against a still-locked page.
           e.preventDefault();
           closeMenu();
-          if (window.history && window.history.pushState) {
-            window.history.pushState(null, '', url.hash);
-          } else {
-            window.location.hash = url.hash;
-          }
-          var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          // One frame so closeMenu()'s layout changes (menu hidden, scroll unlocked) are committed
-          // before we measure/scroll against them — the minimum safe sequencing, not an arbitrary
-          // delay (see the brief's own "minimum safe sequencing" note).
-          window.requestAnimationFrame(function () { scrollToTarget(target, reduceMotion); });
+          scrollToEditionTop(target);
           // Move focus to the destination so keyboard/screen-reader users land where a sighted
           // mouse user's eye would — never left behind on a now-hidden menu item. tabindex="-1"
           // makes an otherwise non-interactive section programmatically focusable without adding a
@@ -199,27 +189,17 @@
   initHeaderControls(document);
   document.addEventListener('shopify:section:load', function (e) { initHeaderControls(e.target); });
 
-  // Cross-page landing correction — ONLY for #edition-i (per brief: a small, targeted routine, not
-  // a generic hash-hijack). The browser's own native fragment scroll (e.g. arriving fresh from
-  // another page via /#edition-i) happens against CSS scroll-margin-top on #edition-i in
-  // caviera-home.css, computed against the header's genuinely resting state at that instant (a
-  // fresh load always starts at scrollY 0, before any scroll event has run .is-compact logic) — so
-  // it lands correctly at first. The landing scroll itself then pushes scrollY well past the
-  // is-compact threshold, so the header shortly animates down to its compact height, which would
-  // otherwise leave a small, self-inflicted gap of Edition I's own background under the header (not
-  // the previous section — that's already scrolled past by then, so never the reported bug — but
-  // still worth closing). One silent, instant correction shortly after load, using the exact same
-  // scrollToTarget() math the click handler uses, closes that gap without a second visible jump.
-  if (window.location.hash === '#edition-i') {
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        var target = document.getElementById('edition-i');
-        if (!target) return;
-        var targetY = window.scrollY + target.getBoundingClientRect().top - headerHeight();
-        if (Math.abs(window.scrollY - Math.max(0, targetY)) > 2) {
-          scrollToTarget(target, true);
-        }
-      }, 560); // just past --motion-base (520ms), the header's own compact-height transition
+  // Cross-page landing correction — ONLY for #edition-i (a small, targeted routine, not a generic
+  // hash-hijack of every anchor on the site). Arriving fresh from another page via /#edition-i
+  // relies entirely on the browser's own native fragment scroll (no JS runs ahead of it); this runs
+  // the identical zero-header-math correction once DOM/layout is ready, so a same-page click and a
+  // fresh cross-page load both land through the exact same logic.
+  var editionOnLoad = document.getElementById('edition-i');
+  if (window.location.hash === '#edition-i' && editionOnLoad) {
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        window.scrollTo({ top: window.scrollY + editionOnLoad.getBoundingClientRect().top, behavior: 'auto' });
+      });
     });
   }
 
