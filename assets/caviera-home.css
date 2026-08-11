@@ -1342,7 +1342,10 @@
 .caviera-craftsmanship__stage[data-caviera-material-progress] { position: relative; }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    height: 150svh;
+    /* VISIBILITY FIX: 150svh gave the sticky hold real scroll distance already (verified — see the
+       commit note), but nudged up slightly (still inside the requested 160-175svh ceiling) so each
+       of the three states has a touch more room to actually register while scrolling normally. */
+    height: 168svh;
     padding-block: 0; /* the section's own padding-block still applies around .stage; nothing extra needed here */
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
@@ -1356,37 +1359,58 @@
     justify-content: center;
   }
   /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
-     [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it. Small: max ~2vw
-     horizontal, max ~2.5% scale — an architectural cue, not the main show. */
+     [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it.
+     VISIBILITY FIX: was max -2vw / scale 1.025 — confirmed via code review to be updating
+     correctly every frame (--material-progress itself was never the problem), just too small a
+     delta to notice. Strengthened to the requested -4vw / scale 1.04 maximum — still one
+     continuous, un-stepped movement tied directly to scroll, never letters, never rotation. */
   .caviera-craftsmanship__stage[data-caviera-material-progress] [data-reveal-style="drkst"].is-visible {
-    transform: translateX(calc(var(--material-progress, 0) * -2vw)) scale(calc(1 + (var(--material-progress, 0) * 0.025)));
+    transform: translateX(calc(var(--material-progress, 0) * -4vw)) scale(calc(1 + (var(--material-progress, 0) * 0.04)));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .caviera-craftsmanship__stage[data-caviera-material-progress] [data-reveal-style="drkst"].is-visible { transform: none; }
 }
 
-/* Active/inactive chapter cue — quiet, opacity + a tiny lift only, never a size/layout change.
-   Applies at EVERY width (mobile gets the same quiet cue, just without the sticky hold above).
-   Gated behind [data-observing="true"] (set by the JS only once detection is actually wired up) so
-   every chapter reads at full strength before/without JS. */
+/* Active/inactive chapter cue — opacity + a lift, never a size/layout change. Base rules here are
+   the MOBILE values (simpler, no scale, per brief); the min-width: 1024px override further down
+   strengthens them for the desktop side-by-side composition, where the sticky hold gives scroll
+   room for a more noticeable handoff. Gated behind [data-observing="true"] (set by the JS only
+   once detection is actually wired up) so every chapter reads at full strength before/without JS.
+   VISIBILITY FIX: the previous delta (0.42->1 opacity, 0px->-5px translateY, no scale at all) was
+   real and working (confirmed via code review — data-observing/.is-active toggle correctly) but too
+   small to read as a clear state change; both tiers below are deliberately stronger. */
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row {
   opacity: 0.42;
-  transform: translateY(0);
-  transition: opacity 450ms var(--ease-caviera), transform 450ms var(--ease-caviera);
+  transform: translateY(4px);
+  transition: opacity 460ms var(--ease-caviera), transform 460ms var(--ease-caviera);
 }
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active {
   opacity: 1;
-  transform: translateY(-5px);
+  transform: translateY(-6px);
+}
+@media (min-width: 1024px) {
+  .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row {
+    opacity: 0.34;
+    transform: translateY(6px) scale(1);
+    transition: opacity 550ms var(--ease-caviera), transform 550ms var(--ease-caviera);
+  }
+  .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.025);
+  }
 }
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .label {
-  opacity: 0.72;
-  transition: opacity 450ms var(--ease-caviera);
+  opacity: 0.3;
+  transition: opacity 460ms var(--ease-caviera), transform 460ms var(--ease-caviera);
 }
-.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .label { opacity: 1; }
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .label {
+  opacity: 1;
+  transform: translateY(-2px);
+}
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .body-text {
-  opacity: 0.75;
-  transition: opacity 450ms var(--ease-caviera);
+  opacity: 0.35;
+  transition: opacity 460ms var(--ease-caviera);
 }
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .body-text { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
