@@ -644,23 +644,24 @@
    colour come from the shared [data-scheme="obsidian"|"cinnabar"] rules in caviera-base.css,
    already applied via this section's own data-scheme attribute — nothing colour-related needed
    here beyond that. */
-/* Anchor-navigation fix (full-screen menu "EDITION I" link, sections/caviera-header.liquid): keeps
-   the section clear of the sticky header after a #edition-i jump/scrollIntoView, whichever browser
-   or JS path lands here — a plain in-page anchor target, so this applies regardless of whether the
-   section is currently in its pinned/sticky scroll-progress state or not.
+/* Anchor-navigation fix (full-screen menu "EDITION I" link, sections/caviera-header.liquid) — ONE
+   authoritative offset strategy per navigation path, not stacked with any other (see the audit in
+   assets/caviera-header.js):
 
-   LANDING FIX: must use --header-height-COMPACT, not the resting --header-height. Edition I sits
-   far enough down the page that ANY scroll to it (menu click, direct link, browser back/forward)
-   leaves window.scrollY well past the 24px threshold assets/caviera-header.js's onScroll() checks,
-   so .caviera-header is always in its .is-compact state by the time the scroll settles — and
-   .caviera-header.is-compact .caviera-header__bar is set to height: var(--header-height-compact)
-   (see caviera-header.css), not the taller resting value. Reserving the resting height here
-   over-shot the actual header by exactly (--header-height − --header-height-compact) — 24px on
-   desktop, 8px on mobile per caviera-base.css's own definitions — which read as a thin sliver of
-   House Statement still visible above Edition I. --header-height-compact is itself redefined inside
-   caviera-base.css's own mobile media query, so this one declaration already resolves correctly at
-   every breakpoint without a matching media query here. */
-#edition-i { scroll-margin-top: var(--header-height-compact, 64px); }
+   - Same-page menu click: bypasses this rule entirely. assets/caviera-header.js's scrollToTarget()
+     computes an exact target from the header's live getBoundingClientRect().height and calls
+     window.scrollTo() with explicit coordinates, which does not consult scroll-margin-top at all —
+     so this declaration and that calculation can never double up.
+   - Cross-page landing (arriving fresh via /#edition-i from another page, or a typed/bookmarked
+     URL): this is the ONLY mechanism available — no JS runs before the browser's native fragment
+     scroll fires. A fresh load always starts at scrollY 0, before any scroll event has run
+     caviera-header.js's is-compact logic, so .caviera-header is still genuinely in its RESTING
+     state at that exact instant — var(--header-height), not the compact value, is what actually
+     matches reality then. (A brief self-correction for the header's subsequent compact-height
+     transition — see assets/caviera-header.js's #edition-i-only load handler — closes the small
+     gap that opens after landing; that gap is Edition I's own background, never the previous
+     section, so it was never the reported bug.) */
+#edition-i { scroll-margin-top: var(--header-height, 88px); }
 
 .caviera-edition-teaser__inner {
   display: grid;
