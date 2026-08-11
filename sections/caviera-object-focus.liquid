@@ -2,37 +2,52 @@
   "Object in focus" — one CAVIERA piece studied in detail, with sequential editorial chapters
   (Stone, Setting, Gold, Silhouette, Craft, Hallmark…) beside it.
 
-  This section always renders — no outer condition removes the whole thing. Media is optional and
-  only changes what fills the left column, never whether the section (label, heading, story,
-  optional CTA) exists:
-    - MEDIA (data-mode="media"): a dedicated image, or else the selected product's featured image,
-      large, with a restrained offset Cinnabar plane behind it (architectural, not decorative).
-    - COMPOSITION (data-mode="composition"): no image resolves at all, so the same column instead
-      shows a controlled CAVIERA material field — a Cinnabar architectural panel, a Warm Bone
-      inset, and (optionally) a large, very subtle House Seal watermark — never an empty rectangle,
-      and never a reused hero/product/collection/packaging image.
+  VISUAL-TUNING FIX: this used to show the quiet "no media" CAVIERA material composition (Cinnabar
+  panel + Warm Bone inset + optional faint House Seal watermark) whenever no product/dedicated
+  image was configured, which read as an unfinished placeholder rather than an object study. Media
+  now always resolves to something real — a per-chapter dedicated image if a merchant has set one
+  on that block, otherwise the section's own dedicated/product image, otherwise the same bundled
+  default the hero uses (assets/15_oryx_necklace_on_model.png) — so the CAVIERA material
+  composition below is now a genuine last-resort fallback (kept in the code, effectively
+  unreachable by default) rather than the everyday state, exactly like the hero's and Edition I
+  teaser's own bundled-default pattern.
 
-  Renders with plain CSS only — no [data-reveal] scroll-fade — so content visibility never depends
-  on JavaScript, IntersectionObserver support, or a Theme Editor section reload.
+  Nolan-style sticky object storytelling: each chapter with a title renders its OWN image state,
+  stacked absolutely inside .caviera-object-focus__media (sticky at 1024px+, see caviera-home.css)
+  and crossfaded by assets/caviera-object-focus.js via data-active-chapter on that element — a real
+  image change per chapter, not just a container-level nudge. A chapter with its own dedicated image
+  renders it as itself; a chapter with none reuses the section's base image with a distinct crop
+  (data-derived="true" — see the per-index rules in caviera-home.css) so "Stone"/"Setting"/"Gold"
+  always look like genuinely different states even when only one real photograph exists yet. This
+  is an explicitly temporary editorial treatment per the visual-tuning brief — real per-chapter
+  macro photography drops in per-block without any code change.
+
+  With no chapters at all, the section falls back to the original single dominant image (respecting
+  the Media fit setting below) — media_fit only applies in that fallback path now, since the
+  chapter-stack above is deliberately always a considered crop.
 {%- endcomment -%}
 {%- liquid
   assign product = section.settings.product
   assign dedicated_image = section.settings.image
   assign dedicated_image_mobile = section.settings.image_mobile
 
-  assign img = dedicated_image
-  if img == blank and product != blank
-    assign img = product.featured_image
+  assign base_img = dedicated_image
+  if base_img == blank and product != blank
+    assign base_img = product.featured_image
   endif
-  assign img_mobile = dedicated_image_mobile
-  if img_mobile == blank
-    assign img_mobile = img
+  assign base_img_mobile = dedicated_image_mobile
+  if base_img_mobile == blank
+    assign base_img_mobile = base_img
   endif
-
-  assign has_media = false
-  if img != blank
-    assign has_media = true
+  assign bundled_file = '15_oryx_necklace_on_model.png'
+  assign use_bundled_base = false
+  if base_img == blank
+    assign use_bundled_base = true
   endif
+  # has_media is now always true — the bundled default fills the gap exactly like the hero and
+  # Edition I teaser, so the "composition" fallback further below is a genuine last resort, not the
+  # everyday no-image state.
+  assign has_media = true
 
   assign mark_mode = 'light'
   unless section.settings.color_scheme == 'bone'
@@ -56,12 +71,6 @@
   endfor
 -%}
 <section class="caviera-section caviera-object-focus" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}" data-spacing="{{ section.settings.spacing | default: 'standard' }}" data-mode="{% if has_media %}media{% else %}composition{% endif %}">
-  {%- if request.design_mode and has_media == false -%}
-    <div class="container container--narrow">
-      <div class="caviera-editor-note">Add a Featured object / product or editorial image to introduce jewellery media. The storefront will otherwise use a quiet CAVIERA material field instead.</div>
-    </div>
-  {%- endif -%}
-
   <div class="container container--narrow caviera-object-focus__head">
     {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
     {%- if section.settings.heading != blank -%}<h2 class="heading-h1 caviera-object-focus__heading">{{ section.settings.heading }}</h2>{%- endif -%}
@@ -69,38 +78,73 @@
 
   <div class="container caviera-object-focus__grid">
     <div class="caviera-object-focus__media-col">
-      <div class="caviera-object-focus__media" data-fit="{{ section.settings.media_fit | default: 'contain' }}">
-        {%- if has_media -%}
+      {%- if has_chapters -%}
+        <div class="caviera-object-focus__media" data-active-chapter="0">
           <span class="caviera-object-focus__media-offset" aria-hidden="true"></span>
-          <picture>
-            {%- if img_mobile != blank and img_mobile != img -%}
-              <source media="(max-width: 749px)" srcset="{{ img_mobile | image_url: width: 700 }} 700w, {{ img_mobile | image_url: width: 1000 }} 1000w" sizes="100vw">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.title != blank or block.settings.body != blank -%}
+              {%- liquid
+                assign chapter_img = block.settings.image
+                assign chapter_derived = false
+                if chapter_img == blank
+                  assign chapter_img = base_img
+                  assign chapter_derived = true
+                endif
+              -%}
+              <div class="caviera-object-focus__media-state" data-state-index="{{ forloop.index0 }}" data-derived="{{ chapter_derived }}">
+                {%- if chapter_img != blank -%}
+                  <img
+                    src="{{ chapter_img | image_url: width: 1200 }}"
+                    srcset="{{ chapter_img | image_url: width: 600 }} 600w, {{ chapter_img | image_url: width: 1200 }} 1200w, {{ chapter_img | image_url: width: 1800 }} 1800w"
+                    sizes="(min-width: 1024px) 58vw, 100vw"
+                    width="{{ chapter_img.width }}" height="{{ chapter_img.height }}"
+                    alt="{{ chapter_img.alt | default: block.settings.title | default: '' | escape }}"
+                    loading="lazy"
+                  >
+                {%- elsif use_bundled_base -%}
+                  <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="{{ block.settings.title | escape }}" loading="lazy">
+                {%- endif -%}
+              </div>
             {%- endif -%}
-            <img
-              src="{{ img | image_url: width: 1200 }}"
-              srcset="{{ img | image_url: width: 600 }} 600w, {{ img | image_url: width: 1200 }} 1200w, {{ img | image_url: width: 1800 }} 1800w"
-              sizes="(min-width: 1024px) 58vw, 100vw"
-              width="{{ img.width }}" height="{{ img.height }}"
-              alt="{{ img.alt | default: product.title | default: '' | escape }}"
-              loading="lazy"
-            >
-          </picture>
-        {%- else -%}
-          {%- comment -%}
-            Controlled CAVIERA material field — never a simulated photo. A Cinnabar panel with a
-            Warm Bone inset, echoing the same "outer protection / inner reveal" language used in
-            Packaging ritual's own material composition, plus an optional quiet House Seal.
-          {%- endcomment -%}
-          <div class="caviera-object-focus__composition" aria-hidden="true">
-            <span class="caviera-object-focus__composition-inset"></span>
-          </div>
-          {%- if section.settings.show_seal_watermark -%}
-            <div class="caviera-object-focus__composition-seal" style="--seal-opacity: {{ section.settings.seal_watermark_opacity | default: 8 }}%;">
-              {%- render 'caviera-house-seal', mode: mark_mode, width: 220, alt: '' -%}
+          {%- endfor -%}
+        </div>
+      {%- else -%}
+        <div class="caviera-object-focus__media" data-fit="{{ section.settings.media_fit | default: 'contain' }}">
+          {%- if base_img != blank or use_bundled_base -%}
+            <span class="caviera-object-focus__media-offset" aria-hidden="true"></span>
+            <picture>
+              {%- if base_img_mobile != blank and base_img_mobile != base_img -%}
+                <source media="(max-width: 749px)" srcset="{{ base_img_mobile | image_url: width: 700 }} 700w, {{ base_img_mobile | image_url: width: 1000 }} 1000w" sizes="100vw">
+              {%- endif -%}
+              {%- if base_img != blank -%}
+                <img
+                  src="{{ base_img | image_url: width: 1200 }}"
+                  srcset="{{ base_img | image_url: width: 600 }} 600w, {{ base_img | image_url: width: 1200 }} 1200w, {{ base_img | image_url: width: 1800 }} 1800w"
+                  sizes="(min-width: 1024px) 58vw, 100vw"
+                  width="{{ base_img.width }}" height="{{ base_img.height }}"
+                  alt="{{ base_img.alt | default: product.title | default: '' | escape }}"
+                  loading="lazy"
+                >
+              {%- else -%}
+                <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="" loading="lazy">
+              {%- endif -%}
+            </picture>
+          {%- else -%}
+            {%- comment -%}
+              Controlled CAVIERA material field — genuine last resort now (unreachable by default,
+              see the file-level comment above). Never a simulated photo.
+            {%- endcomment -%}
+            <div class="caviera-object-focus__composition" aria-hidden="true">
+              <span class="caviera-object-focus__composition-inset"></span>
             </div>
+            {%- if section.settings.show_seal_watermark -%}
+              <div class="caviera-object-focus__composition-seal" style="--seal-opacity: {{ section.settings.seal_watermark_opacity | default: 8 }}%;">
+                {%- render 'caviera-house-seal', mode: mark_mode, width: 220, alt: '' -%}
+              </div>
+            {%- endif -%}
           {%- endif -%}
-        {%- endif -%}
-      </div>
+        </div>
+      {%- endif -%}
     </div>
 
     <div class="caviera-object-focus__story">
@@ -108,7 +152,7 @@
         <ol class="caviera-object-focus__chapters">
           {%- for block in section.blocks -%}
             {%- if block.settings.title != blank or block.settings.body != blank -%}
-              <li class="caviera-object-focus__chapter" {{ block.shopify_attributes }}>
+              <li class="caviera-object-focus__chapter" data-chapter-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
                 <span class="caviera-object-focus__chapter-number label" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
                 <div class="caviera-object-focus__chapter-copy">
                   {%- if block.settings.title != blank -%}<h3 class="caviera-object-focus__chapter-title">{{ block.settings.title }}</h3>{%- endif -%}
@@ -132,12 +176,12 @@
 {
   "name": "Object in focus",
   "settings": [
-    { "type": "product", "id": "product", "label": "Featured object / product", "info": "Select the CAVIERA jewellery piece featured in this editorial study. Its featured image is used when no dedicated editorial image is uploaded." },
-    { "type": "image_picker", "id": "image", "label": "Desktop editorial image", "info": "Takes priority over the selected product's image. Should feel monumental, not a catalogue thumbnail — no marketplace badges, review stars or promotional text." },
-    { "type": "image_picker", "id": "image_mobile", "label": "Mobile editorial image", "info": "Falls back to the desktop image (or the product's image) when left blank." },
+    { "type": "product", "id": "product", "label": "Featured object / product", "info": "Its featured image becomes the base image reused (with a distinct crop) by any chapter block below that has no image of its own." },
+    { "type": "image_picker", "id": "image", "label": "Base image", "info": "Takes priority over the selected product's image as the base reused by chapter blocks with no image of their own. Falls back to a bundled default when left blank." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Base image (mobile)", "info": "Used only in the no-chapters fallback layout below. Falls back to the desktop base image when left blank." },
     {
-      "type": "select", "id": "media_fit", "label": "Media fit", "default": "contain",
-      "info": "Contain shows the whole piece at its true proportions (recommended). Cover fills an editorial frame and may crop the edges.",
+      "type": "select", "id": "media_fit", "label": "Media fit (no-chapters fallback only)", "default": "contain",
+      "info": "Only applies when this section has no chapter blocks at all. Contain shows the whole piece at its true proportions; cover fills an editorial frame and may crop the edges.",
       "options": [
         { "value": "contain", "label": "Contain — preserve the full piece" },
         { "value": "cover", "label": "Cover — fill an editorial frame" }
@@ -162,8 +206,9 @@
         { "value": "spacious", "label": "Spacious" }
       ]
     },
-    { "type": "header", "content": "No-media fallback" },
-    { "type": "checkbox", "id": "show_seal_watermark", "label": "Show House Seal watermark in the material field", "default": true, "info": "Only shown when no image resolves — never overlaid on real jewellery media." },
+    { "type": "header", "content": "No-media, no-chapters fallback" },
+    { "type": "paragraph", "content": "Only ever shown if this section has zero chapter blocks AND no base image, product, or bundled default resolves — effectively unreachable with the settings below at their defaults." },
+    { "type": "checkbox", "id": "show_seal_watermark", "label": "Show House Seal watermark in the material field", "default": true },
     { "type": "range", "id": "seal_watermark_opacity", "label": "Watermark opacity", "min": 5, "max": 12, "step": 1, "default": 8, "unit": "%" },
     { "type": "header", "content": "Call to action" },
     { "type": "text", "id": "link_text", "label": "CTA label", "default": "Discover the object" },
@@ -174,6 +219,7 @@
       "type": "chapter",
       "name": "Chapter",
       "settings": [
+        { "type": "image_picker", "id": "image", "label": "Chapter image (optional)", "info": "A dedicated macro/detail image for this chapter's media state. Falls back to the section's base image, cropped distinctly, when left blank." },
         { "type": "text", "id": "title", "label": "Title", "info": "e.g. Stone, Setting, Gold, Silhouette, Craft, Hallmark" },
         { "type": "richtext", "id": "body", "label": "Body" }
       ]

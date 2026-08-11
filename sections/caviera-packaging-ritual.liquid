@@ -42,6 +42,17 @@
   if stage_image == blank
     assign visual_mode = 'composition'
   endif
+
+  # VISUAL-TUNING FIX: the nested-panel "CAVIERA material composition" still read as an unfinished
+  # placeholder graphic once real photography was expected. Rather than show it by default whenever
+  # no packaging image is set, the ritual now defaults to a typography-led sequence in that case —
+  # six precise, well-spaced states carrying the whole moment on their own — and the composition
+  # visual becomes an explicit merchant opt-in (show_composition_visual) for anyone who prefers it
+  # as a deliberate design choice rather than a stand-in for missing photography.
+  assign show_visual = true
+  if visual_mode == 'composition' and section.settings.show_composition_visual != true
+    assign show_visual = false
+  endif
 -%}
 <section class="caviera-section caviera-ritual" data-scheme="{{ section.settings.color_scheme }}" data-spacing="{{ section.settings.spacing | default: 'standard' }}">
   <div class="container container--narrow caviera-ritual__head" data-reveal>
@@ -50,7 +61,8 @@
     {%- if section.settings.supporting_copy != blank -%}<p class="body-text caviera-ritual__intro-copy">{{ section.settings.supporting_copy }}</p>{%- endif -%}
   </div>
 
-  <div class="container caviera-ritual__body">
+  <div class="container caviera-ritual__body" data-layout="{% if show_visual %}visual{% else %}typography{% endif %}">
+    {%- if show_visual -%}
     <div class="caviera-ritual__stage-col">
       <div class="caviera-ritual__stage" data-reveal>
         {%- if visual_mode == 'media' -%}
@@ -88,6 +100,7 @@
         {%- endif -%}
       </div>
     </div>
+    {%- endif -%}
 
     <div class="caviera-ritual__rail">
       {%- if has_steps -%}
@@ -150,15 +163,16 @@
     { "type": "header", "content": "Visual stage" },
     {
       "type": "select", "id": "visual_mode", "label": "Visual mode", "default": "media",
-      "info": "\"Media\" falls back to the CAVIERA material composition automatically whenever no packaging image is set below — the stage is never left empty.",
+      "info": "\"Media\" falls back to a typography-led sequence (no visual stage at all) whenever no packaging image is set below, unless the composition visual is explicitly turned on beneath.",
       "options": [
         { "value": "media", "label": "Merchant packaging media" },
         { "value": "composition", "label": "CAVIERA material composition" }
       ]
     },
-    { "type": "image_picker", "id": "image", "label": "Packaging image (desktop)", "info": "Real packaging photography only — no marketplace badges, review stars or promotional text." },
+    { "type": "image_picker", "id": "image", "label": "Packaging image (desktop)", "info": "Real packaging photography only — no marketplace badges, review stars or promotional text. Add this to give the ritual its own dedicated visual stage." },
     { "type": "image_picker", "id": "image_mobile", "label": "Packaging image (mobile)", "info": "Falls back to the desktop image when left blank." },
-    { "type": "checkbox", "id": "show_oryx", "label": "Show Living Mascot in the material composition", "default": true, "info": "Only shown in \"CAVIERA material composition\" mode — never overlaid on a merchant's own packaging photography. Uses the bundled official artwork; upload your own under Theme settings → CAVIERA Identity to override it." },
+    { "type": "checkbox", "id": "show_composition_visual", "label": "Show CAVIERA material composition when no packaging image is set", "default": false, "info": "Off by default — with no packaging photography yet, the ritual reads better as a precise typography-led sequence (six full-width states) than a placeholder-like visual stage. Turn on only as a deliberate design choice, not a stand-in for missing photography." },
+    { "type": "checkbox", "id": "show_oryx", "label": "Show Living Mascot in the material composition", "default": true, "info": "Only shown when the composition visual above is on — never overlaid on a merchant's own packaging photography. Uses the bundled official artwork; upload your own under Theme settings → CAVIERA Identity to override it." },
     { "type": "checkbox", "id": "show_seal", "label": "Show House Seal beside the \"Unseal\" step", "default": true, "info": "Matches whichever step block is titled \"Unseal\" (case-insensitive) — rename that step and the mark moves with it." }
   ],
   "blocks": [

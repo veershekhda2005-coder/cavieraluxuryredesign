@@ -30,6 +30,7 @@
 {%- if asset -%}
   <img
     class="caviera-house-seal {{ css_class }}"
+    draggable="false"
     src="{{ asset | image_url: width: 200 }}"
     srcset="{{ asset | image_url: width: 100 }} 100w, {{ asset | image_url: width: 200 }} 200w, {{ asset | image_url: width: 320 }} 320w"
     sizes="{{ width | default: 44 }}px"
@@ -44,6 +45,7 @@
 {%- elsif bundled_file -%}
   <img
     class="caviera-house-seal {{ css_class }}"
+    draggable="false"
     src="{{ bundled_file | asset_url }}"
     width="{{ bundled_w }}"
     height="{{ bundled_h }}"

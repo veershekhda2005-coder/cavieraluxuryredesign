@@ -79,9 +79,8 @@
       },
       "block_order": ["cr-1", "cr-2", "cr-3"],
       "settings": {
-        "layout": "dominant_image",
+        "layout": "list",
         "color_scheme": "obsidian",
-        "show_seal_watermark": true,
         "heading_motion": true
       }
     },

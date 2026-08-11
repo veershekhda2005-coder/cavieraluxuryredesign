@@ -198,17 +198,36 @@
     </div>
 
     {%- comment -%}
-      Toasted Buns' "movable sticker" idea, translated into a luxury CAVIERA artifact: a bounded,
-      draggable House Seal medallion. Nested inside the sticky .caviera-hero__field (not a sibling
-      of it) so it rides along with the pinned viewport while the hero is pinned, rather than
-      sitting fixed at one point in the tall scroll wrapper. Desktop pointer only — static and
-      fully visible (not hidden) on touch/reduced-motion/JS-blocked, per assets/caviera-drag-
-      token.js. On by default but a single merchant toggle away from off.
+      Toasted Buns' "movable sticker" idea, translated into a trio of luxury CAVIERA House
+      artifacts, each nested inside the sticky .caviera-hero__field (not a sibling of it) so they
+      ride along with the pinned viewport while the hero is pinned, rather than sitting fixed at
+      one point in the tall scroll wrapper. Each gets its own bounded drag zone, positioned clear of
+      the headline/CTA column (bottom-left/bottom-centre) and the scroll cue (bottom-centre):
+
+        1) House Seal medallion  — top right (existing zone, unchanged position)
+        2) Edition plaque        — top left  ("01 / EDITION I / 2026", a rectangular archival plaque,
+                                    quantity-neutral — never implies a real production count)
+        3) Provenance tag        — right, vertically centred ("No. __ / __", same neutrality)
+
+      Desktop pointer only — static and fully visible (not hidden) on touch/reduced-motion/JS-
+      blocked, per assets/caviera-drag-token.js. The two secondary artifacts are hidden on mobile
+      (see caviera-home.css) to keep a small viewport uncluttered; the House Seal alone remains as
+      a small, static House artifact there. Each has its own merchant toggle.
     {%- endcomment -%}
     {%- if section.settings.show_token -%}
-      <div class="caviera-hero__tokens" data-caviera-drag-zone>
+      <div class="caviera-hero__tokens caviera-hero__tokens--seal" data-caviera-drag-zone>
         {%- comment -%} mode: 'dark' (Bone-coloured seal) regardless of text_mode — the token floats over the photograph itself, not the editorial scrim, and campaign photography is overwhelmingly darker-toned. {%- endcomment -%}
-        {%- render 'caviera-drag-token', type: 'seal', mode: 'dark', cue: 'Drag' -%}
+        {%- render 'caviera-drag-token', type: 'seal', mode: 'dark', face_size: 76, cue: 'Drag' -%}
+      </div>
+    {%- endif -%}
+    {%- if section.settings.show_edition_token -%}
+      <div class="caviera-hero__tokens caviera-hero__tokens--plaque" data-caviera-drag-zone>
+        {%- render 'caviera-drag-token', type: 'plaque', line1: section.settings.edition_token_number, line2: section.settings.edition_token_heading, line3: section.settings.edition_token_year, cue: 'Move' -%}
+      </div>
+    {%- endif -%}
+    {%- if section.settings.show_provenance_token -%}
+      <div class="caviera-hero__tokens caviera-hero__tokens--tag" data-caviera-drag-zone>
+        {%- render 'caviera-drag-token', type: 'number', text: 'No. __ / __', cue: 'Move' -%}
       </div>
     {%- endif -%}
 
@@ -273,7 +292,14 @@
     { "type": "text", "id": "secondary_cta_text", "label": "Secondary link text" },
     { "type": "url", "id": "secondary_cta_url", "label": "Secondary link" },
     { "type": "checkbox", "id": "show_scroll_cue", "label": "Show scroll cue", "default": true },
-    { "type": "checkbox", "id": "show_token", "label": "Show draggable House Seal token", "default": true, "info": "A small, bounded, draggable House Seal medallion floating over the hero — desktop pointer input only. Stays static and fully visible on touch, keyboard-only, and reduced-motion visits." }
+    { "type": "header", "content": "Draggable House artifacts" },
+    { "type": "paragraph", "content": "A small trio of collectible House artifacts, draggable on desktop pointer input — never playful stickers. Each stays static and fully visible (not hidden) on touch, keyboard-only, and reduced-motion visits; the two secondary artifacts hide on mobile to keep a small viewport uncluttered." },
+    { "type": "checkbox", "id": "show_token", "label": "Show draggable House Seal token", "default": true, "info": "Top right. A small, bounded, draggable House Seal medallion floating over the hero." },
+    { "type": "checkbox", "id": "show_edition_token", "label": "Show draggable Edition plaque token", "default": true, "info": "Top left. A small rectangular archival plaque." },
+    { "type": "text", "id": "edition_token_number", "label": "Edition plaque — small top line", "default": "01" },
+    { "type": "text", "id": "edition_token_heading", "label": "Edition plaque — main line", "default": "EDITION I" },
+    { "type": "text", "id": "edition_token_year", "label": "Edition plaque — small bottom line", "default": "2026" },
+    { "type": "checkbox", "id": "show_provenance_token", "label": "Show draggable provenance tag token", "default": true, "info": "Right, vertically centred. Reads \"No. __ / __\" — deliberately quantity-neutral; never implies a real production count." }
   ],
   "presets": [{ "name": "Cinematic hero" }],
   "enabled_on": {

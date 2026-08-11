@@ -4,10 +4,18 @@
   playful sticker: only official brand marks or plain engraved-plaque typography.
 
   Params:
-    type  — 'seal' | 'oryx' | 'plaque' | 'number' (default 'plaque')
-    text  — plaque/number face text (e.g. "EDITION I", "No. 01")
-    mode  — 'light' | 'dark', for the 'seal'/'oryx' brand-mark faces (match the section behind it)
-    cue   — small label for the hover/focus cue and screen-reader hint (default "Drag")
+    type       — 'seal' | 'oryx' | 'plaque' | 'number' (default 'plaque')
+    text       — plaque/number face text (single line, e.g. "No. 01"). Ignored by 'plaque' when
+                 line1/line2/line3 are used instead (see below).
+    line1/2/3  — 'plaque' only: up to three stacked lines (e.g. line1: "01", line2: "EDITION I",
+                 line3: "2026") rendered as a small rectangular archival plaque — line2 is the
+                 emphasised centre line, line1/line3 render smaller and quieter (see
+                 .caviera-drag-token__text-line in caviera-home.css). Any of the three may be
+                 omitted independently.
+    face_size  — pixel width for the 'seal'/'oryx' brand-mark face (default 72; suggested range
+                 68–88 for a primary seal, 52–72 for a smaller secondary token).
+    mode       — 'light' | 'dark', for the 'seal'/'oryx' brand-mark faces (match the section behind it)
+    cue        — small label for the hover/focus cue and screen-reader hint (default "Drag")
 
   Must sit inside an ancestor carrying [data-caviera-drag-zone] (position: relative, defines the
   bounded region the token can move within) — see assets/caviera-drag-token.js.
@@ -22,14 +30,23 @@
   <span class="caviera-drag-token__face" aria-hidden="true">
     {%- liquid
       assign token_mode = mode | default: 'dark'
+      assign token_face_size = face_size | default: 72
     -%}
     {%- case type -%}
       {%- when 'seal' -%}
-        {%- render 'caviera-house-seal', mode: token_mode, width: 56, loading: 'lazy', alt: '' -%}
+        {%- render 'caviera-house-seal', mode: token_mode, width: token_face_size, loading: 'lazy', alt: '' -%}
       {%- when 'oryx' -%}
-        {%- render 'caviera-oryx', variant: 'static', mode: token_mode, width: 56, loading: 'lazy', alt: '' -%}
+        {%- render 'caviera-oryx', variant: 'static', mode: token_mode, width: token_face_size, loading: 'lazy', alt: '' -%}
       {%- when 'number' -%}
         <span class="caviera-drag-token__text caviera-drag-token__text--number">{{ text | default: 'No. 01' }}</span>
+      {%- when 'plaque' -%}
+        {%- if line1 != blank or line2 != blank or line3 != blank -%}
+          {%- if line1 != blank -%}<span class="caviera-drag-token__text-line">{{ line1 }}</span>{%- endif -%}
+          {%- if line2 != blank -%}<span class="caviera-drag-token__text">{{ line2 }}</span>{%- endif -%}
+          {%- if line3 != blank -%}<span class="caviera-drag-token__text-line">{{ line3 }}</span>{%- endif -%}
+        {%- else -%}
+          <span class="caviera-drag-token__text">{{ text | default: 'EDITION I' }}</span>
+        {%- endif -%}
       {%- else -%}
         <span class="caviera-drag-token__text">{{ text | default: 'EDITION I' }}</span>
     {%- endcase -%}

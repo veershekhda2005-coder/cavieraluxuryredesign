@@ -36,6 +36,7 @@
 {%- if asset -%}
   <img
     class="caviera-oryx caviera-oryx--{{ variant }} {{ css_class }}"
+    draggable="false"
     src="{{ asset | image_url: width: 800 }}"
     {% unless variant == 'walk' %}
     srcset="{{ asset | image_url: width: 400 }} 400w, {{ asset | image_url: width: 800 }} 800w, {{ asset | image_url: width: 1200 }} 1200w"
@@ -52,6 +53,7 @@
 {%- elsif bundled_file -%}
   <img
     class="caviera-oryx caviera-oryx--{{ variant }} {{ css_class }}"
+    draggable="false"
     src="{{ bundled_file | asset_url }}"
     width="1542"
     height="2400"
