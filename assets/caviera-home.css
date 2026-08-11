@@ -10,18 +10,39 @@
    sections/caviera-hero.liquid is UNCHANGED — this is a re-skin of the same structure, not a
    rebuild, so the sophisticated media-priority handling there (dedicated image/video → bundled
    default → considered placeholder, never a product/collection image) still applies untouched. */
+/* Interaction/motion rebuild — Amber-style cinematic pin/release. .caviera-hero is now a TALL
+   wrapper (its extra height IS the scroll distance the hero stays pinned for); .caviera-hero__media
+   and .caviera-hero__field are both `position: sticky; top: 0; height: 100vh` inside it, so they
+   hold at the top of the viewport for that whole distance, then release naturally into normal flow
+   the instant .caviera-hero's own bottom edge passes — the next section (House Statement) then
+   slides up and visually covers the pinned hero from below, in plain document flow, no z-index
+   trickery needed. assets/caviera-scroll-progress.js writes --caviera-progress (0 at the top of
+   the pin range, 1 at release) onto the section; every consumer below falls back to 0 via
+   var(--caviera-progress, 0) so a blocked/failed script still renders a complete, static, correct
+   frame — never a half-applied effect. */
 .caviera-hero {
   position: relative;
-  min-height: clamp(560px, 92vh, 920px);
+  height: clamp(760px, 170vh, 1500px);
   display: block;
   overflow: hidden;
 }
-.caviera-hero__media { position: absolute; inset: 0; overflow: hidden; background: var(--caviera-cinnabar); }
+.caviera-hero__media {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--caviera-cinnabar);
+}
 .caviera-hero__media picture { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .caviera-hero__media-el {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover;
   object-position: var(--hero-focal, center);
+  /* Cinematic "moving through" zoom, driven purely by scroll progress through the pinned range —
+     starts at true scale (1.0) and slowly tightens as the user scrolls, so it reads as passing
+     THROUGH the image rather than the image simply sitting still behind scrolling text. */
+  transform: scale(calc(1 + (0.07 * var(--caviera-progress, 0))));
+  transition: transform 60ms linear;
 }
 .caviera-hero__media-el--mobile { display: none; }
 @media (max-width: 749px) {
@@ -29,16 +50,16 @@
   .caviera-hero__media-el--mobile { display: block; }
 }
 .caviera-hero__overlay { position: absolute; inset: 0; background: var(--caviera-obsidian); }
-/* Motion: a still hero should still feel cinematic. Image settles from a very slight scale, text
-   resolves after it — both pure CSS (animation-fill-mode: backwards holds the start frame until
-   play begins, so there's no flash of the end state before the animation runs), so this plays
-   correctly even if every script on the page fails to load. Reduced motion shows the final,
-   fully-resolved state immediately with no animation at all — not merely a faster version of it. */
+/* Load-in resolve for the copy only (the image's motion is now entirely scroll-driven above, not
+   a one-shot load animation — see the note above). Pure CSS, animation-fill-mode: backwards holds
+   the start frame until play begins, so this plays correctly even if every script on the page
+   fails to load. Reduced motion shows the final, fully-resolved state immediately — not a faster
+   version of it — and --caviera-progress is simply never set (assets/caviera-scroll-progress.js
+   exits immediately under reduced motion), so the zoom/fade rules above stay at their `0` fallback
+   throughout: no pin-driven motion plays at all. */
 @media (prefers-reduced-motion: no-preference) {
-  .caviera-hero__media-el { animation: caviera-hero-settle 1.6s var(--ease-caviera) both; }
   .caviera-hero__field-inner > * { animation: caviera-hero-resolve 1s var(--ease-caviera) both; animation-delay: 0.35s; }
 }
-@keyframes caviera-hero-settle { 0% { transform: scale(1.02); } 100% { transform: scale(1); } }
 @keyframes caviera-hero-resolve { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
 /* Architectural colour field shown when no dedicated hero media is configured — never a stand-in
    product photo (see the comment at the top of sections/caviera-hero.liquid). A flat single-colour
@@ -82,15 +103,23 @@
    same section setting) now controls which side the text column anchors to, rather than which
    side a media panel sits on — a natural re-reading of the same setting, not a new one. */
 .caviera-hero__field {
-  position: absolute;
-  inset: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   z-index: 1;
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
   padding-block-end: clamp(48px, 9vh, 96px);
   overflow: hidden;
+  /* Sits in normal flow directly after the sticky media above (not stacked via inset:0 over it),
+     so it needs its own negative top-margin equal to one viewport height to visually overlay the
+     media rather than appearing a second screen-height further down the tall wrapper. */
+  margin-top: -100vh;
+  pointer-events: none;
 }
+.caviera-hero__field-inner,
+.caviera-hero__tokens { pointer-events: auto; }
 .caviera-hero[data-media-position="right"] .caviera-hero__field { justify-content: flex-end; }
 /* Scrim — a soft directional gradient rising from the bottom edge, coloured to the section's own
    scheme (Cinnabar/Obsidian/Bone) so text stays legible over any photograph without a hard block
@@ -143,10 +172,118 @@
 [data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
 .caviera-hero__secondary { color: inherit; }
 
-.caviera-hero__scroll-cue { position: absolute; z-index: 1; bottom: max(28px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 1px; height: 40px; }
+/* Toasted Buns-inspired draggable House Seal token — bounded to a dedicated region near the top
+   right of the pinned frame, clear of both the bottom-anchored editorial field and the centred
+   scroll cue. Sized explicitly (rather than left to shrink-to-fit its own content) so
+   assets/caviera-drag-token.js has a real region to compute drag bounds against — see
+   .caviera-drag-token's own default corner position in the shared token styling below, which this
+   box exists to contain. */
+.caviera-hero__tokens {
+  position: absolute;
+  top: clamp(88px, 16vh, 176px);
+  right: clamp(24px, 6vw, 72px);
+  width: clamp(160px, 22vw, 260px);
+  height: clamp(160px, 22vh, 260px);
+  z-index: 1;
+}
+
+/* Positioned absolute within .caviera-hero__field (not .caviera-hero itself) — see the markup
+   move in sections/caviera-hero.liquid — because .caviera-hero is now a tall pin wrapper, not a
+   single viewport-height box; .caviera-hero__field is the sticky 100vh slice that actually
+   matches the visible frame for as long as the hero stays pinned. */
+.caviera-hero__scroll-cue { position: absolute; z-index: 1; bottom: max(28px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 1px; height: 40px; pointer-events: auto; }
 .caviera-hero__scroll-cue span { display: block; width: 1px; height: 100%; background: var(--caviera-rhodium); opacity: 0.8; animation: caviera-scroll-cue 1.8s var(--ease-caviera) infinite; }
 @keyframes caviera-scroll-cue { 0% { transform: scaleY(0); transform-origin: top; opacity: 0.9; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; opacity: 0.2; } }
 @media (prefers-reduced-motion: reduce) { .caviera-hero__scroll-cue span { animation: none; } }
+
+/* ---- Draggable House artifact tokens (Toasted Buns, translated) ----
+   Shared component for snippets/caviera-drag-token.liquid + assets/caviera-drag-token.js. A
+   collectible House object, not a sticker: a circular backing (translucent Obsidian, hairline
+   Rhodium edge) so any brand mark or plaque text stays legible over any photograph, with a small
+   "Drag" cue that only ever appears on hover/focus/while dragging — never a persistent label
+   competing with the photography. Always position: absolute inside a sized [data-caviera-drag-zone]
+   ancestor (see .caviera-hero__tokens above and .caviera-edition-teaser__media below) so it floats
+   over the composition without participating in layout flow.
+
+   Desktop pointer only, per the JS. Touch pointers and prefers-reduced-motion keep the token fully
+   visible, at its default resting position, simply not draggable — never hidden, never a dead
+   control. */
+.caviera-drag-token {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  z-index: 2;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+.caviera-drag-token__face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--caviera-obsidian) 58%, transparent);
+  border: 1px solid var(--caviera-rhodium);
+  box-shadow: 0 12px 32px rgba(17, 16, 18, 0.35);
+  transition: transform 220ms var(--ease-caviera), box-shadow 220ms var(--ease-caviera);
+}
+.caviera-drag-token__face img,
+.caviera-drag-token__face svg { width: 100%; height: 100%; object-fit: contain; display: block; }
+.caviera-drag-token__text {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--caviera-bone);
+  white-space: nowrap;
+}
+.caviera-drag-token__text--number { font-size: 0.6875rem; }
+.caviera-drag-token__cue {
+  font-family: var(--font-body);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--caviera-bone);
+  opacity: 0;
+  transition: opacity 200ms var(--ease-caviera);
+}
+.caviera-drag-token:hover .caviera-drag-token__cue,
+.caviera-drag-token:focus-visible .caviera-drag-token__cue,
+.caviera-drag-token.is-dragging .caviera-drag-token__cue { opacity: 0.75; }
+.caviera-drag-token:hover .caviera-drag-token__face,
+.caviera-drag-token:focus-visible .caviera-drag-token__face { transform: translateY(-2px); }
+.caviera-drag-token:focus-visible { outline: 1px solid var(--caviera-bone); outline-offset: 6px; }
+.caviera-drag-token.is-dragging { cursor: grabbing; }
+.caviera-drag-token.is-dragging .caviera-drag-token__face {
+  transform: scale(1.06) translateY(-3px);
+  box-shadow: 0 20px 44px rgba(17, 16, 18, 0.45);
+}
+/* Tactile partial-return settle only — see the 0.32 retained-offset comment in the JS. No spring,
+   no overshoot: a single eased transition back toward (not all the way to) the origin. */
+.caviera-drag-token.is-settling { transition: transform 500ms var(--ease-caviera); }
+/* Touch: static at its resting position, not draggable (the JS never binds pointerdown for touch
+   pointers) — so the grab cursor and hover-only cue, both meaningless without a pointer, step aside
+   rather than sitting there unused. */
+@media (pointer: coarse) {
+  .caviera-drag-token { cursor: default; }
+  .caviera-drag-token__cue { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-drag-token,
+  .caviera-drag-token__face,
+  .caviera-drag-token__cue { transition: none; }
+}
 
 /* ---- House statement — an opening in a presentation case, not a centred quote block ----
    The statement itself sits inside .container--narrow (860px) rather than the full 1560px
@@ -395,6 +532,29 @@
   .caviera-edition-teaser__inner { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); }
 }
 
+/* ---- Aerra-style sticky progression (900px+ only) ----
+   .caviera-edition-teaser (the [data-caviera-pin] wrapper) becomes a tall scroll distance;
+   .caviera-edition-teaser__inner holds at the top of the viewport for that whole distance, same
+   pin/release technique as the hero (see the shared note in assets/caviera-scroll-progress.js).
+   Below 900px the section keeps its original static height and normal-flow layout entirely — no
+   pin, no tall wrapper, nothing scroll-driven, matching every other sticky effect in this theme
+   (Object in focus, Packaging ritual) already gating on the same breakpoint. */
+@media (min-width: 900px) {
+  .caviera-edition-teaser {
+    /* Overrides .caviera-section's own padding-block — that spacing now lives inside the sticky
+       .caviera-edition-teaser__inner (via align-items: center within a 100vh box) instead, since
+       this element's height is the scroll distance itself, not a content box to pad. */
+    padding-block: 0;
+    height: clamp(760px, 190vh, 1600px);
+    overflow: hidden;
+  }
+  .caviera-edition-teaser__inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+}
+
 .caviera-edition-teaser__meta {
   display: block;
   color: var(--caviera-rhodium);
@@ -446,6 +606,59 @@
   }
 }
 .caviera-edition-teaser__note { margin-top: 16px; }
+
+/* Progress-driven crossfade (900px+ only, see the [data-caviera-pin] media query above) — every
+   rule here reads var(--caviera-progress, 0), so the un-set/script-skipped/reduced-motion state
+   (the property never gets applied) falls back to each image's own plain resting opacity/transform
+   below, i.e. a complete static composition, never a half-applied effect. opacity's own UA clamp
+   to [0,1] does the "reached full/zero and stays there" work without extra clamp()/min() calls —
+   same technique as .caviera-hero__media-el's scroll-driven zoom. */
+@media (min-width: 900px) {
+  .caviera-edition-teaser__media-primary img {
+    opacity: calc(1 - (0.35 * var(--caviera-progress, 0)));
+    transform: scale(calc(1 + (0.045 * var(--caviera-progress, 0))));
+    transition: transform 60ms linear, opacity 60ms linear;
+  }
+  .caviera-edition-teaser__media-secondary {
+    opacity: calc(var(--caviera-progress, 0) * 2.2);
+    transform: translateY(calc(28px - (28px * min(var(--caviera-progress, 0) * 2.2, 1))));
+    transition: transform 60ms linear, opacity 60ms linear;
+  }
+}
+
+/* Optional third "detail" image — a small inset that arrives last, once image 2 has already
+   settled in, then the composition holds through to release. Static/hidden with no progress
+   channel below 900px would leave it stranded off-composition, so it's simply always fully
+   visible there instead (see the plain default rule, unguarded by the media query above). */
+.caviera-edition-teaser__media-detail {
+  position: absolute;
+  left: -6%;
+  bottom: 6%;
+  width: 30%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--caviera-rhodium);
+  box-shadow: 0 16px 36px rgba(17, 16, 18, 0.3);
+  z-index: 1;
+}
+.caviera-edition-teaser__media-detail img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (min-width: 900px) {
+  .caviera-edition-teaser__media-detail {
+    opacity: calc(max(0, (var(--caviera-progress, 0) - 0.55)) * 2.6);
+    transform: scale(calc(0.92 + (0.08 * min(max(0, (var(--caviera-progress, 0) - 0.55) * 2.6), 1))));
+    transition: transform 60ms linear, opacity 60ms linear;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-edition-teaser__media-primary img,
+  .caviera-edition-teaser__media-secondary,
+  .caviera-edition-teaser__media-detail { transition: none; }
+}
+
+/* Drag token override: anchor to the top-right of the primary/composed image, matching the hero's
+   own corner default (see .caviera-drag-token's base rule) — no change needed beyond making sure
+   .caviera-edition-teaser__media (the [data-caviera-drag-zone]) is a real, appropriately large
+   region, which it already is at its own image aspect ratio. */
 
 /* ---- Category reveal: display-case panels, not a generic four-card grid ---- */
 /* Spacing-only correction: this section otherwise inherits the generic .caviera-section
@@ -689,6 +902,27 @@
   .caviera-object-focus__media-col { position: sticky; top: calc(var(--header-height) + 40px); }
 }
 
+/* Nolan-style sticky object storytelling: while the media above holds in place, each chapter
+   becoming the reading focus (assets/caviera-object-focus.js) nudges the WHOLE media block with a
+   small scale/shift — never object-position cropping, which would fight "Contain" mode's own
+   promise to show the full piece; a container-level transform reads the same "the object is being
+   studied" way regardless of which media fit the merchant has chosen. Six alternating states cover
+   every possible chapter count up to max_blocks: 6. No attribute set (JS not run yet, blocked, or
+   IntersectionObserver unsupported) = the plain resting state below, unconditionally. */
+@media (min-width: 1024px) {
+  .caviera-object-focus__media {
+    transition: transform 900ms var(--ease-caviera);
+    will-change: transform;
+  }
+  .caviera-object-focus__media[data-active-chapter="0"] { transform: scale(1.015); }
+  .caviera-object-focus__media[data-active-chapter="1"] { transform: scale(1.035) translateX(-0.6%); }
+  .caviera-object-focus__media[data-active-chapter="2"] { transform: scale(1.02) translateX(0.6%); }
+  .caviera-object-focus__media[data-active-chapter="3"] { transform: scale(1.03); }
+  .caviera-object-focus__media[data-active-chapter="4"] { transform: scale(1.015) translateX(-0.4%); }
+  .caviera-object-focus__media[data-active-chapter="5"] { transform: scale(1.025) translateX(0.4%); }
+}
+@media (prefers-reduced-motion: reduce) { .caviera-object-focus__media { transition: none; } }
+
 .caviera-object-focus__chapters { display: flex; flex-direction: column; gap: 0; }
 .caviera-object-focus__chapter {
   display: grid;
@@ -880,7 +1114,22 @@
      capped below what 4:5 would compute, producing an unintentionally near-square box. The
      mobile override below caps height directly instead, since mobile is in normal flow. */
 }
-.caviera-ritual__stage-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.caviera-ritual__stage-media {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform 700ms var(--ease-caviera);
+}
+/* A single, restrained stage reaction — assets/caviera-packaging-ritual.js toggles this class only
+   while the "Unseal" step is the active one, marking the threshold between packaging and object
+   with the same quiet emphasis the House Seal itself gets beside that step. Never applied without
+   the JS enhancement running (see data-observing on the step list), so a blocked/failed script
+   simply leaves the stage at its plain resting state throughout. */
+.caviera-ritual__stage.is-unseal-active .caviera-ritual__stage-media { transform: scale(1.02); }
+.caviera-ritual__stage.is-unseal-active .caviera-ritual__mascot { transform: scale(1.05); }
+.caviera-ritual__mascot { transition: transform 700ms var(--ease-caviera); }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-ritual__stage-media,
+  .caviera-ritual__mascot { transition: none; }
+}
 
 /* Official CAVIERA material composition — the "no packaging photo yet" state. Three nested,
    hairline-Rhodium-edged panels (the section's own Obsidian background, a Cinnabar case, a Warm

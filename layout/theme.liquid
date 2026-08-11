@@ -176,6 +176,10 @@
   <script src="{{ 'caviera-global.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'caviera-cart.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'caviera-page-transition.js' | asset_url }}" defer="defer"></script>
+  {%- if template.name == 'index' -%}
+    <script src="{{ 'caviera-scroll-progress.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'caviera-drag-token.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
   <script>document.documentElement.classList.remove('no-js');</script>
 </body>
 </html>

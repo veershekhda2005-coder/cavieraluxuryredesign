@@ -61,6 +61,24 @@
   transform: none;
 }
 
+/* drkst: a Drkst-inspired typographic moment — large heading copy enters very slightly oversized
+   and offset horizontally, then settles to its true size/position as the section resolves into
+   view. Used selectively, on the single heading element of a chapter moment (never the whole
+   copy block, never split into individual letters) — see the three call sites: EDITION I
+   (sections/caviera-edition-teaser.liquid), "Material truth." (sections/caviera-craftsmanship.
+   liquid, homepage instance only), and "The Maker's Mark" (sections/caviera-editorial-media.
+   liquid, makers-mark homepage instance only). Each is opt-in via its own heading_motion setting —
+   this rule does nothing on an element that doesn't carry data-reveal-style="drkst". */
+[data-reveal][data-reveal-style="drkst"] {
+  opacity: 0;
+  transform: translateX(-2.5%) scale(1.05);
+  transition: opacity 900ms var(--ease-caviera), transform 900ms var(--ease-caviera);
+}
+[data-reveal][data-reveal-style="drkst"].is-visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-reveal][data-reveal-style="crop"] img,
   [data-reveal][data-reveal-style="crop"] picture,
@@ -70,6 +88,11 @@
   }
   [data-reveal][data-reveal-style="mask"] {
     clip-path: none;
+    transition: none;
+  }
+  [data-reveal][data-reveal-style="drkst"] {
+    opacity: 1;
+    transform: none;
     transition: none;
   }
 }

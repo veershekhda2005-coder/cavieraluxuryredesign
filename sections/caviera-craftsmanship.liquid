@@ -53,7 +53,15 @@
 <section class="caviera-section caviera-craftsmanship" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}">
   <div class="container caviera-craftsmanship__head" data-reveal>
     {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
-    {%- if section.settings.heading != blank -%}<h2 class="heading-h2">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.heading != blank -%}
+      {%- comment -%}
+        Drkst-style typographic moment, opt-in per instance (see heading_motion below) — off by
+        default since this same section renders on the dedicated Craftsmanship page and The House
+        page too, where a chapter-moment entrance wasn't asked for. templates/index.json turns it
+        on explicitly for the homepage instance only.
+      {%- endcomment -%}
+      <h2 class="heading-h2"{% if section.settings.heading_motion %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
+    {%- endif -%}
     {%- if section.settings.intro != blank -%}<div class="body-text--wide">{{ section.settings.intro }}</div>{%- endif -%}
   </div>
 
@@ -157,6 +165,7 @@
   "settings": [
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Craftsmanship" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Material truth." },
+    { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Off by default — this section is shared with the Craftsmanship and House pages; the homepage instance turns it on explicitly." },
     { "type": "richtext", "id": "intro", "label": "Intro" },
     {
       "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",

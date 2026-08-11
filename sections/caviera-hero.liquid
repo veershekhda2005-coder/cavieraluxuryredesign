@@ -53,7 +53,7 @@
   endunless
   assign bundled_hero_file = '15_oryx_necklace_on_model.png'
 -%}
-<section class="caviera-hero" data-scheme="{{ section.settings.text_mode }}" data-media-position="{{ section.settings.media_position }}">
+<section class="caviera-hero" data-scheme="{{ section.settings.text_mode }}" data-media-position="{{ section.settings.media_position }}" data-caviera-pin>
   <div
     class="caviera-hero__media"
     data-has-desktop-media="{{ has_desktop_media }}"
@@ -196,13 +196,34 @@
         {%- endif -%}
       </div>
     </div>
-  </div>
 
-  {%- if section.settings.show_scroll_cue -%}
-    <button type="button" class="caviera-hero__scroll-cue" data-caviera-scroll-cue aria-label="Scroll to explore">
-      <span></span>
-    </button>
-  {%- endif -%}
+    {%- comment -%}
+      Toasted Buns' "movable sticker" idea, translated into a luxury CAVIERA artifact: a bounded,
+      draggable House Seal medallion. Nested inside the sticky .caviera-hero__field (not a sibling
+      of it) so it rides along with the pinned viewport while the hero is pinned, rather than
+      sitting fixed at one point in the tall scroll wrapper. Desktop pointer only — static and
+      fully visible (not hidden) on touch/reduced-motion/JS-blocked, per assets/caviera-drag-
+      token.js. On by default but a single merchant toggle away from off.
+    {%- endcomment -%}
+    {%- if section.settings.show_token -%}
+      <div class="caviera-hero__tokens" data-caviera-drag-zone>
+        {%- comment -%} mode: 'dark' (Bone-coloured seal) regardless of text_mode — the token floats over the photograph itself, not the editorial scrim, and campaign photography is overwhelmingly darker-toned. {%- endcomment -%}
+        {%- render 'caviera-drag-token', type: 'seal', mode: 'dark', cue: 'Drag' -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      Nested inside .caviera-hero__field (not a sibling of it, see assets/caviera-home.css) for the
+      same reason as the tokens above — this is the sticky 100vh slice that stays matched to the
+      visible viewport for as long as the hero is pinned; .caviera-hero itself is now a much taller
+      wrapper that the scroll cue would otherwise anchor incorrectly within.
+    {%- endcomment -%}
+    {%- if section.settings.show_scroll_cue -%}
+      <button type="button" class="caviera-hero__scroll-cue" data-caviera-scroll-cue aria-label="Scroll to explore">
+        <span></span>
+      </button>
+    {%- endif -%}
+  </div>
 </section>
 
 {% schema %}
@@ -251,7 +272,8 @@
     { "type": "url", "id": "primary_cta_url", "label": "Primary CTA link" },
     { "type": "text", "id": "secondary_cta_text", "label": "Secondary link text" },
     { "type": "url", "id": "secondary_cta_url", "label": "Secondary link" },
-    { "type": "checkbox", "id": "show_scroll_cue", "label": "Show scroll cue", "default": true }
+    { "type": "checkbox", "id": "show_scroll_cue", "label": "Show scroll cue", "default": true },
+    { "type": "checkbox", "id": "show_token", "label": "Show draggable House Seal token", "default": true, "info": "A small, bounded, draggable House Seal medallion floating over the hero — desktop pointer input only. Stays static and fully visible on touch, keyboard-only, and reduced-motion visits." }
   ],
   "presets": [{ "name": "Cinematic hero" }],
   "enabled_on": {

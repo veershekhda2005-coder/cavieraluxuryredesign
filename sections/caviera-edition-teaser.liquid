@@ -5,19 +5,28 @@
   /collections/all. Informational by design while Edition I has no dedicated page yet — cta_text/
   cta_url are both blank by default; the teaser reads as complete with no action at all.
 
-  Images: edition_image_1 is the primary/larger image; edition_image_2 is optional and secondary
-  (offset, slightly smaller — a restrained, still composition rather than Toasted-Buns-style
-  scroll choreography, translated to CAVIERA per brief: slower, fewer images, more precision).
-  image_1 falls back to the same bundled default used by the hero (assets/15_oryx_necklace_on_
-  model.png — the only jewellery/object photograph that exists anywhere in this theme; see
-  docs/required-brand-assets.md) when no merchant image is set. image_2 has NO bundled fallback —
-  no second suitable asset exists, so it's simply omitted rather than showing something irrelevant.
-  Both are ordinary image_picker settings, so a merchant can replace or add to them at any time
-  without a code change once real Edition I campaign imagery exists.
+  Images: edition_image_1 is the primary/larger image; edition_image_2 is optional and secondary;
+  edition_image_3 is an optional third "detail" image. image_1 falls back to the same bundled
+  default used by the hero (assets/15_oryx_necklace_on_model.png — the only jewellery/object
+  photograph that exists anywhere in this theme; see docs/required-brand-assets.md) when no
+  merchant image is set. image_2/image_3 have NO bundled fallback — they're simply omitted when
+  unset rather than showing something irrelevant. All three are ordinary image_picker settings, so
+  a merchant can replace or add to them at any time without a code change once real Edition I
+  campaign imagery exists.
+
+  Aerra-style sticky progression (min-width: 900px only — see caviera-home.css): the section is a
+  [data-caviera-pin] tall wrapper (assets/caviera-scroll-progress.js writes --caviera-progress onto
+  it, 0 at entry/1 at exit); .caviera-edition-teaser__inner holds at the top of the viewport for
+  that whole distance via position: sticky. Image 1 recedes slightly, image 2 rises in over it,
+  and — only if a third image is set — a small detail inset arrives last, before the section
+  releases into normal flow. Below 900px (and whenever the script is skipped/blocked/under reduced
+  motion) every image simply renders at its resting, fully visible state — see the var(--caviera-
+  progress, 0) fallback on each consumer in caviera-home.css.
 {%- endcomment -%}
 {%- liquid
   assign img1 = section.settings.edition_image_1
   assign img2 = section.settings.edition_image_2
+  assign img3 = section.settings.edition_image_3
   assign bundled_file = '15_oryx_necklace_on_model.png'
   assign use_bundled = false
   if img1 == blank
@@ -27,8 +36,10 @@
   if section.settings.edition_number != blank or section.settings.edition_status != blank
     assign has_meta = true
   endif
+  assign edition_num = section.settings.edition_number | default: '01'
+  assign token_text = 'No. ' | append: edition_num
 -%}
-<section id="edition-i" class="caviera-section caviera-edition-teaser" data-scheme="{{ section.settings.color_scheme | default: 'obsidian' }}">
+<section id="edition-i" class="caviera-section caviera-edition-teaser" data-scheme="{{ section.settings.color_scheme | default: 'obsidian' }}" data-caviera-pin>
   <div class="container caviera-edition-teaser__inner">
     <div class="caviera-edition-teaser__copy" data-reveal>
       {%- if has_meta -%}
@@ -39,7 +50,16 @@
         </span>
       {%- endif -%}
       {%- if section.settings.heading != blank -%}
-        <h2 class="caviera-edition-teaser__heading">
+        {%- comment -%}
+          Drkst-style typographic moment: this heading (nested [data-reveal] of its own, independent
+          of the copy block's outer reveal above) may enter oversized and settle horizontally as the
+          rest of the copy resolves — see [data-reveal-style="drkst"] in caviera-motion.css. Opt-out
+          via heading_motion below; the plain heading renders with no code change either way.
+        {%- endcomment -%}
+        <h2
+          class="caviera-edition-teaser__heading"
+          {%- if section.settings.heading_motion %} data-reveal data-reveal-style="drkst"{% endif %}
+        >
           {{ section.settings.heading }}
           {%- if section.settings.year_label != blank -%}
             <span class="caviera-edition-teaser__year">{{ section.settings.year_label }}</span>
@@ -54,7 +74,7 @@
       {%- endif -%}
     </div>
 
-    <div class="caviera-edition-teaser__media">
+    <div class="caviera-edition-teaser__media"{% if section.settings.show_token %} data-caviera-drag-zone{% endif %}>
       <div class="caviera-edition-teaser__media-primary" data-reveal data-reveal-style="crop">
         {%- if img1 != blank -%}
           <img
@@ -90,6 +110,36 @@
       {%- elsif request.design_mode -%}
         <div class="caviera-editor-note caviera-edition-teaser__note">Optional: add a second image above for the full two-image composition — restrained by design, this section works with just one.</div>
       {%- endif -%}
+      {%- comment -%}
+        Third, optional "detail" image — the Aerra sequence's final state before the section
+        releases. Only ever appears once image_2 is also set (a detail inset makes no sense floating
+        alone over just the primary image) and, per the note above, is scroll-progress-driven only
+        at 900px+ — it simply renders at rest (fully visible) below that, in reduced motion, or if
+        the script is blocked.
+      {%- endcomment -%}
+      {%- if img3 != blank and img2 != blank -%}
+        <div class="caviera-edition-teaser__media-detail">
+          <img
+            src="{{ img3 | image_url: width: 500 }}"
+            srcset="{{ img3 | image_url: width: 300 }} 300w, {{ img3 | image_url: width: 500 }} 500w, {{ img3 | image_url: width: 700 }} 700w"
+            sizes="(min-width: 900px) 16vw, 40vw"
+            width="{{ img3.width }}"
+            height="{{ img3.height }}"
+            alt="{{ img3.alt | default: '' | escape }}"
+            loading="lazy"
+          >
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        Bureau Nine's Edition/spatial-progression idea, translated via the same Toasted-Buns
+        draggable-artifact system as the hero's House Seal — a small, bounded Edition plaque token,
+        floating over the primary image rather than fixed to one point. Desktop pointer only; fully
+        visible and static everywhere else, per assets/caviera-drag-token.js.
+      {%- endcomment -%}
+      {%- if section.settings.show_token -%}
+        {%- render 'caviera-drag-token', type: 'number', text: token_text, mode: 'dark', cue: 'Move' -%}
+      {%- endif -%}
     </div>
   </div>
 </section>
@@ -109,13 +159,17 @@
     { "type": "text", "id": "edition_number", "label": "Number", "default": "01" },
     { "type": "text", "id": "edition_status", "label": "Status", "default": "Upcoming", "info": "Quiet metadata, not a sale badge — avoid hype language (\"Limited drop\", \"Only X left\", \"Coming soon!!!\")." },
     { "type": "text", "id": "heading", "label": "Heading", "default": "EDITION I" },
+    { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": true, "info": "A restrained Drkst-style typographic moment — the heading enters slightly oversized and settles as the section scrolls into view. Off by default falls back to the plain heading with no motion at all." },
     { "type": "text", "id": "year_label", "label": "Year", "default": "2026" },
     { "type": "textarea", "id": "body", "label": "Supporting line", "default": "The first CAVIERA Edition is in preparation." },
     { "type": "text", "id": "cta_text", "label": "Action text (optional)", "info": "Leave blank to keep the teaser purely informational — appropriate while Edition I has no dedicated page yet. Avoid \"Add to Bag\"/\"Shop Edition\"/\"Buy Now\"." },
     { "type": "url", "id": "cta_url", "label": "Action link (optional)", "info": "Only shown when Action text above is also set. Never point this at /collections/all." },
     { "type": "header", "content": "Images" },
     { "type": "image_picker", "id": "edition_image_1", "label": "Primary image", "info": "Gender-neutral jewellery/object imagery preferred — this House is for both men and women. Falls back to a bundled default when left blank." },
-    { "type": "image_picker", "id": "edition_image_2", "label": "Secondary image (optional)", "info": "A smaller, offset second image for a restrained two-image composition. Left empty by default — no bundled fallback exists for this one." }
+    { "type": "image_picker", "id": "edition_image_2", "label": "Secondary image (optional)", "info": "A smaller, offset second image for a restrained two-image composition. Left empty by default — no bundled fallback exists for this one." },
+    { "type": "image_picker", "id": "edition_image_3", "label": "Detail image (optional)", "info": "A small third detail/macro image that arrives last in the scroll sequence at wider viewports. Only shown when a secondary image above is also set." },
+    { "type": "header", "content": "Interaction" },
+    { "type": "checkbox", "id": "show_token", "label": "Show draggable Edition plaque token", "default": true, "info": "A small, bounded, draggable Edition-number token floating over the primary image — desktop pointer input only. Stays static and fully visible on touch, keyboard-only, and reduced-motion visits." }
   ],
   "presets": [{ "name": "Edition I teaser" }],
   "enabled_on": {

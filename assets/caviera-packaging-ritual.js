@@ -17,6 +17,7 @@
     list.dataset.observed = 'true';
 
     var fill = root.querySelector('[data-ritual-progress-fill]');
+    var stage = root.querySelector('.caviera-ritual__stage');
 
     function setActive(index) {
       steps.forEach(function (step, i) {
@@ -25,6 +26,15 @@
       if (fill && steps.length > 1) {
         var pct = (index / (steps.length - 1)) * 100;
         fill.style.height = pct + '%';
+      }
+      // A single, restrained stage reaction at the "Unseal" step specifically — the threshold
+      // between packaging and object, matched by title text (case-insensitive) exactly like the
+      // House Seal placement in sections/caviera-packaging-ritual.liquid, so it stays correctly
+      // attached even if a merchant renames/reorders the step blocks.
+      if (stage) {
+        var title = steps[index] && steps[index].querySelector('.caviera-ritual__step-title');
+        var isUnseal = !!(title && title.textContent.toLowerCase().indexOf('unseal') !== -1);
+        stage.classList.toggle('is-unseal-active', isUnseal);
       }
     }
 

@@ -1,0 +1,38 @@
+{%- comment -%}
+  A small, tactile CAVIERA "House artifact" token — draggable on desktop pointer input, static and
+  fully visible everywhere else (touch, keyboard-only, reduced motion, JS blocked/failed). Never a
+  playful sticker: only official brand marks or plain engraved-plaque typography.
+
+  Params:
+    type  — 'seal' | 'oryx' | 'plaque' | 'number' (default 'plaque')
+    text  — plaque/number face text (e.g. "EDITION I", "No. 01")
+    mode  — 'light' | 'dark', for the 'seal'/'oryx' brand-mark faces (match the section behind it)
+    cue   — small label for the hover/focus cue and screen-reader hint (default "Drag")
+
+  Must sit inside an ancestor carrying [data-caviera-drag-zone] (position: relative, defines the
+  bounded region the token can move within) — see assets/caviera-drag-token.js.
+{%- endcomment -%}
+<div
+  class="caviera-drag-token caviera-drag-token--{{ type | default: 'plaque' }}"
+  data-caviera-drag-token
+  tabindex="0"
+  role="group"
+  aria-label="{{ cue | default: 'Drag' }} — CAVIERA {{ type | default: 'token' }}"
+>
+  <span class="caviera-drag-token__face" aria-hidden="true">
+    {%- liquid
+      assign token_mode = mode | default: 'dark'
+    -%}
+    {%- case type -%}
+      {%- when 'seal' -%}
+        {%- render 'caviera-house-seal', mode: token_mode, width: 56, loading: 'lazy', alt: '' -%}
+      {%- when 'oryx' -%}
+        {%- render 'caviera-oryx', variant: 'static', mode: token_mode, width: 56, loading: 'lazy', alt: '' -%}
+      {%- when 'number' -%}
+        <span class="caviera-drag-token__text caviera-drag-token__text--number">{{ text | default: 'No. 01' }}</span>
+      {%- else -%}
+        <span class="caviera-drag-token__text">{{ text | default: 'EDITION I' }}</span>
+    {%- endcase -%}
+  </span>
+  <span class="caviera-drag-token__cue" aria-hidden="true">{{ cue | default: 'Drag' }}</span>
+</div>
