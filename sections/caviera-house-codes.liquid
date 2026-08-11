@@ -1,55 +1,48 @@
 {%- comment -%}
-  House Codes — REBUILD (previous attempt collapsed the surrounding homepage layout; see below for
-  root cause). Rumaya's core interaction principle only — large visual rooms + one stable central
-  chapter title that automatically changes as the user scrolls between them — translated into an
-  original CAVIERA experience. No Rumaya branding, imagery, rounded cards, or layout copied.
+  House Principles — SIMPLIFIED (the previous pass was too decorative: diamond-outline graphics, a
+  Cinnabar geometric room, the House Seal used as a full-screen substitute for photography, and an
+  oversized title. All of that is removed here). Rumaya's core interaction principle only — large
+  visual rooms + one stable central title that automatically changes as the user scrolls between
+  them. Photography + typography, nothing else.
 
-  ROOT CAUSE OF THE PREVIOUS FAILURE: the old build gave its sticky overlay a manually-guessed
-  negative top-margin (-340vh) to cancel its own flow contribution, WITHOUT the outer section ever
-  having an explicit height to anchor that arithmetic against (unlike the hero/Edition I, which set
-  an explicit `height` on their own outer wrapper). A block element's auto height is the sum of its
-  in-flow children's margins/heights — summing four 85vh panels (+340vh) with a sibling contributing
-  height(100vh) + margin-top(-340vh) = -240vh collapsed the SECTION's own computed height down to
-  roughly 100vh, even though the panels themselves still visually occupied ~340vh — so that ~240vh
-  of real visual content spilled straight through the bottom of its own now-too-short parent and
-  into Edition I beneath it, compressing everything that followed.
+  This is an independent experience from Edition I — separate numbering, separate copy, separate
+  interaction state (--house-code-progress/data-house-code-active, never --caviera-progress). It
+  ends at 04 / Longevity; Edition I begins as its own, unrelated section afterward.
 
-  THE FIX — no negative-margin arithmetic anywhere: .caviera-house-codes__overlay-shell is
-  `position: absolute; inset: 0;` inside this section (`position: relative`) — an absolutely
-  positioned box with inset: 0 always matches its positioned ancestor's box exactly, automatically,
-  with no height to compute or guess. The section's own height is determined ONLY by
-  .caviera-house-codes__panels (real, in-flow, four min-height: 100vh panels) — the overlay-shell
-  contributes nothing to that calculation at all, so it can never distort it. Inside the shell,
-  .caviera-house-codes__overlay is position: sticky; top: 0; height: 100vh — its sticky range is
-  bounded by the shell's box, i.e. the section's real height, whatever that naturally turns out to
-  be. See assets/caviera-house-codes.css for the full implementation; all rules there are strictly
-  scoped under .caviera-house-codes, nothing global.
+  ARCHITECTURE: the section's own height comes ONLY from .caviera-house-codes__panels (four real,
+  in-flow, min-height: 95svh panels — no artificial pinning distance). .caviera-house-codes__
+  overlay-shell is position: absolute; inset: 0 inside this section (position: relative) — it
+  always matches its positioned ancestor's box exactly and contributes NOTHING to that ancestor's
+  own height calculation, so it can never distort it (see assets/caviera-house-codes.css for the
+  full implementation). Inside the shell, .caviera-house-codes__overlay is position: sticky; top:
+  0; height: 100svh — its sticky range is bounded by the shell, i.e. the section's real height,
+  whatever that naturally is.
 
-  The four House Codes are CAVIERA's existing official House pillars (sections/caviera-house-
+  ACTIVE-CHAPTER FIX: assets/caviera-house-codes.js previously used an IntersectionObserver
+  threshold that could never actually be reached against full-viewport-height panels (see the fix
+  note there) — the title was effectively stuck on Rarity. Replaced with a deterministic "closest
+  panel centre to viewport centre" calculation, recomputed on every scroll frame, so it updates
+  correctly scrolling in either direction.
+
+  The four House Principles are CAVIERA's existing official House pillars (sections/caviera-house-
   statement.liquid) — same four names and approved short copy, not invented here: Rarity,
   Precision, Ritual, Longevity. Theme Editor settings (image + short line per code) are unchanged
   from the previous build, so any values a merchant already entered are preserved.
 
   PROGRESSIVE ENHANCEMENT: every panel carries its own real, always-visible local heading + copy
   (.caviera-house-codes__local-label) — not a screen-reader-only duplicate. assets/caviera-house-
-  codes.js adds `is-ready` to the section only once its IntersectionObserver has actually attached;
-  only THEN does desktop CSS visually hide the local labels in favour of the sticky overlay (see the
+  codes.js adds `is-ready` to the section only once detection has actually been wired up; only THEN
+  does desktop CSS visually hide the local labels in favour of the sticky overlay (see the
   `.caviera-house-codes.is-ready` gate in the CSS) — so a slow/blocked/failed script never leaves a
   panel with no visible title at all. The overlay itself is aria-hidden and is hidden outright below
   900px and under prefers-reduced-motion, at which point the local labels are already the whole
   story.
 
-  IMAGE FALLBACKS (Theme Editor image_picker per House Code; every fallback is a deliberate CAVIERA
-  composition, never a placeholder rectangle):
-    Rarity     — the bundled campaign photograph (assets/15_oryx_necklace_on_model.png), cropped
-                 tight and off-centre for a "rare presence in negative space" reading distinct from
-                 its use in the hero/Edition I.
-    Precision  — an original CSS-only faceted/geometric field — no diamond/setting macro exists yet.
-    Ritual     — an original CSS-only material study reusing Packaging ritual's own "Obsidian outer
-                 / Cinnabar case / Warm Bone interior" language — thematically exact for an opening
-                 moment.
-    Longevity  — the official House Seal, large and ceremonial — provenance/maker's mark is already
-                 the Seal's established role elsewhere in this theme.
+  IMAGE FALLBACKS — simple, per brief: if a Theme Editor image is set for a code, it renders exactly
+  as uploaded. If not, EVERY code temporarily reuses the same single bundled campaign photograph
+  (assets/15_oryx_necklace_on_model.png) with a different static crop (see [data-derived="true"] in
+  assets/caviera-house-codes.css) — never a decorative graphic, diamond shape, or brand mark
+  standing in for photography. Purely temporary until real per-Principle photography is uploaded.
 {%- endcomment -%}
 {%- liquid
   assign rarity_img = section.settings.rarity_image
@@ -102,7 +95,7 @@
       </div>
     </article>
 
-    {%- comment -%} 02 PRECISION — no photograph exists yet; an original CAVIERA geometric field. {%- endcomment -%}
+    {%- comment -%} 02 PRECISION — no photograph exists yet; temporarily reuses the same bundled photo with a distinct crop. {%- endcomment -%}
     <article class="caviera-house-codes__panel" data-house-code-index="1" data-derived="{{ precision_derived }}">
       <div class="caviera-house-codes__media">
         {%- if precision_img != blank -%}
@@ -115,11 +108,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <div class="caviera-house-codes__facet-field" aria-hidden="true">
-            <span class="caviera-house-codes__facet"></span>
-            <span class="caviera-house-codes__facet"></span>
-            <span class="caviera-house-codes__facet"></span>
-          </div>
+          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Precision" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -130,7 +119,7 @@
       </div>
     </article>
 
-    {%- comment -%} 03 RITUAL — no packaging photograph exists yet; reuses Packaging ritual's own nested-panel material study. {%- endcomment -%}
+    {%- comment -%} 03 RITUAL — no photograph exists yet; temporarily reuses the same bundled photo with a distinct crop. {%- endcomment -%}
     <article class="caviera-house-codes__panel" data-house-code-index="2" data-derived="{{ ritual_derived }}">
       <div class="caviera-house-codes__media">
         {%- if ritual_img != blank -%}
@@ -143,10 +132,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <div class="caviera-house-codes__ritual-field" aria-hidden="true">
-            <span class="caviera-house-codes__ritual-panel" data-panel="cinnabar"></span>
-            <span class="caviera-house-codes__ritual-panel" data-panel="bone"></span>
-          </div>
+          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Ritual" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -157,7 +143,7 @@
       </div>
     </article>
 
-    {%- comment -%} 04 LONGEVITY — the official House Seal: provenance/maker's mark, already its established role elsewhere in this theme. {%- endcomment -%}
+    {%- comment -%} 04 LONGEVITY — no photograph exists yet; temporarily reuses the same bundled photo with a distinct crop. {%- endcomment -%}
     <article class="caviera-house-codes__panel" data-house-code-index="3" data-derived="{{ longevity_derived }}">
       <div class="caviera-house-codes__media">
         {%- if longevity_img != blank -%}
@@ -170,9 +156,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <div class="caviera-house-codes__seal-field" aria-hidden="true">
-            {%- render 'caviera-house-seal', mode: 'dark', width: 220, alt: '' -%}
-          </div>
+          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Longevity" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -193,7 +177,7 @@
   {%- endcomment -%}
   <div class="caviera-house-codes__overlay-shell" aria-hidden="true">
     <div class="caviera-house-codes__overlay">
-      <span class="caviera-house-codes__overlay-label">The House / Codes</span>
+      <span class="caviera-house-codes__overlay-label">The House / Principles</span>
       <div class="caviera-house-codes__overlay-item" data-house-code-index="0">
         <span class="caviera-house-codes__overlay-progress">01 / 04</span>
         <p class="caviera-house-codes__overlay-title">Rarity</p>
@@ -226,16 +210,16 @@
   "name": "House Codes",
   "settings": [
     { "type": "header", "content": "01 Rarity" },
-    { "type": "image_picker", "id": "rarity_image", "label": "Rarity image", "info": "Jewellery isolated in strong negative space — unusual composition, object-led, not a styled lifestyle shot. Falls back to a bundled CAVIERA image when left blank." },
+    { "type": "image_picker", "id": "rarity_image", "label": "Rarity image", "info": "Jewellery isolated in strong negative space — unusual composition, object-led, not a styled lifestyle shot. Falls back to a bundled CAVIERA photograph when left blank." },
     { "type": "text", "id": "rarity_copy", "label": "Short line", "default": "Unexpected, never ornamental for its own sake." },
     { "type": "header", "content": "02 Precision" },
-    { "type": "image_picker", "id": "precision_image", "label": "Precision image", "info": "Diamond macro, setting detail, or faceted/geometric construction. Falls back to an original CAVIERA geometric field when left blank." },
+    { "type": "image_picker", "id": "precision_image", "label": "Precision image", "info": "Diamond macro, setting detail, or faceted/geometric construction. Falls back to the same bundled photograph (differently cropped) when left blank." },
     { "type": "text", "id": "precision_copy", "label": "Short line", "default": "Every cut, line and word earns its place." },
     { "type": "header", "content": "03 Ritual" },
-    { "type": "image_picker", "id": "ritual_image", "label": "Ritual image", "info": "Packaging reveal, House Seal, or an opening gesture. Falls back to an original CAVIERA material study when left blank." },
+    { "type": "image_picker", "id": "ritual_image", "label": "Ritual image", "info": "Packaging reveal, House Seal, or an opening gesture. Falls back to the same bundled photograph (differently cropped) when left blank." },
     { "type": "text", "id": "ritual_copy", "label": "Short line", "default": "Discovery is paced, tactile and memorable." },
     { "type": "header", "content": "04 Longevity" },
-    { "type": "image_picker", "id": "longevity_image", "label": "Longevity image", "info": "A gold object, maker's mark, or provenance detail. Falls back to the official House Seal when left blank." },
+    { "type": "image_picker", "id": "longevity_image", "label": "Longevity image", "info": "A gold object, maker's mark, or provenance detail. Falls back to the same bundled photograph (differently cropped) when left blank." },
     { "type": "text", "id": "longevity_copy", "label": "Short line", "default": "Objects and identity are made to age well." }
   ],
   "presets": [{ "name": "House Codes" }],

@@ -1,16 +1,20 @@
 /*
- * CAVIERA House Codes — isolated stylesheet. Every selector in this file is namespaced under
+ * CAVIERA House Principles — isolated stylesheet. Every selector in this file is namespaced under
  * .caviera-house-codes; nothing here targets a bare tag, #MainContent, .shopify-section, or any
  * other homepage section/ancestor. Loaded only when this section renders (see the stylesheet_tag
  * at the top of sections/caviera-house-codes.liquid) — not part of the shared caviera-home.css
  * bundle, so it can be audited/removed in complete isolation from every other homepage section.
  *
- * ARCHITECTURE (see the full root-cause note in sections/caviera-house-codes.liquid): the section's
- * own height comes ONLY from .caviera-house-codes__panels (four real, in-flow, min-height: 100vh
- * panels). .caviera-house-codes__overlay-shell is position: absolute; inset: 0 — it always matches
- * its positioned ancestor (.caviera-house-codes, position: relative) exactly, contributing NOTHING
- * to that ancestor's own height calculation, so it can never distort it. No negative margins, no
- * hardcoded vh totals to keep in sync with anything.
+ * SIMPLIFIED per brief: photography + typography only. No decorative graphics, no diamond outlines,
+ * no Cinnabar geometric room, no brand mark used as a photography stand-in. Where no dedicated
+ * Theme Editor image exists yet, every room falls back to the SAME bundled photo with a distinct,
+ * static crop (see the [data-derived="true"] rules below) — never a graphic.
+ *
+ * ARCHITECTURE: the section's own height comes ONLY from .caviera-house-codes__panels (four real,
+ * in-flow, min-height: 95svh panels). .caviera-house-codes__overlay-shell is position: absolute;
+ * inset: 0 — it always matches its positioned ancestor (.caviera-house-codes, position: relative)
+ * exactly, contributing NOTHING to that ancestor's own height calculation, so it can never distort
+ * it. No negative margins, no hardcoded vh totals to keep in sync with anything.
  */
 .caviera-house-codes {
   position: relative;
@@ -22,8 +26,8 @@
 }
 .caviera-house-codes__panel {
   position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
+  min-height: 95vh;
+  min-height: 95svh;
   overflow: hidden;
   background: var(--caviera-obsidian);
 }
@@ -36,26 +40,38 @@
 
 .caviera-house-codes__media { position: absolute; inset: 0; }
 .caviera-house-codes__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Rarity's own crop — tight and off-centre, distinct from the same bundled photo's use in the hero
-   (centred, focal-point-driven) and Edition I (progress-driven, drifting) — a still "rare presence
-   in negative space" reading unique to this room. Only applied to the bundled fallback photo — a
-   merchant's own dedicated Rarity image renders exactly as uploaded, uncropped by this rule. */
+
+/* Static per-room crops — ONLY applied to the shared bundled fallback photo (data-derived="true";
+   a merchant's own dedicated image for that room renders exactly as uploaded, untouched by this).
+   Fixed values, no scroll-driven zoom/parallax/animation of any kind — the brief is explicit that
+   the only motion in this section is normal scrolling plus the central title crossfade. */
 .caviera-house-codes__panel[data-house-code-index="0"][data-derived="true"] .caviera-house-codes__media img {
-  object-position: 72% 30%;
-  transform: scale(1.35);
+  object-position: 50% 50%;
+}
+.caviera-house-codes__panel[data-house-code-index="1"][data-derived="true"] .caviera-house-codes__media img {
+  object-position: 50% 72%;
+  transform: scale(1.25);
+}
+.caviera-house-codes__panel[data-house-code-index="2"][data-derived="true"] .caviera-house-codes__media img {
+  object-position: 30% 55%;
+  transform: scale(1.15);
+}
+.caviera-house-codes__panel[data-house-code-index="3"][data-derived="true"] .caviera-house-codes__media img {
+  object-position: 72% 60%;
+  transform: scale(1.2);
 }
 
-/* Minimum-necessary readability scrim — a soft rise from the bottom-left corner where the local
-   label sits, never a heavy tint across the whole photograph. Photography stays dominant. */
+/* Minimum-necessary readability scrim — a light, restrained tonal overlay, never a heavy curtain.
+   Photography stays dominant. */
 .caviera-house-codes__scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top right, rgba(17, 16, 18, 0.55) 0%, transparent 45%);
+  background: rgba(17, 16, 18, 0.22);
   pointer-events: none;
 }
 
 /* Local label — real, always-visible content in the DOM (never a screen-reader-only duplicate).
-   Visually de-emphasised in favour of the sticky overlay only once .is-ready + 900px width both
+   Visually stepped aside in favour of the sticky overlay only once .is-ready + 900px width both
    apply (see the media query below) — until then (no JS, JS still loading, JS failed, mobile,
    reduced motion) this is the only title on screen, and it must never be blank. */
 .caviera-house-codes__local-label {
@@ -77,57 +93,15 @@
 .caviera-house-codes__local-label h3 {
   font-family: var(--font-display);
   font-weight: 300;
-  text-transform: none;
   letter-spacing: 0.01em;
-  font-size: clamp(1.75rem, 1.3rem + 2.4vw, 3rem);
+  font-size: clamp(2.25rem, 11vw, 3.5rem);
   line-height: 1;
   margin: 0 0 10px;
 }
-.caviera-house-codes__local-label p { margin: 0; opacity: 0.86; font-size: clamp(0.875rem, 1.1vw, 1.05rem); }
-
-/* Precision's no-photo fallback — an original CAVIERA geometric field (nested, rotated, hairline-
-   Rhodium-edged squares suggesting a cut stone's facets), never a placeholder rectangle. */
-.caviera-house-codes__facet-field {
-  position: absolute;
-  inset: 0;
-  background: var(--caviera-cinnabar);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.caviera-house-codes__local-label p { margin: 0; opacity: 0.86; font-size: 0.9375rem; }
+@media (min-width: 900px) {
+  .caviera-house-codes__local-label h3 { font-size: clamp(2.5rem, 4.2vw, 4.5rem); }
 }
-.caviera-house-codes__facet {
-  position: absolute;
-  width: 46vh;
-  height: 46vh;
-  max-width: 60%;
-  max-height: 60%;
-  border: 1px solid var(--caviera-rhodium);
-  opacity: 0.5;
-}
-.caviera-house-codes__facet:nth-child(1) { transform: rotate(45deg) scale(1); }
-.caviera-house-codes__facet:nth-child(2) { transform: rotate(45deg) scale(0.68); opacity: 0.7; }
-.caviera-house-codes__facet:nth-child(3) { transform: rotate(45deg) scale(0.36); opacity: 0.9; }
-
-/* Ritual's no-photo fallback — the same "Obsidian outer / Cinnabar case / Warm Bone interior"
-   nested-panel language as Packaging ritual's own material study — this room IS the opening
-   moment, told the same way. */
-.caviera-house-codes__ritual-field { position: absolute; inset: 0; background: var(--caviera-obsidian); }
-.caviera-house-codes__ritual-panel { position: absolute; border: 1px solid var(--caviera-rhodium); }
-.caviera-house-codes__ritual-panel[data-panel="cinnabar"] { inset: 14% 12%; background: var(--caviera-cinnabar); }
-.caviera-house-codes__ritual-panel[data-panel="bone"] { inset: 38% 28% 10% 28%; background: var(--caviera-bone); }
-
-/* Longevity's no-photo fallback — the official House Seal, large and ceremonial: provenance/maker's
-   mark is already the Seal's established role elsewhere in this theme. */
-.caviera-house-codes__seal-field {
-  position: absolute;
-  inset: 0;
-  background: var(--caviera-obsidian);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.caviera-house-codes__seal-field img { width: clamp(140px, 22vh, 260px); height: auto; }
 
 /* ---- Sticky central overlay (900px+ and no-reduced-motion only) ----
    .caviera-house-codes__overlay-shell spans the section exactly via inset: 0 (see the file header
@@ -165,7 +139,7 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--caviera-rhodium);
-    margin-bottom: clamp(24px, 4vh, 40px);
+    margin-bottom: clamp(16px, 2.5vh, 28px);
   }
   /* Every item renders unconditionally (see the liquid comment) so the Rarity item — matching the
      section's own static default data-house-code-active="0" — is what's on screen with zero JS.
@@ -179,8 +153,9 @@
     flex-direction: column;
     align-items: center;
     opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 380ms var(--ease-caviera), transform 380ms var(--ease-caviera);
+    transform: translateY(8px);
+    visibility: hidden;
+    transition: opacity 380ms ease, transform 380ms ease, visibility 0ms;
     pointer-events: none;
   }
   .caviera-house-codes[data-house-code-active="0"] .caviera-house-codes__overlay-item[data-house-code-index="0"],
@@ -189,39 +164,46 @@
   .caviera-house-codes[data-house-code-active="3"] .caviera-house-codes__overlay-item[data-house-code-index="3"] {
     opacity: 1;
     transform: none;
+    visibility: visible;
   }
   .caviera-house-codes__overlay-progress {
     font-family: var(--font-body);
     font-size: 0.8125rem;
     letter-spacing: 0.1em;
     color: var(--caviera-cinnabar);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
+  /* Title — editorial, not a giant viewport-dominating display size. The photograph remains the
+     hero; this is clearly readable and clearly CAVIERA, nothing more. Title case, not shouting
+     caps. */
   .caviera-house-codes__overlay-title {
     font-family: var(--font-display);
     font-weight: 300;
-    /* Title case, not shouting caps — "Rarity" reads more refined at this scale than a full
-       uppercase treatment. */
-    font-size: clamp(3.5rem, 7vw, 7rem);
+    font-size: clamp(2.5rem, 4.2vw, 4.5rem);
     line-height: 1;
-    margin: 0 0 16px;
+    margin: 0 0 14px;
   }
-  .caviera-house-codes__overlay-copy { margin: 0; max-width: 34ch; opacity: 0.82; font-size: clamp(0.875rem, 1.1vw, 1.05rem); }
+  .caviera-house-codes__overlay-copy {
+    margin: 0;
+    max-width: 34ch;
+    opacity: 0.85;
+    font-size: clamp(0.875rem, 1.1vw, 1.05rem);
+  }
 
-  /* Vertical progression line — a CAVIERA original, not Rumaya's centre line copied outright. Uses
+  /* One thin progression line — a CAVIERA original, not Rumaya's centre line copied outright. Uses
      --house-code-progress (set per active index below) rather than the Edition I/hero's own
      --caviera-progress, so this never reads or writes anything from another section's motion
-     system. */
+     system. No diamond shapes, no nested lines, no moving frame. */
   .caviera-house-codes__line {
     display: block;
     width: 1px;
-    height: 56px;
-    margin-top: clamp(20px, 3vh, 32px);
+    height: 64px;
+    margin-top: clamp(16px, 2.5vh, 28px);
     background: var(--caviera-rhodium);
     opacity: 0.6;
     transform-origin: top;
     transform: scaleY(var(--house-code-progress, 0.25));
-    transition: transform 480ms var(--ease-caviera);
+    transition: transform 480ms ease;
   }
   .caviera-house-codes[data-house-code-active="0"] { --house-code-progress: 0.25; }
   .caviera-house-codes[data-house-code-active="1"] { --house-code-progress: 0.5; }
@@ -229,12 +211,15 @@
   .caviera-house-codes[data-house-code-active="3"] { --house-code-progress: 1; }
 
   /* Progressive enhancement gate: local labels only step aside once assets/caviera-house-codes.js
-     has confirmed its IntersectionObserver actually attached (.is-ready, added by the script after
-     it succeeds — never before, and never if it fails/is blocked) — so a slow network or a script
-     error never leaves a panel with no visible title at all. */
+     has confirmed active-chapter detection is actually wired up (.is-ready, added by the script
+     after it succeeds — never before, and never if it fails/is blocked) — so a slow network or a
+     script error never leaves a panel with no visible title at all. */
   .caviera-house-codes.is-ready .caviera-house-codes__local-label { opacity: 0; }
 }
 
 @media (max-width: 899px), (prefers-reduced-motion: reduce) {
   .caviera-house-codes__overlay-shell { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-house-codes__local-label { opacity: 1 !important; }
 }
