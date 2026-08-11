@@ -25,6 +25,10 @@
         "category_transition_heading": ""
       }
     },
+    "house-codes": {
+      "type": "caviera-house-codes",
+      "settings": {}
+    },
     "category-reveal": {
       "type": "caviera-category-reveal",
       "disabled": true,
@@ -147,6 +151,7 @@
   "order": [
     "hero",
     "statement",
+    "house-codes",
     "edition-teaser",
     "category-reveal",
     "signature-products",

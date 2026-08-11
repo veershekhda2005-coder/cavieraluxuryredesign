@@ -635,6 +635,202 @@
   .caviera-statement__transition-rule { flex: 1 1 100%; order: 3; }
 }
 
+/* ---- House Codes — Rumaya-inspired scroll principle, original CAVIERA translation ----
+   See the file-level comment in sections/caviera-house-codes.liquid for the full architecture.
+   Summary: .caviera-house-codes__rooms is four contiguous 85vh rooms in plain normal flow (NOT a
+   tall pin-wrapper — the natural, gap-free stacking IS the "image handoff" the brief describes);
+   .caviera-house-codes__overlay is a sibling that stays sticky-centred for their entire combined
+   height, via the exact same "sticky sibling + negative top-margin equal to the other's height"
+   technique already proven in .caviera-hero__field/.caviera-edition-teaser__inner above. */
+.caviera-house-codes { position: relative; }
+.caviera-house-codes__head { margin-inline: auto; margin-bottom: clamp(32px, 5vw, 64px); text-align: center; }
+
+.caviera-house-codes__rooms { position: relative; }
+.caviera-house-codes__room {
+  position: relative;
+  height: 60vh;
+  overflow: hidden;
+  background: var(--caviera-obsidian);
+}
+.caviera-house-codes__room-media { position: absolute; inset: 0; }
+.caviera-house-codes__room-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Rarity's own crop — tight and off-centre, distinct from the same bundled photo's use in the hero
+   (centred, focal-point-driven) and Edition I (progress-driven, drifting) — a still, single "rare
+   presence in negative space" reading unique to this room. */
+.caviera-house-codes__room[data-house-code="rarity"][data-derived="true"] .caviera-house-codes__room-media img {
+  object-position: 72% 30%;
+  transform: scale(1.35);
+}
+/* Minimum-necessary readability scrim — a soft rise from the bottom-left corner where the caption
+   sits, never a heavy tint across the whole photograph (see the brief's explicit "let the
+   photography remain strong" note). */
+.caviera-house-codes__room-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top right, rgba(17,16,18,0.55) 0%, transparent 45%);
+  pointer-events: none;
+}
+.caviera-house-codes__room-caption {
+  position: absolute;
+  left: clamp(20px, 5vw, 56px);
+  bottom: clamp(20px, 5vh, 48px);
+  max-width: 40ch;
+  color: var(--caviera-bone);
+  z-index: 1;
+}
+.caviera-house-codes__room-caption .label { color: var(--caviera-cinnabar); display: block; margin-bottom: 8px; }
+.caviera-house-codes__room-caption h3 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: calc(clamp(1.75rem, 1.3rem + 2.4vw, 3rem) * var(--heading-scale));
+  line-height: 1;
+  margin: 0 0 10px;
+}
+.caviera-house-codes__room-caption p { margin: 0; opacity: 0.86; }
+
+/* Precision's no-photo fallback — an original CAVIERA geometric field (nested, rotated, hairline-
+   Rhodium-edged squares suggesting a cut stone's facets), never a placeholder rectangle. */
+.caviera-house-codes__facet-field {
+  position: absolute; inset: 0;
+  background: var(--caviera-cinnabar);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.caviera-house-codes__facet {
+  position: absolute;
+  width: 46vh; height: 46vh;
+  max-width: 60%; max-height: 60%;
+  border: 1px solid var(--caviera-rhodium);
+  opacity: 0.5;
+}
+.caviera-house-codes__facet:nth-child(1) { transform: rotate(45deg) scale(1); }
+.caviera-house-codes__facet:nth-child(2) { transform: rotate(45deg) scale(0.68); opacity: 0.7; }
+.caviera-house-codes__facet:nth-child(3) { transform: rotate(45deg) scale(0.36); opacity: 0.9; }
+
+/* Ritual's no-photo fallback — the same "Obsidian outer / Cinnabar case / Warm Bone interior"
+   nested-panel language as Packaging ritual's own material study (see .caviera-ritual__composition
+   in this file), reused deliberately: this room IS the opening moment, told the same way. */
+.caviera-house-codes__ritual-field { position: absolute; inset: 0; background: var(--caviera-obsidian); }
+.caviera-house-codes__ritual-panel { position: absolute; border: 1px solid var(--caviera-rhodium); }
+.caviera-house-codes__ritual-panel[data-panel="cinnabar"] { inset: 14% 12%; background: var(--caviera-cinnabar); }
+.caviera-house-codes__ritual-panel[data-panel="bone"] { inset: 38% 28% 10% 28%; background: var(--caviera-bone); }
+
+/* Longevity's no-photo fallback — the official House Seal, large and ceremonial: provenance/maker's
+   mark is already the Seal's established role elsewhere in this theme (Packaging ritual's "Unseal"
+   step, the Maker's Mark section) — not a new use invented for this room. */
+.caviera-house-codes__seal-field {
+  position: absolute; inset: 0;
+  background: var(--caviera-obsidian);
+  display: flex; align-items: center; justify-content: center;
+}
+.caviera-house-codes__seal-field img { width: clamp(140px, 22vh, 260px); height: auto; }
+
+@media (min-width: 900px) {
+  .caviera-house-codes__room { height: 85vh; }
+  .caviera-house-codes__room-caption h3 { font-size: calc(clamp(2.25rem, 1.6rem + 3vw, 4rem) * var(--heading-scale)); }
+}
+
+/* ---- Sticky central overlay (900px+ only — see the brief's own mobile/reduced-motion guidance:
+   below that, or under reduced motion, each room's own always-visible caption is already the whole
+   story, so the overlay is simply hidden rather than needing a fallback path of its own). ---- */
+.caviera-house-codes__overlay { display: none; }
+@media (min-width: 900px) {
+  .caviera-house-codes__overlay {
+    display: flex;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    pointer-events: none;
+    /* Cancels this element's own flow contribution so it sticks for the ENTIRE combined height of
+       the four 85vh rooms above (4 × 85vh = 340vh — inside the brief's 320–380vh target) rather
+       than appearing a further 340vh down the page — the exact technique already used by
+       .caviera-hero__field (-100vh) and .caviera-edition-teaser__inner's sticky wrapper. */
+    margin-top: -340vh;
+  }
+  .caviera-house-codes__overlay-inner {
+    position: relative;
+    text-align: center;
+    color: var(--caviera-bone);
+    max-width: 480px;
+    padding-inline: var(--gutter-desktop);
+  }
+  .caviera-house-codes__overlay-eyebrow {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--caviera-rhodium);
+    margin-bottom: clamp(24px, 4vh, 40px);
+  }
+  /* Crossfade family: every frame renders unconditionally (see the liquid comment) so the Rarity
+     frame — matching .caviera-house-codes__stage's own static default data-active-code="rarity" —
+     is what's on screen with zero JS. A refined resolve, not an entertainment flourish: opacity +
+     a small upward settle only, ~400ms, no letter-splitting, no rotation, no bounce. */
+  .caviera-house-codes__overlay-frame {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 400ms var(--ease-caviera), transform 400ms var(--ease-caviera);
+  }
+  .caviera-house-codes__stage[data-active-code="rarity"] .caviera-house-codes__overlay-frame[data-code="rarity"],
+  .caviera-house-codes__stage[data-active-code="precision"] .caviera-house-codes__overlay-frame[data-code="precision"],
+  .caviera-house-codes__stage[data-active-code="ritual"] .caviera-house-codes__overlay-frame[data-code="ritual"],
+  .caviera-house-codes__stage[data-active-code="longevity"] .caviera-house-codes__overlay-frame[data-code="longevity"] {
+    opacity: 1;
+    transform: none;
+  }
+  .caviera-house-codes__overlay-number {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    color: var(--caviera-cinnabar);
+    margin-bottom: 12px;
+  }
+  .caviera-house-codes__overlay-title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    /* Sentence case, not all-caps — "01 / Rarity" reads more refined at this scale than a full
+       uppercase treatment (see the brief's own preference between the two). */
+    font-size: calc(clamp(3rem, 2.2rem + 4vw, 5.5rem) * var(--heading-scale));
+    line-height: 1;
+    margin: 0 0 16px;
+  }
+  .caviera-house-codes__overlay-copy { margin: 0; max-width: 34ch; opacity: 0.82; }
+  /* Vertical progression line — a CAVIERA original, not Rumaya's centre line copied outright: a
+     fine hairline that grows from nothing to its full length as the active frame settles in,
+     communicating progress/continuity without any additional numerals or icons. */
+  .caviera-house-codes__line {
+    display: block;
+    width: 1px;
+    height: 56px;
+    margin-top: clamp(20px, 3vh, 32px);
+    background: var(--caviera-rhodium);
+    opacity: 0.6;
+    transform-origin: top;
+    transform: scaleY(0.25);
+    transition: transform 500ms var(--ease-caviera);
+  }
+  /* Grows one quarter per House Code — a plain progress read (01=25% ... 04=100%), the same idiom
+     as Packaging ritual's own progress-fill, translated to a scale transform instead of a height
+     change (cheaper to animate, no layout thrash). */
+  .caviera-house-codes__stage[data-active-code="precision"] .caviera-house-codes__line { transform: scaleY(0.5); }
+  .caviera-house-codes__stage[data-active-code="ritual"] .caviera-house-codes__line { transform: scaleY(0.75); }
+  .caviera-house-codes__stage[data-active-code="longevity"] .caviera-house-codes__line { transform: scaleY(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-house-codes__overlay { display: none; }
+}
+
 /* ---- Edition I teaser (new) — occupies the homepage's third slot; see templates/index.json,
    which now points "order" at "edition-teaser" instead of "category-reveal" (a Rings/Earrings/
    Necklaces/Bracelets catalogue grid — left fully intact below, just no longer in the active
