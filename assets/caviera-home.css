@@ -1299,6 +1299,37 @@
 @media (min-width: 900px) { .caviera-editorial__text { padding: 48px var(--gutter-desktop); } }
 .caviera-editorial__text .body-text { margin: 20px 0 28px; }
 
+/* House Seal case only — a formal hallmark, not full-bleed photography. The default rule above
+   (object-fit: cover; aspect-ratio: 4/5) is meant for photographic media and was stretching the
+   small Seal emblem into a dominant graphic; contain it to a modest, deliberate size via the
+   wrapper's own max-width (the snippet's img keeps its own width:100%/height:auto inline styles
+   untouched — it simply fills whatever this wrapper allows). Scoped to [data-media-source="house_
+   seal"] only — the Oryx moment (data-media-source="oryx") is unaffected. */
+.caviera-editorial__media[data-media-source="house_seal"] {
+  max-width: clamp(110px, 30vw, 170px);
+  margin-inline: auto;
+}
+.caviera-editorial__media[data-media-source="house_seal"] img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+@media (min-width: 900px) {
+  .caviera-editorial__media[data-media-source="house_seal"] {
+    max-width: clamp(220px, 22vw, 340px);
+    margin-inline: 0;
+  }
+}
+
+/* Edition record — a small, restrained provenance block. Archival, not a certificate card: a
+   label, one line, a fine rule, a closing mark. No fabricated production count. */
+.caviera-editorial__provenance { margin-top: 28px; }
+.caviera-editorial__provenance-label { display: block; opacity: 0.7; }
+.caviera-editorial__provenance-line { margin: 8px 0 0; opacity: 0.95; }
+.caviera-editorial__provenance-rule { display: block; width: 64px; height: 1px; margin: 16px 0; background: currentColor; opacity: 0.35; }
+.caviera-editorial__provenance-mark { display: block; opacity: 0.7; }
+
 /* ---- Craftsmanship ---- */
 .caviera-craftsmanship__head { text-align: center; margin-bottom: 48px; }
 .caviera-craftsmanship__head .body-text--wide { margin: 16px auto 0; }

@@ -8,6 +8,25 @@
   snippets/caviera-oryx.liquid) — so this section no longer needs an asset-presence guard for
   those modes. The heading/body copy beside the mark already names it (e.g. "The House Seal"), so
   the mark itself renders decoratively (alt="") to avoid announcing the same thing twice.
+
+  IDENTITY-CORRECTION FIX (Maker's Mark): media_source was already correctly set to "house_seal"
+  for the homepage instance — the reported "large Living Oryx" was actually the House Seal, forced
+  into an `object-fit: cover; aspect-ratio: 4/5;` box (see .caviera-editorial__media img in
+  caviera-home.css) meant for full-bleed photography, not a small formal emblem — cropping/blowing
+  it up into something that read as a dominant graphic rather than a refined hallmark. data-media-
+  source="{{ media_source }}" below lets caviera-home.css correct ONLY the house_seal case (a
+  contained, deliberately modest size) without touching the oryx case at all — the dedicated Oryx
+  editorial moment (media_source: "oryx") keeps its exact current appearance, untouched.
+
+  media_motion (opt-in, default off — same reasoning as heading_motion) adds a restrained resolve-
+  on-scroll to the mark itself: quiet on entry, settling to full opacity as the section is read.
+  Never opacity: 0 by default and never required for JS — see [data-reveal-style="seal-resolve"] in
+  caviera-motion.css, which (like every [data-reveal] variant in this theme) shows the fully-
+  resolved state immediately under reduced motion or if the script never runs.
+
+  Provenance block (opt-in, default off) — a small, neutral "Edition Record" line, never a
+  fabricated production count (no "017/100"-style denominator unless a real Edition quantity is
+  ever confirmed).
 {%- endcomment -%}
 {%- liquid
   assign media_source = section.settings.media_source | default: 'custom_image'
@@ -18,10 +37,10 @@
 -%}
 <section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}">
   <div class="container--full caviera-editorial__grid">
-    <div class="caviera-editorial__media">
+    <div class="caviera-editorial__media" data-media-source="{{ media_source }}"{% if section.settings.media_motion %} data-reveal data-reveal-style="seal-resolve"{% endif %}>
       {%- case media_source -%}
         {%- when 'house_seal' -%}
-          {%- render 'caviera-house-seal', mode: seal_mode, width: 220, alt: '' -%}
+          {%- render 'caviera-house-seal', mode: seal_mode, width: 280, alt: '' -%}
         {%- when 'oryx' -%}
           {%- render 'caviera-oryx', variant: 'static', mode: seal_mode, width: 320, alt: '' -%}
         {%- else -%}
@@ -53,6 +72,14 @@
       {%- if section.settings.body != blank -%}<div class="body-text">{{ section.settings.body }}</div>{%- endif -%}
       {%- if section.settings.link_text != blank -%}
         <a href="{{ section.settings.link_url }}" class="link-underline">{{ section.settings.link_text }}</a>
+      {%- endif -%}
+      {%- if section.settings.show_provenance -%}
+        <div class="caviera-editorial__provenance">
+          {%- if section.settings.provenance_label != blank -%}<span class="caviera-editorial__provenance-label label">{{ section.settings.provenance_label }}</span>{%- endif -%}
+          {%- if section.settings.provenance_line != blank -%}<p class="caviera-editorial__provenance-line">{{ section.settings.provenance_line }}</p>{%- endif -%}
+          <span class="caviera-editorial__provenance-rule" aria-hidden="true"></span>
+          {%- if section.settings.provenance_mark != blank -%}<span class="caviera-editorial__provenance-mark label">{{ section.settings.provenance_mark }}</span>{%- endif -%}
+        </div>
       {%- endif -%}
     </div>
   </div>
@@ -90,9 +117,14 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Material & craft" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Precision, by hand." },
     { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Off by default — this section is reused for the calmer, ceremonial Oryx moment; the homepage's Maker's Mark instance turns it on explicitly." },
+    { "type": "checkbox", "id": "media_motion", "label": "Quiet resolve-on-scroll for the mark", "default": false, "info": "A restrained opacity/position settle as the mark enters view — never hidden without JS. Off by default; the homepage's Maker's Mark instance turns it on explicitly." },
     { "type": "richtext", "id": "body", "label": "Body" },
     { "type": "text", "id": "link_text", "label": "Link text" },
-    { "type": "url", "id": "link_url", "label": "Link URL" }
+    { "type": "url", "id": "link_url", "label": "Link URL" },
+    { "type": "checkbox", "id": "show_provenance", "label": "Show Edition record", "default": false, "info": "A small, neutral provenance line beneath the copy. Off by default." },
+    { "type": "text", "id": "provenance_label", "label": "Provenance label", "default": "Edition Record" },
+    { "type": "text", "id": "provenance_line", "label": "Provenance line", "default": "CAVIERA No. ______" },
+    { "type": "text", "id": "provenance_mark", "label": "Provenance mark", "default": "House Seal / Authenticated" }
   ],
   "presets": [{ "name": "Editorial media & text" }]
 }

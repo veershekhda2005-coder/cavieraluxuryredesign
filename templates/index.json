@@ -66,12 +66,17 @@
       "type": "caviera-editorial-media",
       "settings": {
         "media_source": "house_seal",
-        "color_scheme": "obsidian",
+        "color_scheme": "cinnabar",
         "image_position": "left",
         "eyebrow": "The Maker's Mark",
         "heading": "Identity, Edition and ownership.",
         "heading_motion": true,
-        "body": "<p>Every CAVIERA creation carries the House Seal — a permanent mark of authentication, not a decoration. In time, each piece will carry its own Edition record: CAVIERA No. ___ / ___, set once an Edition's true count is known.</p>"
+        "media_motion": true,
+        "body": "<p>Every CAVIERA creation carries the House Seal — a permanent mark of authentication. Each piece is accompanied by its Edition record.</p>",
+        "show_provenance": true,
+        "provenance_label": "Edition Record",
+        "provenance_line": "CAVIERA No. ______",
+        "provenance_mark": "House Seal / Authenticated"
       }
     },
     "craftsmanship": {

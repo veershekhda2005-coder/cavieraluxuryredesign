@@ -79,6 +79,20 @@
   transform: translateX(0) scale(1);
 }
 
+/* seal-resolve: a formal, quiet settle for a small hallmark/emblem (e.g. the House Seal) — never
+   fully hidden pre-JS/no-JS (base opacity is 0.45, not 0), a small 10px rise, no scale/rotate/spin.
+   Used selectively on the mark itself, opt-in via media_motion — see sections/caviera-editorial-
+   media.liquid (the "makers-mark" homepage instance only; the Oryx moment leaves this off). */
+[data-reveal][data-reveal-style="seal-resolve"] {
+  opacity: 0.45;
+  transform: translateY(10px);
+  transition: opacity var(--motion-slow) var(--ease-caviera), transform var(--motion-slow) var(--ease-caviera);
+}
+[data-reveal][data-reveal-style="seal-resolve"].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-reveal][data-reveal-style="crop"] img,
   [data-reveal][data-reveal-style="crop"] picture,
@@ -91,6 +105,11 @@
     transition: none;
   }
   [data-reveal][data-reveal-style="drkst"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  [data-reveal][data-reveal-style="seal-resolve"] {
     opacity: 1;
     transform: none;
     transition: none;
