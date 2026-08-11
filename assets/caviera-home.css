@@ -1703,37 +1703,26 @@
        paper without subtracting what the row itself consumes. Verified this way rather than
        guessed: at exactly 1024px (with 340px on the stage), 340 + 460 + the gap still fits inside
        the container with room to spare — at 900px, the same floors would overflow, which is why
-       the breakpoint moved rather than staying at 900 with a bigger number bolted on. */
-    grid-template-columns: minmax(340px, 1fr) minmax(460px, 1fr);
+       the breakpoint moved rather than staying at 900 with a bigger number bolted on. Fractional
+       tracks (1fr/1fr, each with its own floor) land the stage around ~42-52vw at the widths this
+       theme actually ships at, per the Nolan Barret brief — a cinematic stage, not a thumbnail. */
+    grid-template-columns: minmax(380px, 1fr) minmax(460px, 1fr);
     gap: clamp(40px, 5vw, 80px);
     align-items: start;
   }
 }
-/* Typography-led fallback (see show_visual in sections/caviera-packaging-ritual.liquid) — no
-   packaging photography yet, no visual stage column at all, rather than an obviously-placeholder
-   "material composition" box standing in for missing photography. Six precise, generously-spaced,
-   full-width states carry the ritual on their own; a larger step number is the one compositional
-   cue that replaces the visual stage's own presence. */
-@media (min-width: 1024px) {
-  .caviera-ritual__body[data-layout="typography"] { grid-template-columns: minmax(0, 1fr); }
-  .caviera-ritual__body[data-layout="typography"] .caviera-ritual__rail { max-width: 640px; margin-inline: auto; }
-}
-.caviera-ritual__body[data-layout="typography"] .caviera-ritual__step-number {
-  font-family: var(--font-display);
-  font-size: 1.375rem;
-  font-weight: 300;
-}
-/* Below 1024px: stacked. Two tracks with a readable floor on each side genuinely don't fit in the
-   768–1023px tablet range without either overflowing or breaking the floor promise — stacking the
-   full tablet range (rather than forcing a split that can't actually hold ~380px of readable text)
-   is what "switch layouts earlier rather than allowing broken wrapping" means in practice here. */
+/* Below 1024px: stacked, and the shared desktop stage steps aside entirely (see
+   .caviera-ritual__stage-col below) — each step gets its own compact inline visual instead. A
+   side-by-side sticky panel doesn't hold up in a single mobile column. */
 
-.caviera-ritual__stage-col { position: relative; }
+/* Desktop-only sticky visual stage (the "Nolan Barret" half of this section) — mobile gets its own
+   per-step inline visual instead (.caviera-ritual__step-media, inside each <li>, below). */
+.caviera-ritual__stage-col { position: relative; display: none; }
 @media (min-width: 1024px) {
   /* Sticky within the section's own natural height only — this is not scroll-jacking: it simply
      keeps the visual stage in view while the (taller) step list scrolls past beside it, and
-     releases normally once the section ends. Disabled below 1024px per the brief. */
-  .caviera-ritual__stage-col { position: sticky; top: calc(var(--header-height) + 40px); }
+     releases normally once the section ends. */
+  .caviera-ritual__stage-col { display: block; position: sticky; top: calc(var(--header-height) + 40px); }
 }
 .caviera-ritual__stage {
   position: relative;
@@ -1742,47 +1731,82 @@
   background: var(--caviera-obsidian);
   /* No max-height here at desktop: the column's own grid-track width already governs the box's
      height via aspect-ratio, and since the stage is sticky (not stacked in flow), the viewport
-     naturally limits how much of it is ever visible at once anyway. A max-height here would
-     instead fight the aspect-ratio at wide viewports — width fixed by the grid track, height
-     capped below what 4:5 would compute, producing an unintentionally near-square box. The
-     mobile override below caps height directly instead, since mobile is in normal flow. */
-}
-.caviera-ritual__stage-media {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-  transition: transform 700ms var(--ease-caviera);
-}
-/* A single, restrained stage reaction — assets/caviera-packaging-ritual.js toggles this class only
-   while the "Unseal" step is the active one, marking the threshold between packaging and object
-   with the same quiet emphasis the House Seal itself gets beside that step. Never applied without
-   the JS enhancement running (see data-observing on the step list), so a blocked/failed script
-   simply leaves the stage at its plain resting state throughout. */
-.caviera-ritual__stage.is-unseal-active .caviera-ritual__stage-media { transform: scale(1.02); }
-.caviera-ritual__stage.is-unseal-active .caviera-ritual__mascot { transform: scale(1.05); }
-.caviera-ritual__mascot { transition: transform 700ms var(--ease-caviera); }
-@media (prefers-reduced-motion: reduce) {
-  .caviera-ritual__stage-media,
-  .caviera-ritual__mascot { transition: none; }
+     naturally limits how much of it is ever visible at once anyway. */
 }
 
-/* Official CAVIERA material composition — the "no packaging photo yet" state. Three nested,
-   hairline-Rhodium-edged panels (the section's own Obsidian background, a Cinnabar case, a Warm
-   Bone interior) visualise the same Arrive → Open → Discover sequence named in the steps beside
-   it — an architectural study, never a simulated product photo. */
-.caviera-ritual__composition { position: absolute; inset: 0; }
-.caviera-ritual__panel { position: absolute; border: 1px solid var(--caviera-rhodium); }
-.caviera-ritual__panel[data-panel="cinnabar"] { inset: 12% 10%; background: var(--caviera-cinnabar); }
-.caviera-ritual__panel[data-panel="bone"] { inset: 36% 26% 8% 26%; background: var(--caviera-bone); }
+/* Six real, crossfaded scene states — Amber-style "one scene becoming the next", matched by the
+   step's own title content (data-stage-kind, set in Liquid), not by position, exactly like the
+   House Seal placement beside the "Unseal" step already used in this section. The state matching
+   the stage's own initial data-active-kind (set server-side to the first real step's kind) is
+   visible by default, with zero JS required — see assets/caviera-packaging-ritual.js. */
+.caviera-ritual__stage-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  opacity: 0;
+  transform: scale(1.015);
+  transition: opacity 600ms var(--ease-caviera), transform 600ms var(--ease-caviera);
+  z-index: 0;
+}
+.caviera-ritual__stage[data-active-kind="arrive"] .caviera-ritual__stage-state[data-stage-kind="arrive"],
+.caviera-ritual__stage[data-active-kind="open"] .caviera-ritual__stage-state[data-stage-kind="open"],
+.caviera-ritual__stage[data-active-kind="discover"] .caviera-ritual__stage-state[data-stage-kind="discover"],
+.caviera-ritual__stage[data-active-kind="unseal"] .caviera-ritual__stage-state[data-stage-kind="unseal"],
+.caviera-ritual__stage[data-active-kind="reveal"] .caviera-ritual__stage-state[data-stage-kind="reveal"],
+.caviera-ritual__stage[data-active-kind="keep"] .caviera-ritual__stage-state[data-stage-kind="keep"] {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) { .caviera-ritual__stage-state { transition: none; } }
 
-/* Living Mascot: a discovered House element grounded on the innermost panel's edge, not centred
-   like a logo and never more than roughly a third of the stage's width. */
-.caviera-ritual__mascot { position: absolute; left: 8%; bottom: 6%; width: clamp(140px, 28%, 360px); z-index: 1; }
-.caviera-ritual__mascot img { width: 100%; height: auto; display: block; }
+.caviera-ritual__stage-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Material-study fallback fields — brand colour only, never a simulated box/clasp/texture. */
+.caviera-ritual__stage-field { position: absolute; inset: 0; }
+.caviera-ritual__stage-field[data-field="arrive"] { background: var(--caviera-obsidian); box-shadow: inset 0 0 0 1px var(--caviera-rhodium); }
+/* Open: Cinnabar reads as something revealed underneath Obsidian — a quiet vertical gradient, not
+   a wipe or a hard edge. */
+.caviera-ritual__stage-field[data-field="open"] { background: linear-gradient(180deg, var(--caviera-obsidian) 0%, var(--caviera-cinnabar) 78%); }
+/* Discover: a Warm Bone interior held inside a Cinnabar edge — one restrained framing relationship,
+   nothing more. */
+.caviera-ritual__stage-field[data-field="discover-edge"] { background: var(--caviera-cinnabar); }
+.caviera-ritual__stage-field[data-field="discover-center"] { inset: 16%; background: var(--caviera-bone); box-shadow: inset 0 0 0 1px var(--caviera-rhodium); }
+/* Unseal: the same Cinnabar/Bone relationship, now carrying the House Seal itself — the formal
+   threshold. */
+.caviera-ritual__stage-field[data-field="unseal-outer"] { background: var(--caviera-cinnabar); }
+.caviera-ritual__stage-field[data-field="unseal-inner"] { inset: 20%; background: var(--caviera-bone); box-shadow: inset 0 0 0 1px var(--caviera-rhodium); }
+/* Keep: a calm return — Obsidian and Warm Bone, no Cinnabar. */
+.caviera-ritual__stage-field[data-field="keep"] { background: linear-gradient(180deg, var(--caviera-bone) 0%, var(--caviera-obsidian) 82%); }
+
+.caviera-ritual__stage-seal { position: relative; z-index: 1; width: clamp(110px, 20vw, 180px); }
+.caviera-ritual__stage-seal img { width: 100%; height: auto; display: block; }
+.caviera-ritual__stage-seal--small { width: clamp(70px, 12vw, 110px); opacity: 0.75; }
+/* Unseal's Seal resolves gently as its state becomes active — a hallmark settling into place, not
+   a logo zoom: no spin, no bounce, no draw-on. */
+.caviera-ritual__stage-state[data-stage-kind="unseal"] .caviera-ritual__stage-seal {
+  opacity: 0.4;
+  transform: scale(0.96);
+  transition: opacity 650ms var(--ease-caviera), transform 650ms var(--ease-caviera);
+}
+.caviera-ritual__stage[data-active-kind="unseal"] .caviera-ritual__stage-state[data-stage-kind="unseal"] .caviera-ritual__stage-seal {
+  opacity: 1;
+  transform: scale(1);
+}
+@media (prefers-reduced-motion: reduce) { .caviera-ritual__stage-seal { transition: none; } }
+
+.caviera-ritual__stage-caption { position: relative; z-index: 1; color: var(--caviera-bone); opacity: 0.7; }
 
 .caviera-ritual__rail { position: relative; display: flex; gap: 24px; }
 /* Presentation-case progression line — a hairline Rhodium base with a Cinnabar fill that grows
-   with reading position. Purely decorative; the numbered <ol> already carries the real sequence
-   for assistive tech, so this is aria-hidden. Static (no fill) is a perfectly legible default —
-   the JS enhancement in caviera-packaging-ritual.js is what animates it, and never required. */
+   with reading position (Arrive ~1/6 through Keep 6/6). Purely decorative; the numbered <ol>
+   already carries the real sequence for assistive tech, so this is aria-hidden. Static (no fill)
+   is a perfectly legible default — the JS enhancement in caviera-packaging-ritual.js is what
+   animates it, and never required. */
 .caviera-ritual__progress { position: relative; flex: 0 0 1px; width: 1px; align-self: stretch; background: var(--caviera-rhodium); opacity: 0.4; }
 .caviera-ritual__progress-fill { position: absolute; top: 0; left: 0; width: 1px; height: 0%; background: var(--caviera-cinnabar); transition: height 0.4s var(--ease-caviera); }
 @media (prefers-reduced-motion: reduce) { .caviera-ritual__progress-fill { transition: none; } }
@@ -1795,16 +1819,26 @@
   padding-block: 28px;
   border-bottom: var(--border-width) solid var(--border-subtle);
   opacity: 1;
-  transition: opacity 0.4s var(--ease-caviera);
+  transition: opacity 0.4s var(--ease-caviera), border-color 0.4s var(--ease-caviera);
 }
 .caviera-ritual__step:first-child { padding-top: 0; }
 .caviera-ritual__step:last-child { border-bottom: none; }
 /* The JS enhancement only dims non-active steps once it has actually initialised (marked by
    data-observing on the list) — without it, every step stays at full opacity, fully readable, per
-   the brief. 0.7 (not lower) keeps inactive steps clearly legible, just quieter. */
-.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step { opacity: 0.7; }
-.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step.is-active { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { .caviera-ritual__step { transition: none; } }
+   the brief. */
+.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step { opacity: 0.42; }
+.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step.is-active { opacity: 1; border-color: var(--caviera-cinnabar); }
+.caviera-ritual__step.is-active .caviera-ritual__step-title { transform: translateX(8px); }
+.caviera-ritual__step-title { transition: transform 0.4s var(--ease-caviera); }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-ritual__step,
+  .caviera-ritual__step-title { transition: none; }
+}
+/* Desktop only: enough room per step for the scroll-linked stage to actually change state — six
+   short paragraphs otherwise leave almost no scroll distance to read progress in. */
+@media (min-width: 1024px) {
+  .caviera-ritual__step { min-height: 46svh; align-items: center; }
+}
 
 .caviera-ritual__step-number { color: var(--caviera-cinnabar); padding-top: 0.2em; }
 .caviera-ritual__step-title {
@@ -1821,9 +1855,42 @@
 .caviera-ritual__step-copy .body-text { max-width: 500px; }
 .caviera-ritual__step-seal { display: inline-flex; margin-top: 16px; }
 
+/* Mobile/tablet-only inline visual, one per step, right beside its own copy — see
+   .caviera-ritual__stage-col above for why the shared desktop stage steps aside instead of
+   appearing here too. Same crossfade-state markup (snippets/caviera-ritual-stage-visual.liquid)
+   but only the step's OWN state is ever rendered here, so there is nothing to switch between —
+   a plain static visual, with a light one-time fade as the step enters (below). */
+.caviera-ritual__step-media {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-height: 62svh;
+  aspect-ratio: 4 / 5;
+  border-radius: 0;
+  background: var(--caviera-obsidian);
+  margin-bottom: 16px;
+  opacity: 0.65;
+  transform: translateY(10px);
+  transition: opacity 500ms var(--ease-caviera), transform 500ms var(--ease-caviera);
+}
+.caviera-ritual__steps[data-observing="true"] .caviera-ritual__step.is-active .caviera-ritual__step-media {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) { .caviera-ritual__step-media { transition: none; opacity: 1; transform: none; } }
+.caviera-ritual__step-media .caviera-ritual__stage-state {
+  position: static;
+  inset: auto;
+  opacity: 1;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  transition: none;
+}
+@media (min-width: 1024px) {
+  .caviera-ritual__step-media { display: none; }
+}
 @media (max-width: 1023px) {
-  .caviera-ritual__stage { aspect-ratio: 4 / 5; max-height: 520px; }
-  .caviera-ritual__mascot { width: clamp(140px, 45%, 190px); }
   .caviera-ritual__rail { gap: 16px; }
   .caviera-ritual__step { padding-block: 22px; }
 }

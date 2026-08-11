@@ -1,0 +1,52 @@
+{%- comment -%}
+  Packaging ritual — one stage state's visual content, shared between the desktop sticky stage and
+  the mobile per-step inline media (see sections/caviera-packaging-ritual.liquid) so the six-state
+  fallback logic exists in exactly one place.
+
+  Params:
+    kind        - 'arrive' | 'open' | 'discover' | 'unseal' | 'reveal' | 'keep' | anything else
+    image       - optional Shopify image object (the merchant's own photography for this stage)
+    mark_mode   - 'light' | 'dark', passed straight to caviera-house-seal
+    label       - the step's own title, used as alt text / visible caption text
+
+  Real photography always wins when set. With none, each kind gets its own elegant CAVIERA
+  material-study fallback (brand colour fields, the approved House Seal, or — for Reveal only —
+  the same bundled jewellery photograph already used as the hero's and Object in Focus's own
+  bundled default, assets/15_oryx_necklace_on_model.png) — never a simulated box, clasp or texture.
+{%- endcomment -%}
+{%- if image != blank -%}
+  <img
+    class="caviera-ritual__stage-media"
+    src="{{ image | image_url: width: 1000 }}"
+    srcset="{{ image | image_url: width: 600 }} 600w, {{ image | image_url: width: 1000 }} 1000w, {{ image | image_url: width: 1400 }} 1400w"
+    sizes="(min-width: 1024px) 48vw, 100vw"
+    width="{{ image.width }}" height="{{ image.height }}"
+    alt="{{ image.alt | default: label | default: '' | escape }}"
+    loading="lazy"
+  >
+{%- else -%}
+  {%- case kind -%}
+    {%- when 'arrive' -%}
+      <span class="caviera-ritual__stage-field" data-field="arrive" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-caption label">{{ label | default: 'Arrive' }}</span>
+    {%- when 'open' -%}
+      <span class="caviera-ritual__stage-field" data-field="open" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-caption label">{{ label | default: 'Open' }}</span>
+    {%- when 'discover' -%}
+      <span class="caviera-ritual__stage-field" data-field="discover-edge" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-field" data-field="discover-center" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-caption label">{{ label | default: 'Discover' }}</span>
+    {%- when 'unseal' -%}
+      <span class="caviera-ritual__stage-field" data-field="unseal-outer" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-field" data-field="unseal-inner" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-seal">{%- render 'caviera-house-seal', mode: mark_mode, width: 220, alt: '' -%}</span>
+    {%- when 'reveal' -%}
+      <img class="caviera-ritual__stage-media" src="{{ '15_oryx_necklace_on_model.png' | asset_url }}" width="521" height="358" alt="{{ label | default: 'A CAVIERA piece, revealed from its packaging.' | escape }}" loading="lazy">
+    {%- when 'keep' -%}
+      <span class="caviera-ritual__stage-field" data-field="keep" aria-hidden="true"></span>
+      <span class="caviera-ritual__stage-seal caviera-ritual__stage-seal--small">{%- render 'caviera-house-seal', mode: mark_mode, width: 220, alt: '' -%}</span>
+      <span class="caviera-ritual__stage-caption label">{{ label | default: 'Keep' }}</span>
+    {%- else -%}
+      <span class="caviera-ritual__stage-field" data-field="arrive" aria-hidden="true"></span>
+  {%- endcase -%}
+{%- endif -%}

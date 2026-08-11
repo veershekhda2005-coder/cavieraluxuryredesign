@@ -1,27 +1,39 @@
 {%- comment -%}
-  Packaging ritual — ceremonial editorial spread, not a feature-card grid or a website timeline.
-  One editorial introduction, then a two-column composition: a large left "presentation case"
-  visual stage (merchant packaging photography, or — when none is set — an official CAVIERA
-  material study built from real brand colour and artwork, never a simulated photo) beside one
-  vertical sequence of six ritual steps (number, title, short description). A single thin
-  Rhodium/Cinnabar progression line runs beside the steps; an optional, restrained JS enhancement
-  (assets/caviera-packaging-ritual.js) brightens the step nearest the reading focus and grows the
-  progression line to match — every step is fully readable without it.
+  Packaging ritual — Nolan Barret–style sticky object storytelling (a Bureau-Nine-influenced,
+  Amber-cinematic take, dressed entirely in CAVIERA's own six-step packaging ritual, not a
+  photographic-object study): one anchored visual stage at desktop beside the six-step story
+  (Arrive/Open/Discover/Unseal/Reveal/Keep); as the reader scrolls the story, the stage's own
+  content changes to represent whichever stage is closest to the reading focus. Mobile drops the
+  shared sticky stage (a side-by-side sticky panel doesn't hold up in a single column) in favour of
+  each stage carrying its own compact inline visual, right beside its own copy.
 
-  REDESIGN NOTE (see docs/build-progress.md): the previous version placed four equal-width colour
-  bars beside a further-nested flex column, which — combined with an unconstrained inner
-  max-width — could read as an extremely narrow, word-by-word-wrapped strip despite the outer grid
-  already having a readable-floor fix. This version removes that nested sub-layout entirely: steps
-  are one flat vertical list with an explicit, generous 500px max-width on the description text
-  (see .caviera-ritual__step-copy .body-text in caviera-home.css), and the "layering" idea moves to
-  where it actually communicates something — the visual stage itself (nested Obsidian → Cinnabar →
-  Warm Bone panels), not a set of 4px bars next to the text.
+  SCROLL-ANIMATION REBUILD (this task): the section already had a sticky visual-stage column
+  (.caviera-ritual__stage-col, sticky at 1024px+) and an active-step controller
+  (assets/caviera-packaging-ritual.js) — refined rather than duplicated. Three real gaps, closed:
+  1. The stage never actually changed per step — one image (or one static "material composition")
+     sat there for the whole section, with only a small scale nudge at "Unseal". Now every stage
+     block gets its own real visual state (data-stage-kind, crossfaded exactly like Object in
+     Focus's own data-active-chapter/data-state-index system — see caviera-home.css), matched by
+     the step's own title text ("contains 'arrive'", etc. — the same content-matching technique
+     already used below for the House Seal placement), not by block position, so reordering or
+     renaming a step keeps the right visual attached to it.
+  2. The active-step detection reused the same IntersectionObserver threshold/rootMargin combination
+     (threshold: 0.5, rootMargin: '-40% 0px -40% 0px') already found and fixed elsewhere in this
+     project (assets/caviera-house-codes.js's own fix note) — geometrically unreliable once a step's
+     height is a meaningful fraction of the viewport. Replaced with the same deterministic
+     "closest step centre to a fixed viewport focal line" rAF calculation already proven in
+     assets/caviera-object-focus.js.
+  3. Real packaging photography does not exist yet for any stage. Rather than an obviously-
+     placeholder single "material composition" box, each of the six kinds now gets its OWN
+     elegant CAVIERA material-study fallback (brand colour fields, the approved House Seal for
+     Unseal, and — Reveal only — the same bundled jewellery photograph already used as the hero's
+     and Object in Focus's own bundled default, assets/15_oryx_necklace_on_model.png) — see
+     snippets/caviera-ritual-stage-visual.liquid, shared by both the desktop stage and the mobile
+     inline media so this logic exists in exactly one place. A merchant's own "Stage image" on any
+     step block always wins over its fallback, per block, independent of the others.
 
-  House Seal placement: rather than a single always-shown mark with no connection to any specific
-  step, the Seal now appears beside whichever step is actually titled "Unseal" (matched
-  case-insensitively, the same "match by content, not by position" technique already used for
-  header mega-menu features) — so it stays correctly attached to the authentication moment even if
-  a merchant edits/reorders the step blocks, rather than being pinned to "block #4" by assumption.
+  House Seal placement: the small mark beside the step copy (not the stage's own visual) still
+  matches whichever step is titled "Unseal" (case-insensitive) — unchanged from before.
 {%- endcomment -%}
 {%- liquid
   assign has_steps = false
@@ -36,23 +48,29 @@
     assign mark_mode = 'dark'
   endunless
 
-  assign visual_mode = section.settings.visual_mode | default: 'media'
-  assign stage_image = section.settings.image
-  assign stage_image_mobile = section.settings.image_mobile | default: stage_image
-  if stage_image == blank
-    assign visual_mode = 'composition'
-  endif
-
-  # VISUAL-TUNING FIX: the nested-panel "CAVIERA material composition" still read as an unfinished
-  # placeholder graphic once real photography was expected. Rather than show it by default whenever
-  # no packaging image is set, the ritual now defaults to a typography-led sequence in that case —
-  # six precise, well-spaced states carrying the whole moment on their own — and the composition
-  # visual becomes an explicit merchant opt-in (show_composition_visual) for anyone who prefers it
-  # as a deliberate design choice rather than a stand-in for missing photography.
-  assign show_visual = true
-  if visual_mode == 'composition' and section.settings.show_composition_visual != true
-    assign show_visual = false
-  endif
+  assign first_kind = 'arrive'
+  assign found_first_kind = false
+  for block in section.blocks
+    if block.settings.title != blank and found_first_kind == false
+      assign title_down = block.settings.title | downcase
+      if title_down contains 'arrive'
+        assign first_kind = 'arrive'
+      elsif title_down contains 'open'
+        assign first_kind = 'open'
+      elsif title_down contains 'discover'
+        assign first_kind = 'discover'
+      elsif title_down contains 'unseal'
+        assign first_kind = 'unseal'
+      elsif title_down contains 'reveal'
+        assign first_kind = 'reveal'
+      elsif title_down contains 'keep'
+        assign first_kind = 'keep'
+      else
+        assign first_kind = 'arrive'
+      endif
+      assign found_first_kind = true
+    endif
+  endfor
 -%}
 <section class="caviera-section caviera-ritual" data-scheme="{{ section.settings.color_scheme }}" data-spacing="{{ section.settings.spacing | default: 'standard' }}">
   <div class="container container--narrow caviera-ritual__head" data-reveal>
@@ -61,43 +79,40 @@
     {%- if section.settings.supporting_copy != blank -%}<p class="body-text caviera-ritual__intro-copy">{{ section.settings.supporting_copy }}</p>{%- endif -%}
   </div>
 
-  <div class="container caviera-ritual__body" data-layout="{% if show_visual %}visual{% else %}typography{% endif %}">
-    {%- if show_visual -%}
-    <div class="caviera-ritual__stage-col">
-      <div class="caviera-ritual__stage" data-reveal>
-        {%- if visual_mode == 'media' -%}
-          <picture>
-            {%- if stage_image_mobile != blank and stage_image_mobile != stage_image -%}
-              <source media="(max-width: 749px)" srcset="{{ stage_image_mobile | image_url: width: 700 }} 700w, {{ stage_image_mobile | image_url: width: 1000 }} 1000w" sizes="100vw">
-            {%- endif -%}
-            <img
-              class="caviera-ritual__stage-media"
-              src="{{ stage_image | image_url: width: 1000 }}"
-              srcset="{{ stage_image | image_url: width: 600 }} 600w, {{ stage_image | image_url: width: 1000 }} 1000w, {{ stage_image | image_url: width: 1400 }} 1400w"
-              sizes="(min-width: 1024px) 48vw, 100vw"
-              width="{{ stage_image.width }}"
-              height="{{ stage_image.height }}"
-              alt="{{ stage_image.alt | default: '' | escape }}"
-              loading="lazy"
-            >
-          </picture>
-        {%- else -%}
-          {%- comment -%}
-            Official CAVIERA material study — never a simulated photo. Three nested panels
-            (Obsidian outer, Cinnabar case, Warm Bone interior) visualise the same opening
-            sequence named in the steps beside it, each edged in a hairline Rhodium rule. The
-            Living Mascot sits grounded on the innermost panel's edge, not centred like a logo.
-          {%- endcomment -%}
-          <div class="caviera-ritual__composition" aria-hidden="true">
-            <span class="caviera-ritual__panel" data-panel="cinnabar"></span>
-            <span class="caviera-ritual__panel" data-panel="bone"></span>
-          </div>
-          {%- if section.settings.show_oryx -%}
-            <div class="caviera-ritual__mascot">
-              {%- render 'caviera-oryx', variant: 'static', mode: 'dark', width: 320, alt: '' -%}
+  <div class="container caviera-ritual__body">
+    {%- if has_steps -%}
+    <div class="caviera-ritual__stage-col" aria-hidden="true">
+      {%- comment -%}
+        Desktop only — hidden below 1024px, see caviera-home.css. aria-hidden: a decorative,
+        atmospheric echo of the ordered list beside it, which already narrates the full ritual in
+        text (and, for "Unseal"/"Reveal", already carries its own accessible copy) — without this,
+        assistive tech would hit all six stacked states here before ever reaching that list.
+      {%- endcomment -%}
+      <div class="caviera-ritual__stage" data-active-kind="{{ first_kind }}">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.title != blank -%}
+            {%- liquid
+              assign title_down = block.settings.title | downcase
+              assign kind = 'arrive'
+              if title_down contains 'arrive'
+                assign kind = 'arrive'
+              elsif title_down contains 'open'
+                assign kind = 'open'
+              elsif title_down contains 'discover'
+                assign kind = 'discover'
+              elsif title_down contains 'unseal'
+                assign kind = 'unseal'
+              elsif title_down contains 'reveal'
+                assign kind = 'reveal'
+              elsif title_down contains 'keep'
+                assign kind = 'keep'
+              endif
+            -%}
+            <div class="caviera-ritual__stage-state" data-stage-kind="{{ kind }}">
+              {%- render 'caviera-ritual-stage-visual', kind: kind, image: block.settings.image, mark_mode: mark_mode, label: block.settings.title -%}
             </div>
           {%- endif -%}
-        {%- endif -%}
+        {%- endfor -%}
       </div>
     </div>
     {%- endif -%}
@@ -109,16 +124,38 @@
           {%- for block in section.blocks -%}
             {%- if block.settings.title != blank -%}
               {%- liquid
-                assign is_unseal = false
                 assign title_down = block.settings.title | downcase
-                if title_down contains 'unseal'
+                assign kind = 'arrive'
+                if title_down contains 'arrive'
+                  assign kind = 'arrive'
+                elsif title_down contains 'open'
+                  assign kind = 'open'
+                elsif title_down contains 'discover'
+                  assign kind = 'discover'
+                elsif title_down contains 'unseal'
+                  assign kind = 'unseal'
+                elsif title_down contains 'reveal'
+                  assign kind = 'reveal'
+                elsif title_down contains 'keep'
+                  assign kind = 'keep'
+                endif
+                assign is_unseal = false
+                if kind == 'unseal'
                   assign is_unseal = true
                 endif
               -%}
-              <li class="caviera-ritual__step" data-reveal {{ block.shopify_attributes }}>
+              <li class="caviera-ritual__step" data-stage-kind="{{ kind }}" data-reveal {{ block.shopify_attributes }}>
                 <span class="caviera-ritual__step-number label" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
                 <div class="caviera-ritual__step-copy">
                   <h3 class="caviera-ritual__step-title">{{ block.settings.title }}</h3>
+                  {%- comment -%}
+                    Mobile only (hidden at 1024px+, see caviera-home.css) — each stage carries its
+                    own compact visual right beside its own copy, rather than one shared sticky
+                    stage; a side-by-side sticky panel doesn't hold up in a single mobile column.
+                  {%- endcomment -%}
+                  <div class="caviera-ritual__step-media">
+                    {%- render 'caviera-ritual-stage-visual', kind: kind, image: block.settings.image, mark_mode: mark_mode, label: block.settings.title -%}
+                  </div>
                   {%- if block.settings.body != blank -%}<p class="body-text">{{ block.settings.body }}</p>{%- endif -%}
                   {%- if is_unseal and section.settings.show_seal -%}
                     <span class="caviera-ritual__step-seal">{%- render 'caviera-house-seal', mode: mark_mode, width: 32, alt: '' -%}</span>
@@ -160,19 +197,6 @@
         { "value": "spacious", "label": "Spacious" }
       ]
     },
-    { "type": "header", "content": "Visual stage" },
-    {
-      "type": "select", "id": "visual_mode", "label": "Visual mode", "default": "media",
-      "info": "\"Media\" falls back to a typography-led sequence (no visual stage at all) whenever no packaging image is set below, unless the composition visual is explicitly turned on beneath.",
-      "options": [
-        { "value": "media", "label": "Merchant packaging media" },
-        { "value": "composition", "label": "CAVIERA material composition" }
-      ]
-    },
-    { "type": "image_picker", "id": "image", "label": "Packaging image (desktop)", "info": "Real packaging photography only — no marketplace badges, review stars or promotional text. Add this to give the ritual its own dedicated visual stage." },
-    { "type": "image_picker", "id": "image_mobile", "label": "Packaging image (mobile)", "info": "Falls back to the desktop image when left blank." },
-    { "type": "checkbox", "id": "show_composition_visual", "label": "Show CAVIERA material composition when no packaging image is set", "default": false, "info": "Off by default — with no packaging photography yet, the ritual reads better as a precise typography-led sequence (six full-width states) than a placeholder-like visual stage. Turn on only as a deliberate design choice, not a stand-in for missing photography." },
-    { "type": "checkbox", "id": "show_oryx", "label": "Show Living Mascot in the material composition", "default": true, "info": "Only shown when the composition visual above is on — never overlaid on a merchant's own packaging photography. Uses the bundled official artwork; upload your own under Theme settings → CAVIERA Identity to override it." },
     { "type": "checkbox", "id": "show_seal", "label": "Show House Seal beside the \"Unseal\" step", "default": true, "info": "Matches whichever step block is titled \"Unseal\" (case-insensitive) — rename that step and the mark moves with it." }
   ],
   "blocks": [
@@ -181,7 +205,8 @@
       "name": "Step",
       "settings": [
         { "type": "text", "id": "title", "label": "Title", "info": "e.g. Arrive, Open, Discover, Unseal, Reveal, Keep" },
-        { "type": "textarea", "id": "body", "label": "Description", "info": "One to two short sentences read best." }
+        { "type": "textarea", "id": "body", "label": "Description", "info": "One to two short sentences read best." },
+        { "type": "image_picker", "id": "image", "label": "Stage image", "info": "Real packaging/product photography for this exact stage only. Leave blank to use the CAVIERA material-study fallback for this stage instead (never a placeholder box)." }
       ]
     }
   ],
