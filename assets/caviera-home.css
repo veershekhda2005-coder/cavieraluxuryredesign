@@ -1199,6 +1199,42 @@
 }
 @media (prefers-reduced-motion: reduce) { .caviera-object-focus__media { transition: none; } }
 
+/* ---- Mobile/tablet (<1024px): lightweight sticky Stone/Setting/Gold story ----
+   ROOT CAUSE of "mobile feels static": the image crossfade and active-chapter text cue above were
+   never actually gated to desktop — they already ran at every width. The missing piece was purely
+   structural: .caviera-object-focus__grid is `display: grid` with ONE column below 1024px, so
+   .media-col and .story land in two separate, independently auto-sized grid ROWS (stacked). A
+   sticky element only has real "hold" range when there's slack between its own height and its
+   containing block's — in a single-column grid, .media-col's row is sized to exactly its own
+   content, leaving zero slack, so `position: sticky` there would have done nothing visible: the
+   media scrolls away before the user ever reaches the Setting/Gold chapters, and by the time the
+   (already-correct) image swap happens underneath, it's off-screen.
+
+   FIX: switch .grid to plain block flow at this breakpoint — .media-col and .story become normal
+   stacked siblings, and .media-col's sticky range is then genuinely "however much of .story is
+   still below it to scroll past", exactly the same principle already proven for the desktop
+   two-column version (there, media-col and story share one tall GRID ROW instead). top: var(
+   --header-height-compact) — not the resting --header-height — because this section sits far
+   enough down the page that the header is always in its compact state by the time it's reached
+   (see the Edition I anchor-landing fix for the same reasoning). */
+@media (max-width: 1023px) {
+  .caviera-object-focus__grid { display: block; }
+  .caviera-object-focus__media-col {
+    position: sticky;
+    top: var(--header-height-compact, 56px);
+    z-index: 1;
+    margin-bottom: clamp(24px, 6vw, 40px);
+  }
+  /* Large enough to feel luxurious, capped so it never dominates the whole phone screen for the
+     entire story. aspect-ratio still governs width:height normally below this cap. */
+  .caviera-object-focus__media[data-active-chapter] { max-height: 60svh; }
+  /* Gives each chapter real natural height so the sticky media above has genuine room to hold
+     across all three states, and so detection has a meaningful centre to measure — modest, not a
+     giant empty scroll distance (three chapters at ~42svh ≈ 126svh total, well short of "several
+     screens of nothing"). */
+  .caviera-object-focus__chapter { min-height: 42svh; align-items: center; }
+}
+
 .caviera-object-focus__chapters { display: flex; flex-direction: column; gap: 0; }
 .caviera-object-focus__chapter {
   display: grid;
