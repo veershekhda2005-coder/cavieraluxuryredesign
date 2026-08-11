@@ -14,15 +14,15 @@
   directional arrow", see assets/caviera-components.css) — matching the brief's "editorial, not
   button-like" CTA without inventing a new style.
 
-  SCROLL-PROGRESS MOTION (architecture replacement): three earlier passes used an
-  IntersectionObserver-driven entrance trigger (a single .is-active class added/removed at a
-  visibility threshold). Each traced correctly in code review, but real-browser testing repeatedly
-  reported no perceptible motion, so that architecture was retired entirely rather than re-tuned
-  again. assets/caviera-scroll-motion.js now drives the headline/CTA/underline/arrow as a direct,
-  continuous function of the section's own scroll position (getBoundingClientRect(), recomputed on
-  every scroll frame) — no threshold, no discrete state, no CSS transition on the scroll-driven
-  properties, so movement is reversible by construction (scrolling up runs the same function
-  backwards) rather than by a separate replay mechanism.
+  STATIC — PERMANENT (final decision, locked): four separate animation architectures were tried
+  for this section (a shared one-shot reveal, an IntersectionObserver entrance-trigger controller,
+  a strengthened version of the same, and a direct scroll-progress rAF controller). Each traced
+  correctly in code review; none was ever confirmed perceptible in real-browser testing, and this
+  environment has no browser to close that gap. Following a regression scare on the wider site
+  (investigated and found, via exhaustive diff against the deployed remote theme, to involve zero
+  changes to any other section's JS/CSS — see the "Restore CAVIERA signature animation systems"
+  commit for the full audit), this section is being locked to its plain, always fully-visible
+  static state permanently. Do not attempt a fifth animation pass on this section.
 {%- endcomment -%}
 {%- liquid
   assign bespoke_image = section.settings.image_desktop
@@ -64,8 +64,6 @@
     {%- endif -%}
   </div>
 </section>
-
-<script src="{{ 'caviera-scroll-motion.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {

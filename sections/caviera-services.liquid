@@ -1,15 +1,14 @@
 {%- comment -%}
   Quiet trust signals. Fully merchant-editable — nothing is hard-coded globally, no loud badges.
 
-  SCROLL-PROGRESS MOTION (architecture replacement): an earlier IntersectionObserver-driven
-  entrance trigger traced correctly in code review but was never confirmed perceptible in real-
-  browser testing, so it was retired rather than re-tuned again. assets/caviera-scroll-motion.js
-  now drives the heading/three columns/divider lines as a direct, continuous function of scroll
-  position (getBoundingClientRect(), recomputed every scroll frame) — desktop shares one section-
-  level progress value across staggered windows; mobile gives each stacked item its own
-  independent progress, since they enter the viewport at very different times. No threshold, no
-  discrete state, no CSS transition on the scroll-driven properties — motion is reversible by
-  construction.
+  STATIC — PERMANENT (final decision, locked): multiple animation architectures were tried for
+  this heading/column reveal (a shared one-shot reveal, an IntersectionObserver entrance-trigger
+  controller, and a direct scroll-progress rAF controller). None was ever confirmed perceptible in
+  real-browser testing, and this environment has no browser to close that gap. Following a
+  regression scare on the wider site (investigated and found, via exhaustive diff against the
+  deployed remote theme, to involve zero changes to any other section's JS/CSS — see the "Restore
+  CAVIERA signature animation systems" commit for the full audit), this section is being locked to
+  its plain, always fully-visible static state permanently. Do not attempt another animation pass.
 {%- endcomment -%}
 {%- liquid
   assign has_items = false
@@ -35,7 +34,6 @@
     </ul>
   </div>
 </section>
-<script src="{{ 'caviera-scroll-motion.js' | asset_url }}" defer="defer"></script>
 {%- elsif request.design_mode -%}
 <section class="caviera-section caviera-section--tight"><div class="container"><div class="caviera-editor-note">Add service blocks (e.g. Made to order, Tracked delivery, Client support).</div></div></section>
 {%- endif -%}
