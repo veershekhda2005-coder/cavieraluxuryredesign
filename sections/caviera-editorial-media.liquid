@@ -18,11 +18,24 @@
   contained, deliberately modest size) without touching the oryx case at all — the dedicated Oryx
   editorial moment (media_source: "oryx") keeps its exact current appearance, untouched.
 
-  media_motion (opt-in, default off — same reasoning as heading_motion) adds a restrained resolve-
-  on-scroll to the mark itself: quiet on entry, settling to full opacity as the section is read.
-  Never opacity: 0 by default and never required for JS — see [data-reveal-style="seal-resolve"] in
-  caviera-motion.css, which (like every [data-reveal] variant in this theme) shows the fully-
-  resolved state immediately under reduced motion or if the script never runs.
+  ANIMATION VISIBILITY FIX (Maker's Mark): the previous motion here was a single, one-shot
+  IntersectionObserver reveal (assets/caviera-global.js — threshold 0.15, unobserves after firing
+  once), the same generic mechanism used for ordinary text blocks across the theme. It fired once,
+  briefly, near entry and then did nothing for the remaining ~30svh of scroll through the section —
+  there was no continuous scroll-progress driver here at all, unlike Material Truth or Object in
+  Focus. That is the confirmed root cause of "feels static": the reveal was real but too brief and
+  too early to read as scroll-linked motion.
+
+  scroll_progression (opt-in, default off, exactly like Material Truth's own setting on a different
+  section) replaces that one-shot reveal with a dedicated continuous system — see
+  assets/caviera-makers-mark.js, which writes three independent, overlapping 0–1 progress channels
+  (--maker-seal-progress, --maker-headline-progress, --maker-provenance-progress) as the user
+  actually scrolls through the section, plus a lightweight entry-based (non-scroll-linked) mobile
+  mode. Off by default — this section is reused for the calmer, static Oryx moment, which keeps its
+  exact current one-shot behaviour untouched; only the homepage's "makers-mark" instance turns this
+  on (templates/index.json). When scroll_progression is on, the older per-element media_motion /
+  heading_motion reveal attributes are intentionally omitted below so the two systems never both
+  apply to the same element at once.
 
   Provenance block (opt-in, default off) — a small, neutral "Edition Record" line, never a
   fabricated production count (no "017/100"-style denominator unless a real Edition quantity is
@@ -34,10 +47,31 @@
   unless section.settings.color_scheme == 'bone'
     assign seal_mode = 'dark'
   endunless
+  assign use_progress = section.settings.scroll_progression
 -%}
 <section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}">
+  {%- comment -%}
+    Stage/stage-inner only exists when scroll_progression is on (same wrapper pattern used by
+    Material Truth: an in-flow ancestor with an explicit height, a sticky inner that pins for that
+    height, giving assets/caviera-makers-mark.js a real scroll distance to compute continuous
+    progress from). Every other instance of this section renders the grid directly, byte-for-byte
+    as before.
+  {%- endcomment -%}
+  {%- if use_progress -%}<div class="caviera-editorial__stage" data-caviera-editorial-progress>
+  <div class="caviera-editorial__stage-inner">{%- endif -%}
   <div class="container--full caviera-editorial__grid">
-    <div class="caviera-editorial__media" data-media-source="{{ media_source }}"{% if section.settings.media_motion %} data-reveal data-reveal-style="seal-resolve"{% endif %}>
+    <div class="caviera-editorial__media" data-media-source="{{ media_source }}"{% if section.settings.media_motion and use_progress == false %} data-reveal data-reveal-style="seal-resolve"{% endif %}>
+      {%- if use_progress and media_source == 'house_seal' -%}
+        {%- comment -%}
+          Optional Bureau Nine depth cue: one faint, always-static-opacity impression of the same
+          approved Seal sitting behind the real one — never a second visible mark, never sharp.
+          Hidden on mobile (kept lightweight there, per brief). If this ever reads as busy/decorative
+          rather than quietly spatial, delete this single block; nothing else depends on it.
+        {%- endcomment -%}
+        <div class="caviera-editorial__media-impression" aria-hidden="true">
+          {%- render 'caviera-house-seal', mode: seal_mode, width: 280, alt: '' -%}
+        </div>
+      {%- endif -%}
       {%- case media_source -%}
         {%- when 'house_seal' -%}
           {%- render 'caviera-house-seal', mode: seal_mode, width: 280, alt: '' -%}
@@ -58,16 +92,15 @@
           {%- endif -%}
       {%- endcase -%}
     </div>
-    <div class="caviera-editorial__text" data-reveal>
+    <div class="caviera-editorial__text"{% unless use_progress %} data-reveal{% endunless %}>
       {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
       {%- if section.settings.heading != blank -%}
         {%- comment -%}
           Drkst-style typographic moment, opt-in per instance (see heading_motion below) — off by
-          default since this same section also renders the calmer, ceremonial Oryx moment; only the
-          homepage's own "makers-mark" instance turns it on (templates/index.json), keeping the Oryx
-          moment quiet per the Rumaya-style pacing brief.
+          default since this same section also renders the calmer, ceremonial Oryx moment; only used
+          when scroll_progression is off (the continuous system drives the heading itself otherwise).
         {%- endcomment -%}
-        <h2 class="heading-h2"{% if section.settings.heading_motion %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
+        <h2 class="heading-h2"{% if section.settings.heading_motion and use_progress == false %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
       {%- endif -%}
       {%- if section.settings.body != blank -%}<div class="body-text">{{ section.settings.body }}</div>{%- endif -%}
       {%- if section.settings.link_text != blank -%}
@@ -83,7 +116,11 @@
       {%- endif -%}
     </div>
   </div>
+  {%- if use_progress -%}</div>
+</div>{%- endif -%}
 </section>
+
+<script src="{{ 'caviera-makers-mark.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
@@ -116,8 +153,9 @@
     { "type": "image_picker", "id": "image", "label": "Image", "info": "Used only when media source is Custom image." },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Material & craft" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Precision, by hand." },
-    { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Off by default — this section is reused for the calmer, ceremonial Oryx moment; the homepage's Maker's Mark instance turns it on explicitly." },
-    { "type": "checkbox", "id": "media_motion", "label": "Quiet resolve-on-scroll for the mark", "default": false, "info": "A restrained opacity/position settle as the mark enters view — never hidden without JS. Off by default; the homepage's Maker's Mark instance turns it on explicitly." },
+    { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Ignored when scroll progression (below) is on. Off by default — this section is reused for the calmer, ceremonial Oryx moment." },
+    { "type": "checkbox", "id": "media_motion", "label": "Quiet resolve-on-scroll for the mark", "default": false, "info": "A restrained opacity/position settle as the mark enters view. Ignored when scroll progression (below) is on. Off by default." },
+    { "type": "checkbox", "id": "scroll_progression", "label": "Continuous scroll-linked reveal", "default": false, "info": "Replaces the entrance reveals above with a slow, formal, continuously scroll-linked sequence for the mark, heading and Edition record. Off by default; the homepage's Maker's Mark instance turns it on explicitly." },
     { "type": "richtext", "id": "body", "label": "Body" },
     { "type": "text", "id": "link_text", "label": "Link text" },
     { "type": "url", "id": "link_url", "label": "Link URL" },

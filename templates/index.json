@@ -72,6 +72,7 @@
         "heading": "Identity, Edition and ownership.",
         "heading_motion": true,
         "media_motion": true,
+        "scroll_progression": true,
         "body": "<p>Every CAVIERA creation carries the House Seal — a permanent mark of authentication. Each piece is accompanied by its Edition record.</p>",
         "show_provenance": true,
         "provenance_label": "Edition Record",

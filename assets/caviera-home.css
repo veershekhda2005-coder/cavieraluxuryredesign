@@ -1330,6 +1330,131 @@
 .caviera-editorial__provenance-rule { display: block; width: 64px; height: 1px; margin: 16px 0; background: currentColor; opacity: 0.35; }
 .caviera-editorial__provenance-mark { display: block; opacity: 0.7; }
 
+/* ---- Editorial media & text: continuous scroll-linked reveal (opt-in, scroll_progression) ----
+   Scoped entirely to [data-caviera-editorial-progress] — the Oryx moment and any other instance
+   without this attribute render none of the markup below and keep their exact previous CSS/motion
+   untouched. See assets/caviera-makers-mark.js for how each --maker-*-progress channel is written.
+
+   Every calc() below reads its progress variable with a `, 1` fallback — the RESOLVED state — so
+   with no JS, or under prefers-reduced-motion (the script returns immediately in both cases), the
+   section renders its complete final composition with zero flash, zero opacity:0 default. */
+.caviera-editorial__stage[data-caviera-editorial-progress] { position: relative; }
+@media (min-width: 900px) {
+  .caviera-editorial__stage[data-caviera-editorial-progress] { height: 132svh; }
+  .caviera-editorial__stage-inner { position: sticky; top: 0; height: 100svh; display: flex; align-items: center; }
+}
+
+.caviera-editorial__media[data-media-source="house_seal"] {
+  position: relative;
+}
+/* Optional Bureau Nine depth cue: one faint, always-quiet impression behind the real Seal. Never
+   sharp, never a second visible mark — see the media-impression markup note in the section file. */
+.caviera-editorial__media-impression {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.05;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+.caviera-editorial__media[data-media-source="house_seal"] > :not(.caviera-editorial__media-impression) { position: relative; z-index: 1; }
+@media (max-width: 899px) {
+  .caviera-editorial__media-impression { display: none; }
+}
+
+/* Desktop: continuous, scroll-driven — JS updates each --maker-*-progress channel every frame while
+   the stage is in its sticky range, so the values below are already smoothly interpolating; the
+   short transitions just smooth over the gap between animation frames. */
+@media (min-width: 900px) {
+  [data-caviera-editorial-progress] .caviera-editorial__media[data-media-source="house_seal"] {
+    opacity: calc(0.32 + var(--maker-seal-progress, 1) * 0.68);
+    transform:
+      translateY(calc(22px * (1 - var(--maker-seal-progress, 1))))
+      translateX(calc(-8px * (1 - var(--maker-seal-progress, 1))))
+      scale(calc(0.92 + var(--maker-seal-progress, 1) * 0.08));
+    transition: opacity 200ms linear, transform 200ms linear;
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__media-impression {
+    transform: translateY(calc(14px * (1 - var(--maker-seal-progress, 1)))) scale(1.08);
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__text .heading-h2 {
+    opacity: calc(0.75 + var(--maker-headline-progress, 1) * 0.25);
+    transform: translateY(calc(8px * (1 - var(--maker-headline-progress, 1))));
+    transition: opacity 200ms linear, transform 200ms linear;
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__text .eyebrow {
+    opacity: calc(0.55 + var(--maker-headline-progress, 1) * 0.45);
+    transition: opacity 200ms linear;
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__text .body-text {
+    opacity: calc(0.55 + var(--maker-headline-progress, 1) * 0.4);
+    transform: translateY(calc(10px * (1 - var(--maker-headline-progress, 1))));
+    transition: opacity 200ms linear, transform 200ms linear;
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__provenance {
+    opacity: var(--maker-provenance-progress, 1);
+    transform: translateY(calc(12px * (1 - var(--maker-provenance-progress, 1))));
+    transition: opacity 200ms linear, transform 200ms linear;
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__provenance-rule {
+    transform: scaleX(var(--maker-provenance-progress, 1));
+    transform-origin: left;
+  }
+}
+
+/* Mobile/tablet: no sticky, no long section — a lightweight, entry-based, one-time reveal (see
+   assets/caviera-makers-mark.js mobile mode). Base state is the full resolved composition; the
+   quiet start state only applies once JS confirms via [data-mobile-ready], and only for the brief
+   window before [data-mobile-entered] is added on IntersectionObserver entry — never scroll-linked,
+   never a scroll trap. */
+@media (max-width: 899px) {
+  [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__media[data-media-source="house_seal"] {
+    opacity: 0.4;
+    transform: translateY(14px) scale(0.96);
+    transition: opacity 500ms var(--ease-caviera), transform 500ms var(--ease-caviera);
+  }
+  [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__text .heading-h2,
+  [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__text .body-text {
+    opacity: 0.55;
+    transform: translateY(10px);
+    transition: opacity 550ms var(--ease-caviera) 120ms, transform 550ms var(--ease-caviera) 120ms;
+  }
+  [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__provenance {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 550ms var(--ease-caviera) 260ms, transform 550ms var(--ease-caviera) 260ms;
+  }
+  [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__provenance-rule {
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 550ms var(--ease-caviera) 260ms;
+  }
+  [data-caviera-editorial-progress][data-mobile-entered] .caviera-editorial__media[data-media-source="house_seal"],
+  [data-caviera-editorial-progress][data-mobile-entered] .caviera-editorial__text .heading-h2,
+  [data-caviera-editorial-progress][data-mobile-entered] .caviera-editorial__text .body-text,
+  [data-caviera-editorial-progress][data-mobile-entered] .caviera-editorial__provenance {
+    opacity: 1;
+    transform: none;
+  }
+  [data-caviera-editorial-progress][data-mobile-entered] .caviera-editorial__provenance-rule {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-caviera-editorial-progress] .caviera-editorial__media[data-media-source="house_seal"],
+  [data-caviera-editorial-progress] .caviera-editorial__media-impression,
+  [data-caviera-editorial-progress] .caviera-editorial__text .heading-h2,
+  [data-caviera-editorial-progress] .caviera-editorial__text .eyebrow,
+  [data-caviera-editorial-progress] .caviera-editorial__text .body-text,
+  [data-caviera-editorial-progress] .caviera-editorial__provenance,
+  [data-caviera-editorial-progress] .caviera-editorial__provenance-rule {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 /* ---- Craftsmanship ---- */
 .caviera-craftsmanship__head { text-align: center; margin-bottom: 48px; }
 .caviera-craftsmanship__head .body-text--wide { margin: 16px auto 0; }
