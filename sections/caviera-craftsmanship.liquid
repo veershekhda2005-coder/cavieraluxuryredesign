@@ -51,21 +51,41 @@
 -%}
 {%- if has_content -%}
 <section class="caviera-section caviera-craftsmanship" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}">
-  <div class="container caviera-craftsmanship__head" data-reveal>
-    {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
-    {%- if section.settings.heading != blank -%}
-      {%- comment -%}
-        Drkst-style typographic moment, opt-in per instance (see heading_motion below) — off by
-        default since this same section renders on the dedicated Craftsmanship page and The House
-        page too, where a chapter-moment entrance wasn't asked for. templates/index.json turns it
-        on explicitly for the homepage instance only.
-      {%- endcomment -%}
-      <h2 class="heading-h2"{% if section.settings.heading_motion %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
-    {%- endif -%}
-    {%- if section.settings.intro != blank -%}<div class="body-text--wide">{{ section.settings.intro }}</div>{%- endif -%}
-  </div>
+  {%- comment -%}
+    Scroll progression — opt-in (see scroll_progression below), off by default since this same
+    section renders on the dedicated Craftsmanship page and The House page too, where a scroll-
+    driven chapter progression wasn't asked for. templates/index.json turns it on explicitly for
+    the homepage ("Material Truth") instance only. .caviera-craftsmanship__stage is the ONLY
+    element that gets the extra height (desktop only, see caviera-home.css) — kept as a child div,
+    not the outer <section>, so the closing hallmark mark below (if enabled) is never clipped by a
+    fixed-height ancestor. Independent of every other section's own scroll system: --material-
+    progress and data-material-state here, never --caviera-progress, --house-code-progress, or
+    --edition-exhibition-progress.
+  {%- endcomment -%}
+  <div class="caviera-craftsmanship__stage"{% if section.settings.scroll_progression %} data-caviera-material-progress{% endif %}>
+    <div class="caviera-craftsmanship__stage-inner">
+      <div class="container caviera-craftsmanship__head" data-reveal>
+        {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          {%- comment -%}
+            Drkst-style typographic moment, opt-in per instance (see heading_motion below) — off by
+            default since this same section renders on the dedicated Craftsmanship page and The
+            House page too, where a chapter-moment entrance wasn't asked for. templates/index.json
+            turns it on explicitly for the homepage instance only. When scroll_progression is ALSO
+            on, this same heading additionally drifts a couple of vw horizontally in step with
+            --material-progress for as long as the stage holds (see caviera-home.css) — a
+            continuous architectural cue layered on top of its existing one-shot entrance, not a
+            replacement for it.
+          {%- endcomment -%}
+          <h2 class="heading-h2"{% if section.settings.heading_motion %} data-reveal data-reveal-style="drkst"{% endif %}>{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.intro != blank -%}<div class="body-text--wide">{{ section.settings.intro }}</div>{%- endif -%}
+        {%- if section.settings.scroll_progression -%}
+          <span class="caviera-craftsmanship__progress" aria-hidden="true"></span>
+        {%- endif -%}
+      </div>
 
-  {%- if layout == 'dominant_image' -%}
+      {%- if layout == 'dominant_image' -%}
     <div class="container caviera-craftsmanship__split">
       <div class="caviera-craftsmanship__visual-col">
         <div class="caviera-craftsmanship__visual">
@@ -124,7 +144,7 @@
       <div class="container caviera-craftsmanship__list" data-media="{% if any_chapter_has_image %}yes{% else %}no{% endif %}">
         {%- for block in section.blocks -%}
           {%- if block.settings.title != blank -%}
-            <article class="caviera-craftsmanship__row{% if block.settings.image == blank %} caviera-craftsmanship__row--text-only{% endif %}" data-reveal {{ block.shopify_attributes }}>
+            <article class="caviera-craftsmanship__row{% if block.settings.image == blank %} caviera-craftsmanship__row--text-only{% endif %}" data-reveal data-chapter-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
               {%- if block.settings.image -%}
                 <div class="caviera-craftsmanship__image">
                   <img
@@ -150,6 +170,8 @@
       <div class="container"><div class="caviera-editor-note">Add up to six chapter blocks (e.g. Design & form, Stone setting, Gold & finishing).</div></div>
     {%- endif -%}
   {%- endif -%}
+    </div>
+  </div>
 
   {%- if section.settings.show_hallmark -%}
     <div class="caviera-craftsmanship__hallmark" data-reveal>
@@ -157,6 +179,9 @@
     </div>
   {%- endif -%}
 </section>
+{%- if section.settings.scroll_progression -%}
+  <script src="{{ 'caviera-material-truth.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
 {%- endif -%}
 
 {% schema %}
@@ -166,6 +191,7 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Craftsmanship" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Material truth." },
     { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Off by default — this section is shared with the Craftsmanship and House pages; the homepage instance turns it on explicitly." },
+    { "type": "checkbox", "id": "scroll_progression", "label": "Scroll-driven chapter progression", "default": false, "info": "A brief, light sticky hold (desktop only, ~50vh of extra scroll) while the chapters activate one at a time and the heading drifts slightly — a restrained Drkst/Rumaya-inspired moment. Off by default — this section is shared with the Craftsmanship and House pages, where this wasn't asked for; the homepage instance turns it on explicitly. Off renders the plain static section exactly as before." },
     { "type": "richtext", "id": "intro", "label": "Intro" },
     {
       "type": "select", "id": "color_scheme", "label": "Colour", "default": "bone",

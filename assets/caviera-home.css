@@ -1321,6 +1321,108 @@
 }
 .caviera-craftsmanship__hallmark { display: flex; justify-content: center; margin-top: 48px; }
 
+/* ---- Material Truth scroll progression (opt-in — see scroll_progression in sections/caviera-
+   craftsmanship.liquid; only the homepage instance turns this on) ----
+   .caviera-craftsmanship__stage carries [data-caviera-material-progress] only when the setting is
+   on; every rule below is gated on that attribute, so the Craftsmanship/House page instances (that
+   attribute never present there) render exactly as before — completely unaffected.
+
+   DESKTOP (1024px+, motion allowed): .stage gets an explicit height (150svh — inside the 145-155svh
+   target, well short of anything resembling a giant pin) so there's real scroll room for the three
+   states to read; .stage-inner is the sticky, vertically-centred child that holds the (unchanged)
+   head + chapter composition on screen for that whole distance, then releases the instant .stage
+   ends — no lingering over Maker's Mark. assets/caviera-material-truth.js writes --material-
+   progress (0-1) and data-material-state (0/1/2) onto .stage; nothing here ever reads or writes
+   --caviera-progress, --house-code-progress, or --edition-exhibition-progress.
+
+   MOBILE (<1024px): no extra height, no sticky — .stage/.stage-inner stay plain, auto-height
+   wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
+   instead of continuous section progress — see the chapter opacity rules further down, which apply
+   at every width). */
+.caviera-craftsmanship__stage[data-caviera-material-progress] { position: relative; }
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .caviera-craftsmanship__stage[data-caviera-material-progress] {
+    height: 150svh;
+    padding-block: 0; /* the section's own padding-block still applies around .stage; nothing extra needed here */
+  }
+  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
+     [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it. Small: max ~2vw
+     horizontal, max ~2.5% scale — an architectural cue, not the main show. */
+  .caviera-craftsmanship__stage[data-caviera-material-progress] [data-reveal-style="drkst"].is-visible {
+    transform: translateX(calc(var(--material-progress, 0) * -2vw)) scale(calc(1 + (var(--material-progress, 0) * 0.025)));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-craftsmanship__stage[data-caviera-material-progress] [data-reveal-style="drkst"].is-visible { transform: none; }
+}
+
+/* Active/inactive chapter cue — quiet, opacity + a tiny lift only, never a size/layout change.
+   Applies at EVERY width (mobile gets the same quiet cue, just without the sticky hold above).
+   Gated behind [data-observing="true"] (set by the JS only once detection is actually wired up) so
+   every chapter reads at full strength before/without JS. */
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row {
+  opacity: 0.42;
+  transform: translateY(0);
+  transition: opacity 450ms var(--ease-caviera), transform 450ms var(--ease-caviera);
+}
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active {
+  opacity: 1;
+  transform: translateY(-5px);
+}
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .label {
+  opacity: 0.72;
+  transition: opacity 450ms var(--ease-caviera);
+}
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .label { opacity: 1; }
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .body-text {
+  opacity: 0.75;
+  transition: opacity 450ms var(--ease-caviera);
+}
+.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .body-text { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row,
+  .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .label,
+  .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .body-text {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Optional restrained progress rule beneath the heading — a fine, short Rhodium track with a
+   Cinnabar fill advancing per active chapter. Desktop-only (mirrors the sticky progression above);
+   skipped entirely if the merchant leaves scroll_progression off, same gate as everything else
+   here. */
+.caviera-craftsmanship__progress { display: none; }
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__progress {
+    display: block;
+    width: clamp(80px, 10vw, 140px);
+    height: 1px;
+    margin: 20px auto 0;
+    background: var(--caviera-rhodium);
+    opacity: 0.4;
+    position: relative;
+  }
+  .caviera-craftsmanship__progress::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--material-progress, 0) * 100%);
+    background: var(--caviera-cinnabar);
+  }
+}
+
 /* ---- Craftsmanship: "Dominant image" layout — one large visual + a vertical story list, the
    same architectural language (offset Cinnabar plane / controlled material field) as Object in
    focus, so the two enriched sections read as one coherent chapter of the homepage. ---- */

@@ -85,7 +85,8 @@
       "settings": {
         "layout": "list",
         "color_scheme": "obsidian",
-        "heading_motion": true
+        "heading_motion": true,
+        "scroll_progression": true
       }
     },
     "packaging-ritual": {
