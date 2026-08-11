@@ -1,12 +1,13 @@
 {%- comment -%}
   Quiet trust signals. Fully merchant-editable — nothing is hard-coded globally, no loud badges.
 
-  ANIMATION VISIBILITY FIX: no longer uses the shared, one-shot [data-reveal] observer (assets/
-  caviera-global.js) — a horizontal row of three crossed its 15%-visible threshold at essentially
-  the same instant, well before the user was actually reading it, and it never fired again on a
-  return visit. Replaced with a dedicated, replayable controller (assets/caviera-quiet-interlude.js)
-  that toggles .is-active on .caviera-services itself, timed to ~20-30% visibility rather than 1px.
-  See assets/caviera-home.css for the actual entrance/stagger values.
+  STATIC FALLBACK (final decision): an entrance-motion controller (assets/caviera-quiet-
+  interlude.js) was built and iterated on across three passes to make this section's heading/
+  column reveal clearly visible while scrolling. Each pass traced correctly end to end in code
+  review, but real-browser testing twice reported no perceptible motion, and this environment has
+  no browser to verify the actual rendered result directly. Per this task's own explicit fallback
+  rule ("reliability is more important than forcing motion"), the controller has been removed and
+  this section is back to its plain, always-visible static state.
 {%- endcomment -%}
 {%- liquid
   assign has_items = false
@@ -32,7 +33,6 @@
     </ul>
   </div>
 </section>
-<script src="{{ 'caviera-quiet-interlude.js' | asset_url }}" defer="defer"></script>
 {%- elsif request.design_mode -%}
 <section class="caviera-section caviera-section--tight"><div class="container"><div class="caviera-editor-note">Add service blocks (e.g. Made to order, Tracked delivery, Client support).</div></div></section>
 {%- endif -%}
