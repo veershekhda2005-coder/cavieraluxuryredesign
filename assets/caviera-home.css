@@ -2209,9 +2209,22 @@
 .caviera-newsletter__inner { text-align: center; }
 /* SPACING FIX: h2/p carry no default margin (see the global heading/paragraph reset in
    caviera-base.css) and nothing here previously supplied one, so the heading and body copy sat
-   with zero gap between them — effectively touching. Within the requested 18-24px band. */
-.caviera-newsletter__inner .body-text { margin-top: 20px; }
-.caviera-newsletter__incentive { color: var(--caviera-cinnabar); margin-top: 12px; }
+   with zero gap between them — effectively touching. Within the requested 18-24px band.
+
+   CENTRING FIX: the shared .body-text class (assets/caviera-layout.css) is max-width: 42ch with
+   no margin-inline: auto — correct for this class's usual left-aligned contexts elsewhere on the
+   site, but here it meant the description sat flush against the LEFT edge of its own already-
+   narrower-than-its-container box: text-align: center on .caviera-newsletter__inner only centres
+   text within a box, it can't centre the box itself. The heading (no max-width, no such
+   constraint) spans the full container width and so appeared correctly centred by contrast,
+   while the description's own narrower box was left-flush — exactly the reported "description
+   shifted left of the heading's centre line". margin-inline: auto centres the box itself; scoped
+   to this section only, the shared .body-text rule used elsewhere is untouched. */
+.caviera-newsletter__inner .body-text { margin-top: 20px; margin-inline: auto; }
+/* Same centring fix as the description above — also uses the shared .body-text class, same
+   max-width: 42ch with no margin-inline: auto. Not populated by default, but corrected for
+   consistency so it shares the same centre-line if a merchant ever configures it. */
+.caviera-newsletter__incentive { color: var(--caviera-cinnabar); margin-top: 12px; margin-inline: auto; }
 
 /* ALIGNMENT FIX (structural, round 2): the round-1 fix genuinely centred the form-wrap BOX
    (max-width + margin-inline: auto both verified correct, and re-confirmed still deployed
