@@ -38,18 +38,24 @@
   900px and under prefers-reduced-motion, at which point the local labels are already the whole
   story.
 
-  IMAGE FALLBACKS — simple, per brief: if a Theme Editor image is set for a code, it renders exactly
-  as uploaded. If not, EVERY code temporarily reuses the same single bundled campaign photograph
-  (assets/15_oryx_necklace_on_model.png) with a different static crop (see [data-derived="true"] in
-  assets/caviera-house-codes.css) — never a decorative graphic, diamond shape, or brand mark
-  standing in for photography. Purely temporary until real per-Principle photography is uploaded.
+  IMAGE FALLBACKS — per brief: if a Theme Editor image is set for a code, it renders exactly as
+  uploaded (a merchant's own choice always wins). If not, each code now falls back to its own
+  final, dedicated 2026 campaign photograph (assets/caviera-principle-rarity-2026.png / -precision-
+  2026.png / -ritual-2026.png / -longevity-2026.png) — no longer the single shared placeholder
+  photo reused four ways with artificial crops/zoom that this section previously used while real
+  per-Principle photography didn't exist yet. Each is real, distinct photography, so the derived
+  object-position rules in assets/caviera-house-codes.css are tuned per image, not per an old
+  shared-photo compromise.
 {%- endcomment -%}
 {%- liquid
   assign rarity_img = section.settings.rarity_image
   assign precision_img = section.settings.precision_image
   assign ritual_img = section.settings.ritual_image
   assign longevity_img = section.settings.longevity_image
-  assign bundled_file = '15_oryx_necklace_on_model.png'
+  assign rarity_bundled_file = 'caviera-principle-rarity-2026.png'
+  assign precision_bundled_file = 'caviera-principle-precision-2026.png'
+  assign ritual_bundled_file = 'caviera-principle-ritual-2026.png'
+  assign longevity_bundled_file = 'caviera-principle-longevity-2026.png'
 
   assign rarity_derived = false
   if rarity_img == blank
@@ -84,7 +90,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Rarity" loading="lazy">
+          <img src="{{ rarity_bundled_file | asset_url }}" width="1672" height="941" alt="Rarity" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -95,7 +101,7 @@
       </div>
     </article>
 
-    {%- comment -%} 02 PRECISION — no photograph exists yet; temporarily reuses the same bundled photo with a distinct crop. {%- endcomment -%}
+    {%- comment -%} 02 PRECISION {%- endcomment -%}
     <article class="caviera-house-codes__panel" data-house-code-index="1" data-derived="{{ precision_derived }}">
       <div class="caviera-house-codes__media">
         {%- if precision_img != blank -%}
@@ -108,7 +114,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Precision" loading="lazy">
+          <img src="{{ precision_bundled_file | asset_url }}" width="1672" height="941" alt="Precision" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -119,7 +125,7 @@
       </div>
     </article>
 
-    {%- comment -%} 03 RITUAL — no photograph exists yet; temporarily reuses the same bundled photo with a distinct crop. {%- endcomment -%}
+    {%- comment -%} 03 RITUAL {%- endcomment -%}
     <article class="caviera-house-codes__panel" data-house-code-index="2" data-derived="{{ ritual_derived }}">
       <div class="caviera-house-codes__media">
         {%- if ritual_img != blank -%}
@@ -132,7 +138,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Ritual" loading="lazy">
+          <img src="{{ ritual_bundled_file | asset_url }}" width="1672" height="941" alt="Ritual" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -143,7 +149,7 @@
       </div>
     </article>
 
-    {%- comment -%} 04 LONGEVITY — no photograph exists yet; temporarily reuses the same bundled photo with a distinct crop. {%- endcomment -%}
+    {%- comment -%} 04 LONGEVITY {%- endcomment -%}
     <article class="caviera-house-codes__panel" data-house-code-index="3" data-derived="{{ longevity_derived }}">
       <div class="caviera-house-codes__media">
         {%- if longevity_img != blank -%}
@@ -156,7 +162,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <img src="{{ bundled_file | asset_url }}" width="521" height="358" alt="Longevity" loading="lazy">
+          <img src="{{ longevity_bundled_file | asset_url }}" width="1672" height="941" alt="Longevity" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>

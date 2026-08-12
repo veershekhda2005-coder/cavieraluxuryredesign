@@ -7,8 +7,8 @@
  *
  * SIMPLIFIED per brief: photography + typography only. No decorative graphics, no diamond outlines,
  * no Cinnabar geometric room, no brand mark used as a photography stand-in. Where no dedicated
- * Theme Editor image exists yet, every room falls back to the SAME bundled photo with a distinct,
- * static crop (see the [data-derived="true"] rules below) — never a graphic.
+ * Theme Editor image is set, each room falls back to its own final, dedicated 2026 campaign
+ * photograph (see the [data-derived="true"] rules below) — never a graphic.
  *
  * ARCHITECTURE: the section's own height comes ONLY from .caviera-house-codes__panels (four real,
  * in-flow, min-height: 95svh panels). .caviera-house-codes__overlay-shell is position: absolute;
@@ -41,24 +41,34 @@
 .caviera-house-codes__media { position: absolute; inset: 0; }
 .caviera-house-codes__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* Static per-room crops — ONLY applied to the shared bundled fallback photo (data-derived="true";
-   a merchant's own dedicated image for that room renders exactly as uploaded, untouched by this).
-   Fixed values, no scroll-driven zoom/parallax/animation of any kind — the brief is explicit that
-   the only motion in this section is normal scrolling plus the central title crossfade. */
+/* Static per-room crops — ONLY applied to the bundled fallback photo for that room (data-
+   derived="true"; a merchant's own dedicated image renders exactly as uploaded, untouched by
+   this). Fixed values, no scroll-driven zoom/parallax/animation of any kind — the brief is
+   explicit that the only motion in this section is normal scrolling plus the central title
+   crossfade.
+
+   2026 FINAL IMAGES: each room now has its own real, dedicated photograph (assets/caviera-
+   principle-rarity/precision/ritual/longevity-2026.png) rather than the previous single shared
+   placeholder photo cropped four different ways — the old transform: scale(...) zooms existed
+   only to disguise that mismatch and are removed; each value below is tuned to the actual
+   composition of its own image, no artificial enlargement. */
 .caviera-house-codes__panel[data-house-code-index="0"][data-derived="true"] .caviera-house-codes__media img {
-  object-position: 50% 50%;
+  /* Rarity: a single marquise diamond, upper-right of frame against a dark textile ground. */
+  object-position: 62% 40%;
 }
 .caviera-house-codes__panel[data-house-code-index="1"][data-derived="true"] .caviera-house-codes__media img {
-  object-position: 50% 72%;
-  transform: scale(1.25);
+  /* Precision: tweezers setting a stone at a jeweller's bench, right-of-centre, slightly low. */
+  object-position: 63% 55%;
 }
 .caviera-house-codes__panel[data-house-code-index="2"][data-derived="true"] .caviera-house-codes__media img {
-  object-position: 30% 55%;
-  transform: scale(1.15);
+  /* Ritual: incense bowl (left-of-centre) and the House Seal panel + necklace (right) — balanced
+     center keeps both the ritual gesture and the House mark in frame. */
+  object-position: 48% 45%;
 }
 .caviera-house-codes__panel[data-house-code-index="3"][data-derived="true"] .caviera-house-codes__media img {
-  object-position: 72% 60%;
-  transform: scale(1.2);
+  /* Longevity: sunset/sea on the left, the House Seal panel on the architecture to the right —
+     biased right so the House mark stays clearly in frame while the sunset remains visible. */
+  object-position: 62% 45%;
 }
 
 /* Minimum-necessary readability scrim — a light, restrained tonal overlay, never a heavy curtain.
