@@ -8,7 +8,115 @@
  * ------------------------------------------------------------
  */
 {
-  "current": "Default",
+  "current": {
+    "favicon": "shopify://shop_images/caviera-living-mascot-cinnabar.png",
+    "enable_loader": false,
+    "sections": {
+      "caviera-header": {
+        "type": "caviera-header",
+        "blocks": {
+          "caviera-header-0": {
+            "type": "edition_nav_item",
+            "settings": {
+              "title": "EDITION I",
+              "status_label": "UPCOMING — 2026",
+              "link": "/#edition-i"
+            }
+          },
+          "caviera-header-1": {
+            "type": "edition_nav_item",
+            "settings": {
+              "title": "THE HOUSE",
+              "status_label": "",
+              "link": "/pages/about-caviera"
+            }
+          },
+          "caviera-header-2": {
+            "type": "edition_nav_item",
+            "settings": {
+              "title": "JOURNAL",
+              "status_label": "",
+              "link": "/blogs/news"
+            }
+          },
+          "caviera-header-3": {
+            "type": "secondary_nav_item",
+            "settings": {
+              "title": "Craftsmanship",
+              "link": "/pages/craftsmanship"
+            }
+          },
+          "caviera-header-4": {
+            "type": "secondary_nav_item",
+            "settings": {
+              "title": "Our Diamonds",
+              "link": "/pages/our-diamonds"
+            }
+          },
+          "caviera-header-5": {
+            "type": "secondary_nav_item",
+            "settings": {
+              "title": "Bespoke",
+              "link": "/pages/contact"
+            }
+          },
+          "caviera-header-6": {
+            "type": "secondary_nav_item",
+            "settings": {
+              "title": "Client Care",
+              "link": "/pages/contact"
+            }
+          }
+        },
+        "block_order": [
+          "caviera-header-0",
+          "caviera-header-1",
+          "caviera-header-2",
+          "caviera-header-3",
+          "caviera-header-4",
+          "caviera-header-5",
+          "caviera-header-6"
+        ],
+        "settings": {
+          "main_menu": "main-menu",
+          "transparent_over_hero": true,
+          "sticky_header": true,
+          "sticky_logo_mode": "seal",
+          "resolved_scheme": "bone",
+          "logo_scheme": "light",
+          "logo_width_desktop": 220,
+          "logo_width_mobile": 40,
+          "enable_search": true,
+          "enable_account": true,
+          "enable_country_selector": false
+        }
+      },
+      "caviera-footer": {
+        "type": "caviera-footer",
+        "settings": {
+          "color_scheme": "obsidian",
+          "logo_scheme": "dark",
+          "show_master_signature": true,
+          "master_heading": "Objects of rare composure.",
+          "statement": "",
+          "social_show": true,
+          "show_localization": false,
+          "show_payment_icons": false,
+          "footer_jewellery_heading": "Editions",
+          "footer_jewellery_menu": "",
+          "footer_house_heading": "The House",
+          "footer_house_menu": "",
+          "footer_client_care_heading": "Client Care",
+          "footer_client_care_menu": "",
+          "footer_information_heading": "Information",
+          "footer_information_menu": "",
+          "show_newsletter": false,
+          "newsletter_heading": ""
+        }
+      }
+    },
+    "content_for_index": []
+  },
   "presets": {
     "Default": {
       "enable_loader": false
