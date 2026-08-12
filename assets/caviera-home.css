@@ -40,6 +40,11 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  /* MOBILE VIEWPORT-CHROME FIX: svh (the viewport size once mobile browser UI has settled) as a
+     progressive enhancement over vh — same fallback pattern already used elsewhere in this file
+     (e.g. House Codes). Unsupported browsers simply ignore this line and keep the vh value above;
+     supporting ones get a size that doesn't shift as the address bar shows/hides mid-scroll. */
+  height: 100svh;
   overflow: hidden;
   background: var(--caviera-cinnabar);
 }
@@ -117,6 +122,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100svh;
   z-index: 1;
   display: flex;
   align-items: flex-end;
@@ -125,8 +131,11 @@
   overflow: hidden;
   /* Sits in normal flow directly after the sticky media above (not stacked via inset:0 over it),
      so it needs its own negative top-margin equal to one viewport height to visually overlay the
-     media rather than appearing a second screen-height further down the tall wrapper. */
+     media rather than appearing a second screen-height further down the tall wrapper. Kept in
+     lockstep with .caviera-hero__media's own height above (vh, then svh) — the two must always
+     match or the sticky-overlay math drifts. */
   margin-top: -100vh;
+  margin-top: -100svh;
   pointer-events: none;
 }
 /* .caviera-hero__tokens (the small per-artifact anchor wrappers) deliberately NOT listed here —

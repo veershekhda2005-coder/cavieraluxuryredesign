@@ -208,6 +208,11 @@
 .caviera-mobile-nav :focus-visible { outline-color: var(--caviera-bone); }
 .caviera-mobile-nav__head { display: flex; align-items: center; justify-content: space-between; height: var(--header-height-compact); padding-top: env(safe-area-inset-top, 0px); }
 .caviera-mobile-nav__mark img { max-height: calc(var(--header-height-compact) - 16px); }
+/* MOBILE TOUCH-TARGET FIX: the icon itself stays 20x20, visually unchanged — width/height grow the
+   actual (invisible, no background/border) tappable box to the standard ~44x44px minimum, and an
+   equal negative margin on every side cancels that growth back out of the flex layout, so neither
+   the head row's height nor the icon's visual position shifts. */
+.caviera-mobile-nav__close { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -12px; }
 .caviera-mobile-nav__close svg { width: 20px; height: 20px; }
 
 /* ---- Primary navigation + reserved visual field ("the room") ----

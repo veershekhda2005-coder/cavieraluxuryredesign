@@ -54,7 +54,11 @@
    accompanying JS also never attaches a click handler there (see caviera-footer.js), so the
    inert appearance matches inert behaviour. */
 @media (max-width: 899px) {
-  .caviera-footer__column-toggle { cursor: pointer; }
+  /* MOBILE TOUCH-TARGET FIX: min-height only (not a fixed height) grows the tappable area to the
+     ~44px minimum without changing the column's own vertical rhythm when the label text itself is
+     taller than 44px; align-items centres the label within that taller box. The plus/minus icon
+     already positions itself with top: 50% (below), so it re-centres automatically. */
+  .caviera-footer__column-toggle { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
   .caviera-footer__column-toggle::before,
   .caviera-footer__column-toggle::after {
     content: "";
