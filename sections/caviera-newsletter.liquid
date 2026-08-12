@@ -11,14 +11,23 @@
     {%- form 'customer', class: 'caviera-newsletter-form' -%}
       <input type="hidden" name="contact[tags]" value="newsletter">
       <label class="visually-hidden" for="HomeNewsletterEmail">{{ 'general.newsletter.email_placeholder' | t }}</label>
-      <div class="caviera-newsletter-form__row">
-        <input type="email" id="HomeNewsletterEmail" name="contact[email]" required placeholder="{{ 'general.newsletter.email_placeholder' | t }}" autocomplete="email">
-        <button type="submit" class="caviera-newsletter-form__submit link-underline">{{ 'general.newsletter.submit' | t }}</button>
+      {%- comment -%}
+        ALIGNMENT FIX: the form row and consent copy previously each carried their own,
+        independent max-width (420px and 340px) — two different centre-lines, and the consent
+        paragraph had no auto-margins at all, so it hugged the left edge of its own box rather
+        than sharing either centre. This single wrapper gives the row + consent (+ success/error
+        state) one shared max-width and centre, matching the heading/description above.
+      {%- endcomment -%}
+      <div class="caviera-newsletter__form-wrap">
+        <div class="caviera-newsletter-form__row">
+          <input type="email" id="HomeNewsletterEmail" name="contact[email]" required placeholder="{{ 'general.newsletter.email_placeholder' | t }}" autocomplete="email">
+          <button type="submit" class="caviera-newsletter-form__submit link-underline">{{ 'general.newsletter.submit' | t }}</button>
+        </div>
+        <p class="caviera-footer__consent">{{ 'general.newsletter.consent' | t }}</p>
+        {%- if form.posted_successfully? -%}
+          <p class="form-status" data-state="success">{{ 'general.newsletter.success' | t }}</p>
+        {%- endif -%}
       </div>
-      <p class="caviera-footer__consent">{{ 'general.newsletter.consent' | t }}</p>
-      {%- if form.posted_successfully? -%}
-        <p class="form-status" data-state="success">{{ 'general.newsletter.success' | t }}</p>
-      {%- endif -%}
     {%- endform -%}
   </div>
 </section>

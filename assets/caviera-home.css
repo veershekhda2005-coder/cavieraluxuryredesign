@@ -2209,12 +2209,47 @@
 .caviera-newsletter__inner { text-align: center; }
 /* SPACING FIX: h2/p carry no default margin (see the global heading/paragraph reset in
    caviera-base.css) and nothing here previously supplied one, so the heading and body copy sat
-   with zero gap between them — effectively touching. */
-.caviera-newsletter__inner .body-text { margin-top: 12px; }
-/* Base row/input rule lives in caviera-components.css — this only overrides context-specific layout. */
-.caviera-newsletter-form__row { max-width: 420px; margin: 24px auto 0; }
-.caviera-newsletter-form__row input { text-align: left; }
+   with zero gap between them — effectively touching. Within the requested 18-24px band. */
+.caviera-newsletter__inner .body-text { margin-top: 20px; }
 .caviera-newsletter__incentive { color: var(--caviera-cinnabar); margin-top: 12px; }
+
+/* ALIGNMENT FIX: the form row and consent copy previously each carried their own, independent
+   max-width (420px and 340px, set in sections/caviera-newsletter.liquid's markup) with no shared
+   centre — the consent paragraph in particular had no auto-margins at all, so it simply hugged the
+   left edge of its own box rather than sharing the heading/description's centre-line. This wrapper
+   (see the updated Liquid) gives the row + consent + success/error state one shared max-width and
+   centre. Base row/input rule lives in caviera-components.css — this only overrides context-
+   specific layout, scoped to this wrapper only so the footer's own (unused by default) newsletter
+   form is never affected. */
+.caviera-newsletter__form-wrap { max-width: 640px; margin: clamp(34px, 4vw, 44px) auto 0; }
+.caviera-newsletter__form-wrap .caviera-newsletter-form__row {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 3vw, 32px);
+}
+.caviera-newsletter-form__row input { text-align: left; }
+/* Shrink-to-content and flush against the gap next to the input, rather than stretching the
+   underline the full width of its ~20-25% grid column — keeps the understated treatment the brief
+   asks for instead of an oversized dash past the "Subscribe" text. */
+.caviera-newsletter-form__submit { width: auto; justify-self: start; }
+/* Consent copy: was .caviera-footer__consent's own max-width: 340px with no centring — now spans
+   the full form-wrap width and centres its own (possibly two-line) text within it, sharing the
+   same centre-line as the row above and the heading/description above that. */
+.caviera-newsletter__form-wrap .caviera-footer__consent {
+  max-width: none;
+  width: 100%;
+  text-align: center;
+  margin: 14px auto 0;
+}
+@media (max-width: 599px) {
+  /* Stacked: email keeps the full available width (grid items stretch by default — no override
+     needed), Subscribe sits clearly beneath it, shrunk to its own content and centred (rather than
+     stretching its underline the full row width) with a deliberate 20px gap. */
+  .caviera-newsletter__form-wrap .caviera-newsletter-form__row { grid-template-columns: 1fr; gap: 20px; }
+  .caviera-newsletter-form__row input { text-align: center; }
+  .caviera-newsletter-form__submit { width: auto; justify-self: center; }
+}
 
 /* ---- Closing house signature ---- */
 .caviera-signature__inner { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 40px; }
