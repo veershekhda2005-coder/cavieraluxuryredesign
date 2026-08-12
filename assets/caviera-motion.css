@@ -93,6 +93,22 @@
   transform: translateY(0);
 }
 
+/* wordmark-reveal: a clean, one-directional clip-path unveiling for a formal signature mark (the
+   official Master Signature/wordmark artwork itself, never split, retyped or distorted) — left to
+   right, with a small opacity/rise settle composed alongside it, never a dramatic scale. Used once,
+   on the footer's own opening signature moment — see sections/caviera-footer.liquid. */
+[data-reveal][data-reveal-style="wordmark-reveal"] {
+  opacity: 0.35;
+  transform: translateY(12px);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity 1000ms var(--ease-caviera), transform 1000ms var(--ease-caviera), clip-path 1000ms var(--ease-caviera);
+}
+[data-reveal][data-reveal-style="wordmark-reveal"].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  clip-path: inset(0 0 0 0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-reveal][data-reveal-style="crop"] img,
   [data-reveal][data-reveal-style="crop"] picture,
@@ -112,6 +128,12 @@
   [data-reveal][data-reveal-style="seal-resolve"] {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+  [data-reveal][data-reveal-style="wordmark-reveal"] {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
     transition: none;
   }
 }

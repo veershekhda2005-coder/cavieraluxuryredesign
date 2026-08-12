@@ -10,8 +10,26 @@
    centred and restrained rather than a repeat of the homepage's closing section above it. */
 .caviera-footer__signature { text-align: center; padding-bottom: clamp(32px, 5vw, 56px); }
 .caviera-footer__signature-heading { margin-bottom: 24px; }
-.caviera-footer__signature-mark { display: flex; justify-content: center; }
-.caviera-footer__signature .caviera-footer__statement { margin: 20px auto 0; max-width: 46ch; color: var(--text-muted); }
+/* SIZING FIX: the render call itself now passes a deliberately generous width (900, effectively
+   never the binding constraint — see the comment in sections/caviera-footer.liquid); the real,
+   responsive size lives here instead, on the wrapper. The snippet's own img keeps its inline
+   width: 100% untouched — it simply fills whatever this wrapper allows. ~62vw lands the mark
+   inside the requested 55-72% of available width on desktop; capped at 900px so it never becomes
+   oversized on very wide screens, and with a sensible floor for narrower desktop/tablet widths. */
+.caviera-footer__signature-mark { display: flex; justify-content: center; max-width: clamp(280px, 62vw, 900px); margin-inline: auto; }
+@media (max-width: 749px) {
+  /* Full width within safe margins — the surrounding .container already supplies the safe
+     side margins (--gutter-mobile) here, so this is 100% of that already-inset content box,
+     not a second subtraction on top of it. */
+  .caviera-footer__signature-mark { max-width: 100%; }
+  /* Smaller movement on mobile — same reveal, shorter travel. */
+  .caviera-footer__signature-mark[data-reveal-style="wordmark-reveal"] { transform: translateY(8px); }
+  .caviera-footer__signature-mark[data-reveal-style="wordmark-reveal"].is-visible { transform: translateY(0); }
+}
+/* CONTRAST FIX: see the identical fix note on .caviera-footer__column-list a above — --text-muted
+   is never redefined per colour scheme, so on this Obsidian footer it rendered as a low-contrast
+   near-black on near-black. --text-primary correctly resolves to Warm Bone here. */
+.caviera-footer__signature .caviera-footer__statement { margin: 20px auto 0; max-width: 46ch; color: var(--text-primary); opacity: 0.86; }
 
 /* Thin Rhodium boundary — marks the seam between the signature/nav/utility bands without a thick
    border or card-like separation. */
@@ -30,8 +48,62 @@
   gap: 32px 48px;
 }
 .caviera-footer__column-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-.caviera-footer__column-list a { font-size: 0.875rem; color: var(--text-muted); }
-.caviera-footer__column-list a:hover { color: var(--text-primary); }
+/* CONTRAST FIX: was color: var(--text-muted) — a fixed Obsidian-tinted colour-mix, never redefined
+   per colour scheme (unlike --text-primary), so on this Obsidian-background footer it rendered as
+   a dark, low-contrast near-black on near-black. --text-primary correctly resolves per
+   [data-scheme] (Warm Bone here) — Warm Bone links, per the brief's own explicit hierarchy. */
+.caviera-footer__column-list a {
+  position: relative;
+  display: inline-block;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  transition: color 240ms var(--ease-caviera);
+}
+/* House hover: text shifts one step quieter/cooler and a fine rule grows in beneath it, left to
+   right — no sliding blocks, no background change. CONTRAST NOTE: the brief's own suggestion was
+   Warm Bone -> Cinnabar, but Cinnabar-on-Obsidian is two dark colours together — roughly 2.2:1,
+   well under the 4.5:1 text minimum — so this would have made the hover/focus state noticeably
+   harder to read than the resting state, exactly backwards for a focus indicator. Brushed Rhodium
+   instead — already this codebase's own established substitute for a Cinnabar accent specifically
+   on dark schemes (see the eyebrow colour rule in assets/caviera-layout.css) — keeps strong
+   contrast (~10.5:1) while still reading as a deliberate, restrained state change. Guarded to real
+   pointer hover only; touch/keyboard focus gets the same colour shift via :focus-visible without
+   needing hover support. */
+.caviera-footer__column-list a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms var(--ease-caviera);
+}
+@media (hover: hover) {
+  .caviera-footer__column-list a:hover { color: var(--caviera-rhodium); }
+  .caviera-footer__column-list a:hover::after { transform: scaleX(1); }
+}
+.caviera-footer__column-list a:focus-visible { color: var(--caviera-rhodium); }
+.caviera-footer__column-list a:focus-visible::after { transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-footer__column-list a,
+  .caviera-footer__column-list a::after { transition: none; }
+}
+
+/* Restrained entry stagger for the four navigation groups — reuses the shared [data-reveal]
+   mechanism (assets/caviera-motion.css / assets/caviera-global.js), no second observer, no
+   scroll-linked animation (the footer doesn't need one — a single one-time reveal on arrival is
+   enough). Editions -> The House -> Client Care -> Information, ~90ms apart; :nth-child counts
+   actual rendered position, so this still reads correctly if a merchant's configuration means
+   fewer than four columns render. */
+.caviera-footer__column[data-reveal] { transform: translateY(10px); }
+.caviera-footer__column[data-reveal].is-visible { transform: none; }
+.caviera-footer__columns .caviera-footer__column:nth-child(2) { transition-delay: 90ms; }
+.caviera-footer__columns .caviera-footer__column:nth-child(3) { transition-delay: 180ms; }
+.caviera-footer__columns .caviera-footer__column:nth-child(4) { transition-delay: 270ms; }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-footer__columns .caviera-footer__column { transition-delay: 0ms; }
+}
 
 .caviera-footer__column-toggle {
   position: relative;
@@ -41,7 +113,10 @@
   padding-right: 24px;
   background: none;
   border: none;
-  color: inherit;
+  /* Group headings sit one tier quieter than the links beneath them — Brushed Rhodium against the
+     links' Warm Bone, per the brief's own explicit hierarchy (was color: inherit, i.e. the same
+     Warm Bone as the links themselves, with no distinction). */
+  color: var(--caviera-rhodium);
   text-align: left;
   /* The theme's global button reset sets cursor: pointer unconditionally — override back to
      default here since this button is genuinely inert at desktop (no click handler is attached

@@ -64,8 +64,16 @@
   {%- if section.settings.show_master_signature -%}
     <div class="container caviera-footer__signature">
       {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading heading-h2">{{ section.settings.master_heading }}</p>{%- endif -%}
-      <div class="caviera-footer__signature-mark">
-        {%- render 'caviera-master-signature', mode: mark_mode, width: 240 -%}
+      <div class="caviera-footer__signature-mark" data-reveal data-reveal-style="wordmark-reveal">
+        {%- comment -%}
+          width: 900 here is deliberately generous — a ceiling the artwork will essentially never
+          reach, not the actual rendered size. The real, responsive size (~55-72% of the available
+          width on desktop, full width within safe margins on mobile) is set on the wrapper's own
+          max-width in assets/caviera-footer.css instead, since the snippet's inline max-width/
+          width:100% (see snippets/caviera-master-signature.liquid) simply fills whatever the
+          wrapper allows — this avoids fighting that inline style directly.
+        {%- endcomment -%}
+        {%- render 'caviera-master-signature', mode: mark_mode, width: 900 -%}
       </div>
       {%- if section.settings.statement != blank -%}
         <p class="caviera-footer__statement body-text">{{ section.settings.statement }}</p>
@@ -85,7 +93,7 @@
           teaser.liquid) rather than a catalogue column. A merchant-selected menu still overrides
           this entirely, same as every other footer column.
         {%- endcomment -%}
-          <div class="caviera-footer__column" data-footer-accordion>
+          <div class="caviera-footer__column" data-footer-accordion data-reveal>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Jewellery-{{ section.id }}">
               {{ section.settings.footer_jewellery_heading | default: 'Editions' }}
             </button>
@@ -109,7 +117,7 @@
           endunless
         -%}
         {%- if has_house_menu or house_has_fallback -%}
-          <div class="caviera-footer__column" data-footer-accordion>
+          <div class="caviera-footer__column" data-footer-accordion data-reveal>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-House-{{ section.id }}">
               {{ section.settings.footer_house_heading | default: 'The House' }}
             </button>
@@ -137,7 +145,7 @@
           endunless
         -%}
         {%- if has_client_care_menu or client_care_has_fallback -%}
-          <div class="caviera-footer__column" data-footer-accordion>
+          <div class="caviera-footer__column" data-footer-accordion data-reveal>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-ClientCare-{{ section.id }}">
               {{ section.settings.footer_client_care_heading | default: 'Client Care' }}
             </button>
@@ -165,7 +173,7 @@
           endunless
         -%}
         {%- if has_information_menu or information_has_fallback -%}
-          <div class="caviera-footer__column" data-footer-accordion>
+          <div class="caviera-footer__column" data-footer-accordion data-reveal>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Information-{{ section.id }}">
               {{ section.settings.footer_information_heading | default: 'Information' }}
             </button>
@@ -263,8 +271,8 @@
     },
     { "type": "header", "content": "Formal signature" },
     { "type": "checkbox", "id": "show_master_signature", "label": "Show Master Signature moment", "default": true, "info": "The formal opening of the footer — House Seal + wordmark composed, with a headline. The plain wordmark appears again, smaller, near the bottom as the everyday utility mark." },
-    { "type": "text", "id": "master_heading", "label": "Signature heading", "default": "Sculpted for a lifetime." },
-    { "type": "textarea", "id": "statement", "label": "Short house statement", "default": "A modern jewellery house shaped by precision, material and ritual." },
+    { "type": "text", "id": "master_heading", "label": "Signature heading", "default": "Objects of rare composure." },
+    { "type": "textarea", "id": "statement", "label": "Short house statement", "info": "Optional — leave blank to keep the closing signature to one line (wordmark + heading only)." },
     { "type": "checkbox", "id": "social_show", "label": "Show social links", "default": true },
     { "type": "checkbox", "id": "show_localization", "label": "Show country/language selector", "default": false, "info": "Only appears when the store has more than one market or language configured." },
     { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": false },
