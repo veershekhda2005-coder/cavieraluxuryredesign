@@ -63,8 +63,8 @@
 <footer class="caviera-footer" data-scheme="{{ section.settings.color_scheme }}">
   {%- if section.settings.show_master_signature -%}
     <div class="container caviera-footer__signature">
-      {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading" data-reveal>{{ section.settings.master_heading }}</p>{%- endif -%}
-      <div class="caviera-footer__signature-mark" data-reveal data-reveal-style="wordmark-reveal">
+      {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading">{{ section.settings.master_heading }}</p>{%- endif -%}
+      <div class="caviera-footer__signature-mark">
         {%- comment -%}
           width: 900 here is deliberately generous — a ceiling the artwork will essentially never
           reach, not the actual rendered size. The real, responsive size (~55-72% of the available
@@ -72,6 +72,16 @@
           max-width in assets/caviera-footer.css instead, since the snippet's inline max-width/
           width:100% (see snippets/caviera-master-signature.liquid) simply fills whatever the
           wrapper allows — this avoids fighting that inline style directly.
+
+          MOTION REMOVED (temporarily, this round): this element and the heading/nav columns below
+          previously carried data-reveal, which sets opacity:0 by default until a shared
+          IntersectionObserver (assets/caviera-global.js) adds .is-visible. Per this round's
+          explicit instruction — confirm the static footer is fully visible with zero JS/animation
+          dependency first — that attribute is removed here. No code defect was proven in
+          caviera-global.js itself (it runs on DOMContentLoaded/defer and the footer is present in
+          the initial static HTML, not injected later), but removing the dependency entirely is the
+          safer, directly-requested fix regardless of cause. A restrained reveal may be reintroduced
+          later, once static visibility is confirmed.
         {%- endcomment -%}
         {%- render 'caviera-master-signature', mode: mark_mode, width: 900 -%}
       </div>
@@ -93,7 +103,7 @@
           teaser.liquid) rather than a catalogue column. A merchant-selected menu still overrides
           this entirely, same as every other footer column.
         {%- endcomment -%}
-          <div class="caviera-footer__column" data-footer-accordion data-reveal>
+          <div class="caviera-footer__column" data-footer-accordion>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Jewellery-{{ section.id }}">
               {{ section.settings.footer_jewellery_heading | default: 'Editions' }}
             </button>
@@ -117,7 +127,7 @@
           endunless
         -%}
         {%- if has_house_menu or house_has_fallback -%}
-          <div class="caviera-footer__column" data-footer-accordion data-reveal>
+          <div class="caviera-footer__column" data-footer-accordion>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-House-{{ section.id }}">
               {{ section.settings.footer_house_heading | default: 'The House' }}
             </button>
@@ -145,7 +155,7 @@
           endunless
         -%}
         {%- if has_client_care_menu or client_care_has_fallback -%}
-          <div class="caviera-footer__column" data-footer-accordion data-reveal>
+          <div class="caviera-footer__column" data-footer-accordion>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-ClientCare-{{ section.id }}">
               {{ section.settings.footer_client_care_heading | default: 'Client Care' }}
             </button>
@@ -173,7 +183,7 @@
           endunless
         -%}
         {%- if has_information_menu or information_has_fallback -%}
-          <div class="caviera-footer__column" data-footer-accordion data-reveal>
+          <div class="caviera-footer__column" data-footer-accordion>
             <button type="button" class="caviera-footer__column-toggle label" aria-expanded="false" aria-controls="FooterMenu-Information-{{ section.id }}">
               {{ section.settings.footer_information_heading | default: 'Information' }}
             </button>
