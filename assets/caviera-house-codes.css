@@ -220,6 +220,33 @@
 @media (max-width: 899px), (prefers-reduced-motion: reduce) {
   .caviera-house-codes__overlay-shell { display: none; }
 }
+
+/* MOBILE MOTION FIX: below 900px the local labels were always fully, statically visible — real
+   content, correctly never hidden — but with no active/inactive distinction, so scrolling through
+   the four rooms produced no visible change at all: assets/caviera-house-codes.js already
+   computes data-house-code-active continuously at every width (no desktop-only guard in that
+   file), this was purely a missing CSS consumer. Quieting the inactive panels' labels and letting
+   the active one stay full gives the same "Rarity -> Precision -> Ritual -> Longevity" progression
+   feedback mobile is asking for, without a sticky/pinned overlay (never introduced below 900px).
+   Gated behind .is-ready (added only once the script has actually wired up detection), so a slow/
+   blocked/failed script leaves every label at its plain, fully-visible resting state. */
+@media (max-width: 899px) {
+  .caviera-house-codes.is-ready .caviera-house-codes__local-label {
+    opacity: 0.55;
+    transform: translateY(6px);
+    transition: opacity 420ms var(--ease-caviera), transform 420ms var(--ease-caviera);
+  }
+  .caviera-house-codes.is-ready[data-house-code-active="0"] .caviera-house-codes__panel[data-house-code-index="0"] .caviera-house-codes__local-label,
+  .caviera-house-codes.is-ready[data-house-code-active="1"] .caviera-house-codes__panel[data-house-code-index="1"] .caviera-house-codes__local-label,
+  .caviera-house-codes.is-ready[data-house-code-active="2"] .caviera-house-codes__panel[data-house-code-index="2"] .caviera-house-codes__local-label,
+  .caviera-house-codes.is-ready[data-house-code-active="3"] .caviera-house-codes__panel[data-house-code-index="3"] .caviera-house-codes__local-label {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .caviera-house-codes.is-ready .caviera-house-codes__local-label { transition: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .caviera-house-codes__local-label { opacity: 1 !important; }
 }

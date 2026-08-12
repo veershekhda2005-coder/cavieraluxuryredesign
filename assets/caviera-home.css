@@ -835,6 +835,33 @@
     transition: transform 60ms linear, opacity 60ms linear;
   }
 }
+/* MOBILE MOTION FIX (<900px): the four-phase pin above was explicitly documented as "no pin, no
+   tall wrapper, nothing scroll-driven" below 900px — a deliberate simplification that, taken with
+   this task's requirement that mobile motion be adapted rather than removed, left this section
+   with zero visible movement at all on mobile. --caviera-progress is already computed
+   continuously at EVERY width by the shared assets/caviera-scroll-progress.js (no width guard
+   there — see its own file header) since .caviera-edition-teaser already carries [data-caviera-
+   pin] unconditionally; only a CSS consumer below 900px was missing. This reuses that same value
+   for one restrained entrance (not the desktop's four-phase sequence) as the section's own
+   natural-height box scrolls past: the heading settles in slightly further, the media settles in
+   with a small scale — a single, calm movement, not a re-creation of the pinned choreography.
+   var(--caviera-progress, 1) falls back to the fully-resolved state, so no-JS/reduced-motion/JS-
+   not-yet-run always show the complete final composition. */
+@media (max-width: 899px) {
+  .caviera-edition-teaser__heading.is-visible {
+    opacity: calc(0.6 + var(--caviera-progress, 1) * 0.4);
+    transform: translateY(calc(10px * (1 - var(--caviera-progress, 1))));
+  }
+  .caviera-edition-teaser__media {
+    opacity: calc(0.75 + var(--caviera-progress, 1) * 0.25);
+    transform: scale(calc(0.97 + var(--caviera-progress, 1) * 0.03));
+  }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .caviera-edition-teaser__heading.is-visible,
+  .caviera-edition-teaser__media { opacity: 1; transform: none; }
+}
+
 /* Single-image fallback crops (see img2_derived/img3_derived in sections/caviera-edition-teaser.
    liquid): when media 02/03 have no dedicated asset of their own, they reuse media 01's own photo
    — these object-position/scale values give each reused instance a visibly distinct, strongly
