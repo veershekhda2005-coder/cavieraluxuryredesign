@@ -185,18 +185,27 @@
    blocker over the hero image beyond the token's own actual visible footprint. */
 .caviera-hero__field-inner { pointer-events: auto; }
 .caviera-hero[data-media-position="right"] .caviera-hero__field { justify-content: flex-end; }
-/* Scrim — a soft directional gradient rising from the bottom edge, coloured to the section's own
-   scheme (Cinnabar/Obsidian/Bone) so text stays legible over any photograph without a hard block
-   covering nearly half the image the way the previous solid column did. */
+/* Scrim — a soft directional gradient rising from the bottom edge so text stays legible over any
+   photograph without a hard block covering nearly half the image the way the previous solid
+   column did.
+
+   RED-TINT FIX: this scrim was, on the cinnabar scheme (the hero's own default text_mode), tinted
+   to var(--caviera-cinnabar) at up to 70% opacity — a genuine colour wash across the bottom ~62%
+   of the FULL-HEIGHT hero image (this scrim spans .caviera-hero__field, which matches the media's
+   own 100vh/100svh exactly), not a small text-legibility aid confined to the copy area. That is
+   what read as "noticeably redder, especially from the bottom upward" against the actual image's
+   neutral-warm colours. A legibility scrim over a photograph should stay neutral regardless of the
+   section's own accent colour — the base rule below (Obsidian-tinted, unchanged) already does
+   exactly that, so the cinnabar-specific override is removed rather than re-tuned. The real
+   Cinnabar wall that is part of the source photograph itself is untouched — this only removes an
+   overlay layered on top of the whole image, not any colour within the image. The bone-scheme
+   variant below (a different colour, not reported as an issue) is left as-is. */
 .caviera-hero__field::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, color-mix(in srgb, var(--caviera-obsidian) 62%, transparent) 0%, transparent 62%);
   pointer-events: none;
-}
-[data-scheme="cinnabar"] .caviera-hero__field::before {
-  background: linear-gradient(to top, color-mix(in srgb, var(--caviera-cinnabar) 70%, transparent) 0%, transparent 62%);
 }
 [data-scheme="bone"] .caviera-hero__field::before {
   background: linear-gradient(to top, color-mix(in srgb, var(--caviera-bone) 78%, transparent) 0%, transparent 62%);
