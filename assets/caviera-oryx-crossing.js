@@ -144,13 +144,30 @@
     // generous observer, so the listener isn't running for the rest of the page. This observer is
     // scoped to this stage element only; it does not replace or interfere with any other
     // section's own observer.
+    //
+    // ROOT-CAUSE FIX: this function previously called sync() unconditionally once more, after this
+    // if/else, regardless of IntersectionObserver support. That set `mode` to 'desktop' (or
+    // 'mobile') and attached the scroll listener immediately on page load — before the observer had
+    // ever confirmed the section was actually near the viewport. The observer's own first real
+    // callback (almost always reporting isNear === false, since the page normally loads scrolled to
+    // the top, far from this section) then removed that listener. Once the section later actually
+    // approached and the observer reported isNear === true, sync() ran again — but since `mode` was
+    // already 'desktop'/'mobile' from the earlier premature call, enterMode()'s own `if (mode ===
+    // nextMode) return;` guard treated it as a no-op and never re-attached the listener. The result:
+    // progress was computed exactly once, while the section was still far below the viewport (a low,
+    // dim value), and never again — reading as the animation "starting" (the CSS renders that one
+    // frozen value) and then never advancing, exactly the reported symptom. Matches assets/caviera-
+    // makers-mark.js's own, correct structure: sync() is called ONLY inside the "no
+    // IntersectionObserver support" fallback branch, never unconditionally afterward — so `mode`
+    // stays null, and the very first real enterMode() call happens exactly when the observer
+    // confirms proximity, which is also the first time the scroll listener is attached.
     if ('IntersectionObserver' in window) {
       var sectionObserver = new IntersectionObserver(
         function (entries) {
           var isNear = entries.some(function (entry) { return entry.isIntersecting; });
           if (isNear) {
             sync();
-          } else {
+          } else if (mode) {
             window.removeEventListener('scroll', onScroll);
           }
         },
@@ -179,8 +196,6 @@
       },
       { passive: true }
     );
-
-    sync();
   }
 
   function init(root) {
