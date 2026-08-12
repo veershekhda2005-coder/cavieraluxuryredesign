@@ -23,7 +23,15 @@
     endif
   -%}
   {%- if favicon_source -%}
-    <link rel="icon" type="image/png" href="{{ favicon_source | image_url: width: 96 }}">
+    {%- comment -%}
+      SQUARE FIX: width: 96 alone only constrains width — height scales to the source artwork's
+      own aspect ratio. settings.favicon/the House Seal fallback are not square source images
+      (confirmed: the previously-rendered favicon was 96x149px, not 96x96), and both browsers and
+      Google explicitly require a square favicon, or may silently fall back to a default icon
+      instead. crop: 'center' forces an exact 96x96 square regardless of the source image's own
+      proportions, without distorting it (crops, never stretches).
+    {%- endcomment -%}
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ favicon_source | image_url: width: 96, height: 96, crop: 'center' }}">
   {%- else -%}
     {%- comment -%}
       No approved favicon or House Seal exists yet (see docs/required-brand-assets.md). Browsers
