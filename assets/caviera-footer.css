@@ -22,7 +22,10 @@
    instead of the shared heading-h2 class (removed from the element in the Liquid). Margin-bottom
    tightened alongside the padding change above. */
 .caviera-footer__signature-heading {
-  margin-bottom: 14px;
+  /* SPACING FIX: reduced from 14px (~21%) per this round's explicit request to tighten the gap
+     between "Objects of rare composure." and the wordmark below it, without cramming the two
+     together. */
+  margin-bottom: 11px;
   font-family: var(--font-display);
   font-weight: 300;
   line-height: 1.25;
@@ -193,9 +196,11 @@
    + reduced opacity keeps the quieter, secondary tone while staying correctly scheme-aware. */
 .caviera-footer__consent { font-size: 0.75rem; color: var(--text-primary); opacity: 0.7; margin-top: 10px; max-width: 340px; }
 
-/* Bottom utility row — the smaller, secondary wordmark plus social/localization/copyright/payment,
-   with the tiny House Seal as the final closing mark. Wraps on narrow desktop/tablet rather than
-   overflowing; stacks cleanly on mobile via the wrap + centred alignment below. */
+/* Bottom utility row — social/localization/copyright/payment only. RESTRAINT FIX: previously also
+   carried a second, smaller wordmark and a small House Seal (an oryx-head icon) as a closing mark;
+   both removed — the brand identity now appears once, in the signature moment above, not repeated
+   at the legal baseline. Wraps on narrow desktop/tablet rather than overflowing; stacks cleanly on
+   mobile via the wrap + centred alignment below. */
 .caviera-footer__bottom {
   display: flex;
   align-items: center;
@@ -203,7 +208,6 @@
   padding-top: 24px;
   flex-wrap: wrap;
 }
-.caviera-footer__bottom-mark { flex-shrink: 0; max-width: 140px; line-height: 0; }
 .caviera-footer__social { display: flex; gap: 16px; }
 .caviera-footer__social svg { width: 18px; height: 18px; }
 /* --text-primary is reassigned per data-scheme (see caviera-base.css), so this hover always has
@@ -214,8 +218,6 @@
 .caviera-footer__copyright { font-size: 0.75rem; color: var(--text-primary); opacity: 0.7; }
 .caviera-footer__payment { display: flex; gap: 8px; }
 .caviera-footer__payment img, .caviera-footer__payment svg { height: 20px; width: auto; }
-.caviera-footer__seal { margin-left: auto; flex-shrink: 0; }
 @media (max-width: 599px) {
   .caviera-footer__bottom { justify-content: center; text-align: center; }
-  .caviera-footer__seal { margin-left: 0; }
 }

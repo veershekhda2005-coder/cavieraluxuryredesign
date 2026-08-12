@@ -16,13 +16,14 @@
   fallback item simply doesn't render if its destination doesn't exist — never a placeholder or
   guessed URL. A merchant-selected menu always overrides the fallback entirely for that group.
 
-  Formal identity restructured per this round's explicit hierarchy: the Master Signature (House
-  Seal + wordmark, composed) is now the footer's own opening moment, alongside "Sculpted for a
-  lifetime." — previously this line and the Master Signature lived only in the homepage's separate
-  closing section above the real <footer> (see the clarification in an earlier report); this round
-  deliberately brings both into the footer itself, per the explicit new structure. The plain
-  horizontal wordmark moves to the bottom utility row as the smaller, secondary mark, and the small
-  House Seal remains the tiny final mark — no identity element repeated without a clear role.
+  Formal identity: the plain horizontal wordmark (snippets/caviera-wordmark.liquid) on its own is
+  the footer's one opening moment, alongside the closing heading ("Objects of rare composure." by
+  default). RESTRAINT FIX (this round): previously used render 'caviera-master-signature' here —
+  the House Seal (an angular oryx-head icon; see snippets/caviera-house-seal.liquid) composed
+  together with the wordmark into one image — which read as a large Oryx attached above the
+  wordmark, a role the Living Oryx section elsewhere on the homepage already owns. The legal
+  baseline's own second wordmark and second small House Seal were removed for the same reason —
+  the brand identity now appears exactly once in this footer.
 {%- endcomment -%}
 {%- liquid
   assign mark_mode = section.settings.logo_scheme
@@ -66,24 +67,22 @@
       {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading">{{ section.settings.master_heading }}</p>{%- endif -%}
       <div class="caviera-footer__signature-mark">
         {%- comment -%}
+          RESTRAINT FIX: was render 'caviera-master-signature' — the House Seal (an angular
+          oryx-head icon; see snippets/caviera-house-seal.liquid) composed together with the
+          wordmark into one image. That put the Seal directly above the wordmark here, reading as
+          an attached "Oryx" the Living Oryx section elsewhere on the homepage already owns as its
+          own narrative moment. Switched to render 'caviera-wordmark' — the plain horizontal
+          CAVIERA JEWELS wordmark artwork on its own (snippets/caviera-wordmark.liquid,
+          3000x557 official artwork), never retyped/redrawn/recomposed.
+
           width: 900 here is deliberately generous — a ceiling the artwork will essentially never
           reach, not the actual rendered size. The real, responsive size (~55-72% of the available
           width on desktop, full width within safe margins on mobile) is set on the wrapper's own
           max-width in assets/caviera-footer.css instead, since the snippet's inline max-width/
-          width:100% (see snippets/caviera-master-signature.liquid) simply fills whatever the
-          wrapper allows — this avoids fighting that inline style directly.
-
-          MOTION REMOVED (temporarily, this round): this element and the heading/nav columns below
-          previously carried data-reveal, which sets opacity:0 by default until a shared
-          IntersectionObserver (assets/caviera-global.js) adds .is-visible. Per this round's
-          explicit instruction — confirm the static footer is fully visible with zero JS/animation
-          dependency first — that attribute is removed here. No code defect was proven in
-          caviera-global.js itself (it runs on DOMContentLoaded/defer and the footer is present in
-          the initial static HTML, not injected later), but removing the dependency entirely is the
-          safer, directly-requested fix regardless of cause. A restrained reveal may be reintroduced
-          later, once static visibility is confirmed.
+          width:100% simply fills whatever the wrapper allows — this avoids fighting that inline
+          style directly.
         {%- endcomment -%}
-        {%- render 'caviera-master-signature', mode: mark_mode, width: 900 -%}
+        {%- render 'caviera-wordmark', mode: mark_mode, width: 900 -%}
       </div>
       {%- if section.settings.statement != blank -%}
         <p class="caviera-footer__statement body-text">{{ section.settings.statement }}</p>
@@ -223,10 +222,13 @@
 
   <span class="caviera-footer__rule" aria-hidden="true"></span>
 
+  {%- comment -%}
+    RESTRAINT FIX: this row previously repeated the wordmark a second time (.caviera-footer__bottom-
+    mark, width 140) and closed with a second small House Seal / oryx-head mark
+    (.caviera-footer__seal) — both removed. The primary wordmark above the navigation is now the
+    only identity mark in the footer; the legal baseline stays plain text + utility controls only.
+  {%- endcomment -%}
   <div class="container caviera-footer__bottom">
-    <div class="caviera-footer__bottom-mark">
-      {%- render 'caviera-wordmark', mode: mark_mode, width: 140 -%}
-    </div>
     {%- if section.settings.social_show -%}
       <div class="caviera-footer__social">
         {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
@@ -253,7 +255,6 @@
         {%- endfor -%}
       </ul>
     {%- endif -%}
-    <span class="caviera-footer__seal">{%- render 'caviera-house-seal', mode: mark_mode, width: 24, alt: '' -%}</span>
   </div>
 </footer>
 
@@ -273,14 +274,14 @@
     },
     {
       "type": "select", "id": "logo_scheme", "label": "Identity colour version", "default": "dark",
-      "info": "Applies to the Master Signature, wordmark and House Seal below.",
+      "info": "Applies to the wordmark below.",
       "options": [
         { "value": "light", "label": "For light backgrounds" },
         { "value": "dark", "label": "For dark backgrounds" }
       ]
     },
     { "type": "header", "content": "Formal signature" },
-    { "type": "checkbox", "id": "show_master_signature", "label": "Show Master Signature moment", "default": true, "info": "The formal opening of the footer — House Seal + wordmark composed, with a headline. The plain wordmark appears again, smaller, near the bottom as the everyday utility mark." },
+    { "type": "checkbox", "id": "show_master_signature", "label": "Show wordmark signature moment", "default": true, "info": "The formal opening of the footer — the plain horizontal wordmark on its own, with a headline. Not repeated again at the bottom of the footer." },
     { "type": "text", "id": "master_heading", "label": "Signature heading", "default": "Objects of rare composure." },
     { "type": "textarea", "id": "statement", "label": "Short house statement", "info": "Optional — leave blank to keep the closing signature to one line (wordmark + heading only)." },
     { "type": "checkbox", "id": "social_show", "label": "Show social links", "default": true },
