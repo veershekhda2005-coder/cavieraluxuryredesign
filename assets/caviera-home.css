@@ -466,10 +466,24 @@
    on the assumption the heading stayed at a deliberately small scale (see .caviera-statement__
    heading below) — now that the heading is the section's main focal point at a much larger size,
    a taller natural height is the correct, expected result of that type, not a regression to guard
-   against. Padding itself is otherwise unchanged: top keeps a little breathing room below the hero
-   (now handed off immediately, with no pin gap above — see .caviera-hero above), bottom stays
-   small since the transition band just below already provides a natural close. */
-.caviera-statement { position: relative; z-index: 0; padding-top: clamp(32px, 4vw, 56px); padding-bottom: clamp(0px, 0.5vw, 8px); overflow: hidden; }
+   against. Padding itself keeps a little breathing room below the hero (handed off immediately,
+   with no pin gap above — see .caviera-hero above); bottom stays comparatively small since the
+   transition band just below already provides a natural close.
+
+   BREATHING-ROOM FIX (this round): approved composition/type/proportions unchanged — only the
+   section's own vertical padding is raised, top modestly (clamp(32px,4vw,56px) ->
+   clamp(40px,5vw,72px), roughly +25%) and bottom a little more in relative terms
+   (clamp(0px,0.5vw,8px) -> clamp(16px,2vw,32px)), landing the section's overall desktop height
+   in the requested ~330-380px-and-up range depending on content without any min-height/spacer —
+   still well short of a large empty area. Mobile gets its own smaller, explicit bump below (not
+   this fluid clamp, which would otherwise push bottom padding from ~2px to a floor of 16px — a
+   much larger relative jump than intended on a small viewport). */
+.caviera-statement { position: relative; z-index: 0; padding-top: clamp(40px, 5vw, 72px); padding-bottom: clamp(16px, 2vw, 32px); overflow: hidden; }
+@media (max-width: 599px) {
+  /* Less aggressive than desktop, per the brief (~10-15% over the previous mobile values of
+     ~32px top / ~2px bottom) — a little more breathing room, not a second desktop-scale increase. */
+  .caviera-statement { padding-top: 36px; padding-bottom: 12px; }
+}
 
 /* Palace architecture — a genuinely visible environment image spanning the full section (behind
    both the statement AND the three feature columns below it, not just the top portion), reading
