@@ -28,23 +28,28 @@
    show — the image had already fully resolved — while the user was still made to keep scrolling
    through a plain Cinnabar/Obsidian field before House Statement's own content arrived underneath.
 
-   SPACER-HEIGHT CORRECTION (this round): the wrapper's own height was still calculated in bare
-   vh — its two sticky children (below) both already progressively enhance to svh, the viewport
-   unit that discounts a mobile browser's collapsible address-bar chrome. On any device where vh
-   and svh genuinely differ, that mismatch alone stretches this wrapper beyond what its own pinned
-   children actually cover, leaving a sliver of the wrapper's own background (Cinnabar by default,
-   via data-scheme) exposed at the bottom of the pin range before House Statement arrives — exactly
-   the calculated-spacer error this pattern is prone to. The wrapper now also enhances to svh,
-   matching its children exactly. The remaining deliberate "extra" pin distance is also tightened
-   further, from 26vh to 12vh over 100vh (clamp(700px, 112svh, 1200px) total, ceiling raised to stay
-   safely above realistic viewport heights so the pin range is never shorter than the viewport
-   itself) — still enough room for the crop/fade to read as a considered pinned beat, not an empty
-   hold, while minimising any exposure window regardless of cause. The pin/zoom/fade animation
-   itself is unchanged — only its own end spacing is corrected. */
+   SPACER-HEIGHT CORRECTION: the wrapper's own height was calculated in bare vh while its two
+   sticky children (below) already progressively enhance to svh, the viewport unit that discounts
+   a mobile browser's collapsible address-bar chrome — on any device where vh and svh genuinely
+   differ, that mismatch stretched this wrapper beyond what its own pinned children actually
+   cover, leaving a sliver of the wrapper's own background (Cinnabar by default, via data-scheme)
+   exposed at the bottom of the pin range before House Statement arrived. A prior pass already
+   tightened the deliberate "extra" pin distance from 26vh to 12vh and unit-matched the wrapper to
+   svh, but the gap was still being reported — so this round removes the extra pin distance
+   entirely rather than tuning it again: the wrapper is now exactly 100vh/100svh, identical to its
+   own sticky children, with zero remaining room for any exposed background regardless of cause.
+   House Statement now begins the instant the hero's own single viewport of height ends — no pin
+   hold, no possible gap. The one deliberate side effect: with no extra scroll distance,
+   assets/caviera-scroll-progress.js's total (rect.height − viewport height) is 0, so
+   --caviera-progress stays at its safe 0 fallback throughout — the subtle 1.00→1.04 crop and the
+   headline's fade/rise (both driven by that variable, see .caviera-hero__media-el and
+   .caviera-hero__field-inner below) simply hold their fully-resolved resting frame the whole time,
+   rather than animating into it over a pin. Nothing else about the hero's markup, image handling
+   or the drag tokens changed. */
 .caviera-hero {
   position: relative;
-  height: clamp(700px, 112vh, 1200px);
-  height: clamp(700px, 112svh, 1200px);
+  height: 100vh;
+  height: 100svh;
   display: block;
   overflow: hidden;
 }
@@ -457,11 +462,13 @@
    padding is also reduced from the general section clamp so the section feels spacious without
    accidental empty height. `position: relative` is new, only so the watermark below (a section-
    level absolutely-positioned child) has a containing block to size against. */
-/* Compact overall height, matched against the approved reference (~300–340px at desktop) rather
-   than the previous generous section-default spacing: top padding keeps a little breathing room
-   below the hero, bottom padding is kept deliberately small since the transition band just below
-   already provides a natural close, and category-reveal's own top padding (see its override
-   further down this file) supplies the rest of the gap before the category cards. */
+/* HIERARCHY FIX: the section's overall height target was previously tuned to a compact ~300-340px
+   on the assumption the heading stayed at a deliberately small scale (see .caviera-statement__
+   heading below) — now that the heading is the section's main focal point at a much larger size,
+   a taller natural height is the correct, expected result of that type, not a regression to guard
+   against. Padding itself is otherwise unchanged: top keeps a little breathing room below the hero
+   (now handed off immediately, with no pin gap above — see .caviera-hero above), bottom stays
+   small since the transition band just below already provides a natural close. */
 .caviera-statement { position: relative; z-index: 0; padding-top: clamp(32px, 4vw, 56px); padding-bottom: clamp(0px, 0.5vw, 8px); overflow: hidden; }
 
 /* Palace architecture — a genuinely visible environment image spanning the full section (behind
@@ -502,7 +509,10 @@
    would be too narrow to read comfortably either way. */
 .caviera-statement__copy { display: flex; flex-direction: column; gap: 16px; }
 @media (min-width: 700px) {
-  .caviera-statement__copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+  /* HIERARCHY FIX: was an even 1fr/1fr split — with the heading now the section's dominant
+     element, it gets the larger share of the row so the enlarged type has real room rather than
+     wrapping tightly against the body column. */
+  .caviera-statement__copy { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
 }
 .caviera-statement__label {
   display: block;
@@ -512,19 +522,24 @@
   color: var(--caviera-cinnabar);
   margin-bottom: 12px;
 }
-/* Deliberately smaller than the shared .heading-h1 token — this section's compact target height
-   (~300–340px) has no room for a full-scale display headline once it sits beside the body copy
-   rather than above it. */
+/* HIERARCHY FIX: was deliberately capped below .heading-h1 (a ~28-44px range) to fit the section's
+   old compact target height. "Composure made visible." is now the section's main focal point — the
+   same large editorial scale as .heading-h1 (--step-h1: 36-72px desktop, ~40px floor on mobile,
+   still noticeably larger than the old mobile floor of 28px) rather than a supporting line beside
+   the body copy. THE HOUSE / 01 label above stays at its existing small, quiet scale; the body copy
+   beside it is deliberately unchanged/untouched in size — both stay clearly secondary to this. */
 .caviera-statement__heading {
   color: var(--text-primary);
   font-family: var(--font-display);
   font-weight: 300;
   text-wrap: balance;
-  font-size: calc(clamp(1.75rem, 1.3rem + 2vw, 2.75rem) * var(--heading-scale));
-  line-height: 1.08;
+  font-size: var(--step-h1);
+  line-height: 1.05;
 }
-.caviera-statement__body-col { padding-top: 2px; }
-.caviera-statement__body { max-width: 42ch; }
+.caviera-statement__body-col { padding-top: 4px; }
+/* HIERARCHY FIX: a touch smaller than the shared .body-text default and narrower, so it reads as
+   clearly supportive beside the much larger heading rather than competing with it. */
+.caviera-statement__body { max-width: 38ch; font-size: 0.9375rem; }
 .caviera-statement__cta { display: inline-block; margin-top: 16px; }
 .caviera-statement__seal { grid-column: 1 / -1; display: inline-flex; justify-self: start; margin-top: 12px; }
 @media (max-width: 599px) {
