@@ -217,36 +217,94 @@
   .caviera-house-codes.is-ready .caviera-house-codes__local-label { opacity: 0; }
 }
 
-@media (max-width: 899px), (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
   .caviera-house-codes__overlay-shell { display: none; }
+  .caviera-house-codes__local-label { opacity: 1 !important; }
 }
 
-/* MOBILE MOTION FIX: below 900px the local labels were always fully, statically visible — real
-   content, correctly never hidden — but with no active/inactive distinction, so scrolling through
-   the four rooms produced no visible change at all: assets/caviera-house-codes.js already
-   computes data-house-code-active continuously at every width (no desktop-only guard in that
-   file), this was purely a missing CSS consumer. Quieting the inactive panels' labels and letting
-   the active one stay full gives the same "Rarity -> Precision -> Ritual -> Longevity" progression
-   feedback mobile is asking for, without a sticky/pinned overlay (never introduced below 900px).
-   Gated behind .is-ready (added only once the script has actually wired up detection), so a slow/
-   blocked/failed script leaves every label at its plain, fully-visible resting state. */
+/* ---- Mobile/tablet sticky central title (<900px, motion allowed) ----
+   FIX: the previous mobile pass only dimmed/undimmed each panel's OWN local label in place — real
+   content, never hidden, but four independent labels each anchored to their own panel is not "one
+   stable chapter identity that changes"; scrolling from one panel to the next just scrolled its
+   label away with it, with nothing anchored for the eye to return to. This reuses the desktop
+   overlay's existing markup/crossfade (four pre-rendered .overlay-item elements, already correctly
+   swapped via [data-house-code-active] — see the shared rule above) at a mobile-appropriate size
+   and position instead of introducing a second text-swapping mechanism: one sticky title, anchored
+   at roughly 44% down the viewport (translateY(-50%) centres it on that point, same technique
+   requested for the brief's own suggested implementation), while the four visual rooms move past
+   behind it. assets/caviera-house-codes.js already computes data-house-code-active continuously at
+   every width (no desktop-only guard in that file) — this was purely a missing CSS consumer.
+
+   Local labels stay exactly as they always were — real, always fully visible, non-interactive
+   fallback content — so a slow/blocked/failed script (or reduced motion, which hides the overlay
+   entirely above) never leaves a panel with no visible title at all. */
 @media (max-width: 899px) {
-  .caviera-house-codes.is-ready .caviera-house-codes__local-label {
-    opacity: 0.35;
-    transform: translateY(14px);
-    transition: opacity 460ms var(--ease-caviera), transform 460ms var(--ease-caviera);
+  .caviera-house-codes__overlay-shell {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
   }
-  .caviera-house-codes.is-ready[data-house-code-active="0"] .caviera-house-codes__panel[data-house-code-index="0"] .caviera-house-codes__local-label,
-  .caviera-house-codes.is-ready[data-house-code-active="1"] .caviera-house-codes__panel[data-house-code-index="1"] .caviera-house-codes__local-label,
-  .caviera-house-codes.is-ready[data-house-code-active="2"] .caviera-house-codes__panel[data-house-code-index="2"] .caviera-house-codes__local-label,
-  .caviera-house-codes.is-ready[data-house-code-active="3"] .caviera-house-codes__panel[data-house-code-index="3"] .caviera-house-codes__local-label {
+  .caviera-house-codes__overlay {
+    position: sticky;
+    top: 44vh;
+    top: 44svh;
+    /* An explicit height (rather than the auto/zero height an all-absolute-children box would
+       otherwise collapse to) so this translateY(-50%) has something real to centre against —
+       tall enough for the progress label + title line below at their mobile clamp() sizes. */
+    height: 110px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .caviera-house-codes__overlay-label { display: none; }
+  .caviera-house-codes__overlay-item {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, calc(-50% + 8px));
+    width: min(320px, calc(100vw - 80px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: var(--caviera-bone);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 350ms var(--ease-caviera), transform 350ms var(--ease-caviera), visibility 0ms;
+    pointer-events: none;
+  }
+  .caviera-house-codes[data-house-code-active="0"] .caviera-house-codes__overlay-item[data-house-code-index="0"],
+  .caviera-house-codes[data-house-code-active="1"] .caviera-house-codes__overlay-item[data-house-code-index="1"],
+  .caviera-house-codes[data-house-code-active="2"] .caviera-house-codes__overlay-item[data-house-code-index="2"],
+  .caviera-house-codes[data-house-code-active="3"] .caviera-house-codes__overlay-item[data-house-code-index="3"] {
     opacity: 1;
-    transform: none;
+    transform: translate(-50%, -50%);
+    visibility: visible;
   }
+  .caviera-house-codes__overlay-progress {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--caviera-cinnabar);
+    margin-bottom: 8px;
+  }
+  .caviera-house-codes__overlay-title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 10vw, 2.75rem);
+    line-height: 1;
+    margin: 0;
+    text-shadow: 0 2px 18px rgba(17, 16, 18, 0.5);
+  }
+  /* Supporting copy stays with the panel's own local label below (already visible, in reading
+     order) rather than duplicated here — keeps the sticky title itself small and restrained. */
+  .caviera-house-codes__overlay-copy,
+  .caviera-house-codes__line { display: none; }
 }
 @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
-  .caviera-house-codes.is-ready .caviera-house-codes__local-label { transition: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .caviera-house-codes__local-label { opacity: 1 !important; }
+  /* Declared after (and more specifically than) the plain prefers-reduced-motion block above, so
+     this correctly wins the narrow-width + reduced-motion case: overlay hidden, local labels are
+     the whole (already fully visible) story. */
+  .caviera-house-codes__overlay-shell { display: none; }
+  .caviera-house-codes__overlay-item { transition: none; }
 }
