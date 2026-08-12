@@ -1556,20 +1556,24 @@
     scale(var(--oryx-scale, 1.02));
   transition: opacity 200ms linear, transform 200ms linear;
 }
-/* THE HOUSE label + headline — resolve earlier and more quietly than the artwork itself. */
+/* THE HOUSE label — resolves earliest and most quietly, ahead of the headline. */
 [data-caviera-oryx-progress] .caviera-editorial__text .eyebrow {
-  opacity: calc(0.35 + var(--oryx-heading-progress, 1) * 0.65);
-  transform: translateY(calc(10px * (1 - var(--oryx-heading-progress, 1))));
+  opacity: calc(0.25 + var(--oryx-label-progress, 1) * 0.75);
+  transform: translateY(calc(10px * (1 - var(--oryx-label-progress, 1))));
   transition: opacity 200ms linear, transform 200ms linear;
 }
+/* Headline — settles shortly after the label; a very small optional translateX alongside its own
+   translateY, never a dramatic scale. */
 [data-caviera-oryx-progress] .caviera-editorial__text .heading-h2 {
-  opacity: calc(0.5 + var(--oryx-heading-progress, 1) * 0.5);
-  transform: translateY(calc(22px * (1 - var(--oryx-heading-progress, 1))));
+  opacity: calc(0.4 + var(--oryx-heading-progress, 1) * 0.6);
+  transform:
+    translateY(calc(22px * (1 - var(--oryx-heading-progress, 1))))
+    translateX(calc(4px * (1 - var(--oryx-heading-progress, 1))));
   transition: opacity 200ms linear, transform 200ms linear;
 }
-/* Body copy — resolves after the heading, alongside the artwork's own crossing. */
+/* Body copy — resolves later, alongside the artwork's own crossing. */
 [data-caviera-oryx-progress] .caviera-editorial__text .body-text {
-  opacity: calc(0.25 + var(--oryx-body-progress, 1) * 0.75);
+  opacity: calc(0.22 + var(--oryx-body-progress, 1) * 0.78);
   transform: translateY(calc(14px * (1 - var(--oryx-body-progress, 1))));
   transition: opacity 200ms linear, transform 200ms linear;
 }
