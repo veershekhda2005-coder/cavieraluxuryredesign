@@ -85,14 +85,25 @@
    different desktop vs. mobile composition of the same source image, not one shared focal point.
    Same specificity as .caviera-hero__media-el above; wins on source order (declared after). */
 .caviera-hero__media-el--bundled {
-  /* Desktop: within the requested 58-65% band — keeps the full cinematic read (open sea/sky on
-     the left, headline legible, Cinnabar wall + the architecture's own integrated Oryx, main
-     entrance) while bringing the second, far-right architectural Oryx/House mark into frame,
-     which the previous 66% cropped too close to the image's right edge to fully show. No scale
-     transform is contributing to this — .caviera-hero__media-el's own transform: scale(...) above
-     already resolves to exactly 1 at rest (--caviera-progress has no pin distance left to drive
-     it since the earlier hero dead-zone fix; confirmed, not changed here). */
-  object-position: 62% 44%;
+  /* Desktop: measured the actual source file directly (cropped and inspected its own right 20%,
+     1672x941) rather than estimating — the far-right dark Oryx plaque sits at roughly 91-97% of
+     the image's width, right at the edge; the Cinnabar-wall Oryx sits around 76-82%. A prior pass
+     had moved this to 62% (lower than the original 66%), which — checked against object-position's
+     actual spec direction (higher % reveals more of the image's RIGHT edge, not less) — was a step
+     in the wrong direction and cropped the far-right plaque more, not less. Set to the maximum
+     100% instead: object-fit: cover always removes 0% from the right edge at 100%, so the
+     right-edge plaque is included at every desktop width regardless of viewport aspect ratio —
+     verified by hand across 1440x900 (only ~10% of the image is ever cropped at that ratio, so
+     100% keeps nearly the whole frame, maximum left sea/sky), 1024x768 and even a hypothetical
+     1:1 viewport (~25-44% cropped in the worst realistic cases, but the crop always comes from the
+     LEFT at 100%, and the sea/sky region — roughly the image's own left 62% — still keeps a
+     meaningful visible band before the architecture begins, since the crop amount never approaches
+     that far). No scale transform is contributing to any of this — .caviera-hero__media-el's own
+     transform: scale(...) above already resolves to exactly 1 at rest (--caviera-progress has no
+     pin distance left to drive it since the earlier hero dead-zone fix; confirmed, not changed
+     here) — and object-fit: cover here is not artificially enlarging the image beyond what cover
+     itself requires to fill the viewport. */
+  object-position: 100% 44%;
 }
 @media (max-width: 749px) {
   /* Mobile's much taller/narrower crop has far less width to work with — biased further right so
