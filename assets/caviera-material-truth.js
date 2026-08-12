@@ -104,13 +104,30 @@
 
     // Only run the scroll handler while the section is actually near the viewport — a single,
     // generous observer on the stage itself, so the listener isn't running for the rest of the page.
+    //
+    // ROOT-CAUSE FIX (independent bug in this file, not a conflict with any other section's own
+    // controller — assets/caviera-makers-mark.js was already structured correctly and needed no
+    // change): this function previously called sync() unconditionally once more, right after this
+    // if/else, regardless of IntersectionObserver support. That set `mode` to 'desktop' (or
+    // 'mobile') and attached the scroll listener immediately on page load — before the observer had
+    // ever confirmed the section was actually near the viewport. The observer's own first real
+    // callback (almost always reporting isNear === false, since the page normally loads scrolled to
+    // the top, far from this section) then removed that listener. Once the section later actually
+    // approached and the observer reported isNear === true, sync() ran again — but since `mode` was
+    // already 'desktop'/'mobile' from the earlier premature call, enterMode()'s own `if (mode ===
+    // nextMode) return;` guard treated it as a no-op and never re-attached the listener. The result:
+    // progress was computed exactly once, while the section was still off-screen, and never again —
+    // reading as the animation "starting" and then freezing. Matches the exact same bug already
+    // found and fixed in assets/caviera-oryx-crossing.js this project, and the same correct
+    // structure assets/caviera-makers-mark.js already used: sync() is called ONLY inside the "no
+    // IntersectionObserver support" fallback branch, never unconditionally afterward.
     if ('IntersectionObserver' in window) {
       var sectionObserver = new IntersectionObserver(
         function (entries) {
           var isNear = entries.some(function (entry) { return entry.isIntersecting; });
           if (isNear) {
             sync();
-          } else {
+          } else if (mode) {
             window.removeEventListener('scroll', onScroll);
           }
         },
@@ -119,6 +136,7 @@
       sectionObserver.observe(stage);
     } else {
       window.addEventListener('scroll', onScroll, { passive: true });
+      sync();
     }
 
     var resizeTimer = null;
@@ -130,8 +148,6 @@
       },
       { passive: true }
     );
-
-    sync();
 
     // Only now — once detection is actually wired up — let CSS dim the non-active chapters (see
     // [data-observing="true"] in caviera-home.css). Every chapter stays at full opacity until this
