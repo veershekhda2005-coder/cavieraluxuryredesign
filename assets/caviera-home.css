@@ -85,9 +85,14 @@
    different desktop vs. mobile composition of the same source image, not one shared focal point.
    Same specificity as .caviera-hero__media-el above; wins on source order (declared after). */
 .caviera-hero__media-el--bundled {
-  /* Desktop: keeps the full cinematic read — open sea/sky on the left, the Cinnabar wall + Oryx
-     plaque and the building's geometry fully in frame on the right. */
-  object-position: 66% 44%;
+  /* Desktop: within the requested 58-65% band — keeps the full cinematic read (open sea/sky on
+     the left, headline legible, Cinnabar wall + the architecture's own integrated Oryx, main
+     entrance) while bringing the second, far-right architectural Oryx/House mark into frame,
+     which the previous 66% cropped too close to the image's right edge to fully show. No scale
+     transform is contributing to this — .caviera-hero__media-el's own transform: scale(...) above
+     already resolves to exactly 1 at rest (--caviera-progress has no pin distance left to drive
+     it since the earlier hero dead-zone fix; confirmed, not changed here). */
+  object-position: 62% 44%;
 }
 @media (max-width: 749px) {
   /* Mobile's much taller/narrower crop has far less width to work with — biased further right so
