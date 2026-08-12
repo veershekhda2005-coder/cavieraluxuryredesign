@@ -379,6 +379,27 @@
   .caviera-drag-token { cursor: default; }
   .caviera-drag-token__cue { display: none; }
 }
+/* MOBILE MOTION: touch dragging stays deliberately disabled (see the pointerType guard in assets/
+   caviera-drag-token.js) rather than risk fighting normal page-scroll gestures — but that must not
+   mean the artifact is simply static. A one-time, pure-CSS drift-in (no JS, no shared reveal
+   infrastructure touched) gives it its own quiet life on arrival: a small settle, once, as the
+   hero/Edition I composition first comes into view. No transform is ever set inline until an
+   actual drag begins (which touch pointers never trigger), so this animation has nothing to
+   conflict with. Scoped to the same <749px breakpoint already used for this composition's other
+   mobile adaptations. */
+@media (max-width: 749px) {
+  @keyframes caviera-token-drift-in {
+    0% { opacity: 0.4; transform: translateY(10px) scale(0.94); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .caviera-drag-token {
+    animation: caviera-token-drift-in 900ms var(--ease-caviera) both;
+    animation-delay: 0.6s;
+  }
+}
+@media (max-width: 749px) and (prefers-reduced-motion: reduce) {
+  .caviera-drag-token { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .caviera-drag-token,
   .caviera-drag-token__face,
@@ -848,18 +869,33 @@
    var(--caviera-progress, 1) falls back to the fully-resolved state, so no-JS/reduced-motion/JS-
    not-yet-run always show the complete final composition. */
 @media (max-width: 899px) {
+  /* Staggered per the brief: metadata resolves, then the Edition I title, then the image — three
+     named sub-windows of the one raw value, same derivation technique as Maker's Mark's own
+     --maker-*-progress channels on a different section. */
+  .caviera-edition-teaser {
+    --edition-mobile-meta: clamp(0, calc(var(--caviera-progress, 1) / 0.35), 1);
+    --edition-mobile-heading: clamp(0, calc((var(--caviera-progress, 1) - 0.15) / 0.35), 1);
+    --edition-mobile-media: clamp(0, calc((var(--caviera-progress, 1) - 0.35) / 0.45), 1);
+  }
+  .caviera-edition-teaser__meta {
+    opacity: var(--edition-mobile-meta);
+    transform: translateY(calc(12px * (1 - var(--edition-mobile-meta))));
+    transition: opacity 420ms var(--ease-caviera), transform 420ms var(--ease-caviera);
+  }
   .caviera-edition-teaser__heading.is-visible {
-    opacity: calc(0.6 + var(--caviera-progress, 1) * 0.4);
-    transform: translateY(calc(10px * (1 - var(--caviera-progress, 1))));
+    opacity: calc(0.3 + var(--edition-mobile-heading) * 0.7);
+    transform: translateY(calc(16px * (1 - var(--edition-mobile-heading))));
   }
   .caviera-edition-teaser__media {
-    opacity: calc(0.75 + var(--caviera-progress, 1) * 0.25);
-    transform: scale(calc(0.97 + var(--caviera-progress, 1) * 0.03));
+    opacity: calc(0.35 + var(--edition-mobile-media) * 0.65);
+    transform: scale(calc(0.92 + var(--edition-mobile-media) * 0.08));
+    transition: opacity 460ms var(--ease-caviera), transform 460ms var(--ease-caviera);
   }
 }
 @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .caviera-edition-teaser__meta,
   .caviera-edition-teaser__heading.is-visible,
-  .caviera-edition-teaser__media { opacity: 1; transform: none; }
+  .caviera-edition-teaser__media { opacity: 1; transform: none; transition: none; }
 }
 
 /* Single-image fallback crops (see img2_derived/img3_derived in sections/caviera-edition-teaser.
@@ -1445,8 +1481,8 @@
    never a scroll trap. */
 @media (max-width: 899px) {
   [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__media[data-media-source="house_seal"] {
-    opacity: 0.4;
-    transform: translateY(14px) scale(0.96);
+    opacity: 0.3;
+    transform: translateY(18px) scale(0.94);
     transition: opacity 500ms var(--ease-caviera), transform 500ms var(--ease-caviera);
   }
   [data-caviera-editorial-progress][data-mobile-ready] .caviera-editorial__text .heading-h2,
@@ -1963,13 +1999,13 @@
   border-radius: 0;
   background: var(--caviera-obsidian);
   margin-bottom: 16px;
-  opacity: 0.65;
-  transform: translateY(10px);
+  opacity: 0.4;
+  transform: translateY(16px) scale(0.97);
   transition: opacity 500ms var(--ease-caviera), transform 500ms var(--ease-caviera);
 }
 .caviera-ritual__steps[data-observing="true"] .caviera-ritual__step.is-active .caviera-ritual__step-media {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 @media (prefers-reduced-motion: reduce) { .caviera-ritual__step-media { transition: none; opacity: 1; transform: none; } }
 .caviera-ritual__step-media .caviera-ritual__stage-state {
