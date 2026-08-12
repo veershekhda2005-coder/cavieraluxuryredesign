@@ -63,7 +63,7 @@
 <footer class="caviera-footer" data-scheme="{{ section.settings.color_scheme }}">
   {%- if section.settings.show_master_signature -%}
     <div class="container caviera-footer__signature">
-      {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading heading-h2">{{ section.settings.master_heading }}</p>{%- endif -%}
+      {%- if section.settings.master_heading != blank -%}<p class="caviera-footer__signature-heading" data-reveal>{{ section.settings.master_heading }}</p>{%- endif -%}
       <div class="caviera-footer__signature-mark" data-reveal data-reveal-style="wordmark-reveal">
         {%- comment -%}
           width: 900 here is deliberately generous — a ceiling the artwork will essentially never

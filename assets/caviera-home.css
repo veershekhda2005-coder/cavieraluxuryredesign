@@ -2120,8 +2120,12 @@
 /* ---- Journal (homepage preview head only — card/grid styles are global, see caviera-components.css) ---- */
 .caviera-journal__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 40px; }
 
-/* ---- Newsletter ---- */
+/* ---- Newsletter (Private Notice) ---- */
 .caviera-newsletter__inner { text-align: center; }
+/* SPACING FIX: h2/p carry no default margin (see the global heading/paragraph reset in
+   caviera-base.css) and nothing here previously supplied one, so the heading and body copy sat
+   with zero gap between them — effectively touching. */
+.caviera-newsletter__inner .body-text { margin-top: 12px; }
 /* Base row/input rule lives in caviera-components.css — this only overrides context-specific layout. */
 .caviera-newsletter-form__row { max-width: 420px; margin: 24px auto 0; }
 .caviera-newsletter-form__row input { text-align: left; }

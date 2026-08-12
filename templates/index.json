@@ -149,11 +149,6 @@
         "heading": "Private Notice",
         "body": "Receive word of the next Edition, House stories and private releases."
       }
-    },
-    "signature": {
-      "type": "caviera-house-signature",
-      "disabled": true,
-      "settings": {}
     }
   },
   "order": [
@@ -172,7 +167,6 @@
     "services",
     "oryx-moment",
     "journal",
-    "newsletter",
-    "signature"
+    "newsletter"
   ]
 }

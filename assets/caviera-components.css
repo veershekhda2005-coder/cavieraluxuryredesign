@@ -93,15 +93,33 @@
 /* Canonical newsletter-row rule — used by both the footer and homepage newsletter sections.
    Each context only overrides layout (max-width/margin) in its own stylesheet; this is the single
    source of truth for the input's own styling, so the two never drift out of sync again. */
-.caviera-newsletter-form__row { display: flex; gap: 12px; }
+.caviera-newsletter-form__row { display: flex; gap: 12px; align-items: center; }
 .caviera-newsletter-form__row input {
   flex: 1;
   border: none;
-  border-bottom: var(--border-width) solid var(--border-subtle);
+  /* Fine Rhodium underline (not the generic --border-subtle used elsewhere) — the Private Notice
+     brief specifically calls for a Rhodium field rule, distinct from ordinary form borders. */
+  border-bottom: var(--border-width) solid var(--caviera-rhodium);
   background: transparent;
+  color: var(--text-primary);
   height: var(--input-height);
   padding-inline: 4px;
   font-size: 1rem;
+}
+.caviera-newsletter-form__row input::placeholder { color: var(--caviera-rhodium); opacity: 1; }
+
+/* Subscribe as restrained functional typography, not a filled/outlined button box — reuses
+   .link-underline (uppercase, letter-spaced, fine underline) rather than .btn/.btn--primary.
+   CONTRAST NOTE: same substitution as the footer's own link hover — Warm Bone -> Cinnabar would be
+   two dark colours together on this section's Obsidian scheme (~2.2:1, below the 4.5:1 text
+   minimum), so Brushed Rhodium is used instead, matching the established codebase precedent. */
+.caviera-newsletter-form__submit { transition: color 240ms var(--ease-caviera); }
+@media (hover: hover) {
+  .caviera-newsletter-form__submit:hover { color: var(--caviera-rhodium); }
+}
+.caviera-newsletter-form__submit:focus-visible { color: var(--caviera-rhodium); }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-newsletter-form__submit { transition: none; }
 }
 
 .form-status { font-size: 0.875rem; margin-top: 12px; }

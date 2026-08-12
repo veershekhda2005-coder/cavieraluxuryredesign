@@ -4,12 +4,43 @@
    content-driven. The previous "too much empty Obsidian space" was a direct consequence of the
    navigation grid having nothing to show; with real content (formal signature + navigation +
    utility row) now always present, natural height grows to fit it without any explicit floor. */
-.caviera-footer { padding-block: calc(var(--section-spacing) * 0.75) calc(var(--section-spacing) * 0.35); }
+/* HEIGHT FIX: top padding was 0.75x --section-spacing (~72px at max) sitting directly beneath
+   Private Notice's own bottom padding, on the same Obsidian background — combined, that read as a
+   large dead Obsidian band before any real content (wordmark) appeared. Tightened to 0.4x so the
+   transition into the footer's own opening moment feels immediate rather than like a separate,
+   near-empty section. Bottom padding (the actual end of the page) is unchanged. */
+.caviera-footer { padding-block: calc(var(--section-spacing) * 0.4) calc(var(--section-spacing) * 0.35); }
 
 /* Formal signature — the footer's own opening moment (Master Signature + heading + statement),
    centred and restrained rather than a repeat of the homepage's closing section above it. */
-.caviera-footer__signature { text-align: center; padding-bottom: clamp(32px, 5vw, 56px); }
-.caviera-footer__signature-heading { margin-bottom: 24px; }
+/* HEIGHT FIX: padding-bottom reduced from clamp(32px,5vw,56px) — combined with the reduced top
+   padding on .caviera-footer above, this closes most of the gap that read as an oversized empty
+   Obsidian area between Private Notice and the footer's real navigation. */
+.caviera-footer__signature { text-align: center; padding-bottom: clamp(20px, 2.5vw, 32px); }
+/* SIZING FIX: was heading-h2 (--step-h2, up to 44px) — a size that competed with the master
+   wordmark above it rather than supporting it. Given its own dedicated, smaller scale (~28-40px)
+   instead of the shared heading-h2 class (removed from the element in the Liquid). Margin-bottom
+   tightened alongside the padding change above. */
+.caviera-footer__signature-heading {
+  margin-bottom: 14px;
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 1.25;
+  font-size: clamp(1.75rem, 1rem + 1.6vw, 2.5rem);
+}
+/* Own entrance timing — resolves shortly after the wordmark begins (see [data-reveal-style=
+   "wordmark-reveal"] in caviera-motion.css), a quieter/faster settle than the wordmark's own
+   1000ms unveiling. Composes with the shared base [data-reveal] opacity rule in caviera-motion.css
+   — only transform/timing are overridden here. */
+.caviera-footer__signature-heading[data-reveal] {
+  transform: translateY(12px);
+  transition: opacity 650ms var(--ease-caviera), transform 650ms var(--ease-caviera);
+  transition-delay: 150ms;
+}
+.caviera-footer__signature-heading[data-reveal].is-visible { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .caviera-footer__signature-heading[data-reveal] { transition-delay: 0ms; }
+}
 /* SIZING FIX: the render call itself now passes a deliberately generous width (900, effectively
    never the binding constraint — see the comment in sections/caviera-footer.liquid); the real,
    responsive size lives here instead, on the wrapper. The snippet's own img keeps its inline
@@ -156,7 +187,11 @@
 .caviera-footer__newsletter { margin-top: clamp(32px, 5vw, 56px); }
 /* Base row/input rule lives in caviera-components.css — this only overrides context-specific layout. */
 .caviera-newsletter-form__row { margin-top: 16px; max-width: 360px; }
-.caviera-footer__consent { font-size: 0.75rem; color: var(--text-muted); margin-top: 10px; max-width: 340px; }
+/* CONTRAST FIX: same bug as the column links/statement above — --text-muted is never redefined
+   per colour scheme, so on this (and the homepage Private Notice section, which reuses this same
+   class) Obsidian background it rendered as low-contrast near-black on near-black. --text-primary
+   + reduced opacity keeps the quieter, secondary tone while staying correctly scheme-aware. */
+.caviera-footer__consent { font-size: 0.75rem; color: var(--text-primary); opacity: 0.7; margin-top: 10px; max-width: 340px; }
 
 /* Bottom utility row — the smaller, secondary wordmark plus social/localization/copyright/payment,
    with the tiny House Seal as the final closing mark. Wraps on narrow desktop/tablet rather than
@@ -175,7 +210,8 @@
    safe contrast against the footer's own chosen background — a hardcoded Cinnabar hover would
    risk becoming invisible if a merchant ever chose the Cinnabar colour scheme for this section. */
 .caviera-footer__social a:hover { color: var(--text-primary); }
-.caviera-footer__copyright { font-size: 0.75rem; color: var(--text-muted); }
+/* CONTRAST FIX: identical --text-muted issue as .caviera-footer__consent above. */
+.caviera-footer__copyright { font-size: 0.75rem; color: var(--text-primary); opacity: 0.7; }
 .caviera-footer__payment { display: flex; gap: 8px; }
 .caviera-footer__payment img, .caviera-footer__payment svg { height: 20px; width: auto; }
 .caviera-footer__seal { margin-left: auto; flex-shrink: 0; }
