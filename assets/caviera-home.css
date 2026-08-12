@@ -77,6 +77,25 @@
   transform: scale(calc(1 + (0.04 * var(--caviera-progress, 0))));
   transition: transform 60ms linear;
 }
+/* 2026 approved House campaign image (assets/caviera-house-hero-2026.png, 1672x941) — a coastal
+   architectural composition: open sea/sky negative space on the left, the House's Cinnabar
+   architectural wall and Oryx plaque dominant on the right. A fixed, deliberate crop per
+   breakpoint here, overriding the generic --hero-focal custom property above (which only really
+   suits a merchant-uploaded image with its own focal_point setting) — this file needs a genuinely
+   different desktop vs. mobile composition of the same source image, not one shared focal point.
+   Same specificity as .caviera-hero__media-el above; wins on source order (declared after). */
+.caviera-hero__media-el--bundled {
+  /* Desktop: keeps the full cinematic read — open sea/sky on the left, the Cinnabar wall + Oryx
+     plaque and the building's geometry fully in frame on the right. */
+  object-position: 66% 44%;
+}
+@media (max-width: 749px) {
+  /* Mobile's much taller/narrower crop has far less width to work with — biased further right so
+     the architectural entrance, Cinnabar wall and Oryx detail stay the priority, while the left
+     edge of the crop still carries a little sea/sky breathing room rather than architecture wall
+     to wall. */
+  .caviera-hero__media-el--bundled { object-position: 80% 42%; }
+}
 .caviera-hero__media-el--mobile { display: none; }
 @media (max-width: 749px) {
   .caviera-hero__media-el--desktop { display: none; }

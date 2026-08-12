@@ -51,7 +51,7 @@
     assign use_bundled_mobile = true
     assign has_mobile_media = true
   endunless
-  assign bundled_hero_file = '15_oryx_necklace_on_model.png'
+  assign bundled_hero_file = 'caviera-house-hero-2026.png'
 -%}
 <section class="caviera-hero" data-scheme="{{ section.settings.text_mode }}" data-media-position="{{ section.settings.media_position }}" data-caviera-pin>
   <div
@@ -104,15 +104,23 @@
             sizes="100vw"
           >
         {%- endif -%}
-        {%- comment -%} object-position nudged up slightly from centre — shows a little more upper-chest context around the pendant rather than cropping tight on it, without moving the pendant itself out of frame. {%- endcomment -%}
+        {%- comment -%}
+          2026 approved House campaign image (assets/caviera-house-hero-2026.png, 1672x941) — a
+          coastal architectural composition: open sea/sky negative space on the left, the House's
+          Cinnabar architectural wall and Oryx plaque dominant on the right. object-position is set
+          per breakpoint in assets/caviera-home.css (.caviera-hero__media-el--bundled), not inline
+          here, since desktop and mobile need genuinely different crops of the same file — desktop
+          keeps the full cinematic composition (sea negative space + architecture), mobile biases
+          further right toward the entrance/Cinnabar wall/Oryx detail while still keeping some
+          sea/sky breathing room on the left edge of the crop.
+        {%- endcomment -%}
         <img
-          class="caviera-hero__media-el"
+          class="caviera-hero__media-el caviera-hero__media-el--bundled"
           src="{{ bundled_hero_file | asset_url }}"
-          width="521" height="358"
+          width="1672" height="941"
           alt=""
           loading="eager"
           fetchpriority="high"
-          style="object-position: center 38%;"
         >
       </picture>
     {%- endif -%}
@@ -146,13 +154,12 @@
         >
       {%- elsif use_bundled_mobile -%}
         <img
-          class="caviera-hero__media-el caviera-hero__media-el--mobile"
+          class="caviera-hero__media-el caviera-hero__media-el--mobile caviera-hero__media-el--bundled"
           src="{{ bundled_hero_file | asset_url }}"
-          width="521" height="358"
+          width="1672" height="941"
           alt=""
           loading="eager"
           fetchpriority="high"
-          style="object-position: center 38%;"
         >
       {%- endif -%}
     {%- endif -%}
