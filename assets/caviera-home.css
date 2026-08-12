@@ -27,12 +27,24 @@
    fade needs to visibly play. Once the extra distance was used up, the hero had nothing left to
    show — the image had already fully resolved — while the user was still made to keep scrolling
    through a plain Cinnabar/Obsidian field before House Statement's own content arrived underneath.
-   A 26vh margin over 100vh (clamp(760px, 126vh, 1160px) total) is enough scroll room to feel the
-   crop/fade resolve, then release promptly into the next room — an elegant, quick pinned moment,
-   not a long cinematic hold. */
+
+   SPACER-HEIGHT CORRECTION (this round): the wrapper's own height was still calculated in bare
+   vh — its two sticky children (below) both already progressively enhance to svh, the viewport
+   unit that discounts a mobile browser's collapsible address-bar chrome. On any device where vh
+   and svh genuinely differ, that mismatch alone stretches this wrapper beyond what its own pinned
+   children actually cover, leaving a sliver of the wrapper's own background (Cinnabar by default,
+   via data-scheme) exposed at the bottom of the pin range before House Statement arrives — exactly
+   the calculated-spacer error this pattern is prone to. The wrapper now also enhances to svh,
+   matching its children exactly. The remaining deliberate "extra" pin distance is also tightened
+   further, from 26vh to 12vh over 100vh (clamp(700px, 112svh, 1200px) total, ceiling raised to stay
+   safely above realistic viewport heights so the pin range is never shorter than the viewport
+   itself) — still enough room for the crop/fade to read as a considered pinned beat, not an empty
+   hold, while minimising any exposure window regardless of cause. The pin/zoom/fade animation
+   itself is unchanged — only its own end spacing is corrected. */
 .caviera-hero {
   position: relative;
-  height: clamp(760px, 126vh, 1160px);
+  height: clamp(700px, 112vh, 1200px);
+  height: clamp(700px, 112svh, 1200px);
   display: block;
   overflow: hidden;
 }
