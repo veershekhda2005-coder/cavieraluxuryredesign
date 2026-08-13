@@ -151,6 +151,18 @@
           // permanent tab stop for mouse/normal reading-order users.
           if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
           target.focus({ preventScroll: true });
+        } else if (link.hasAttribute('data-caviera-house-link') && window.CaviearaLoader && typeof window.CaviearaLoader.show === 'function') {
+          // MENU → THE HOUSE: the one deliberate ceremonial-loader trigger in the theme (see
+          // assets/caviera-loader.js). Every other cross-page link (Journal, etc.) falls through to
+          // the plain else-branch below completely unaffected. Destination is read from the link's
+          // own href at click time — never a second, hardcoded copy of the URL — so this keeps
+          // working correctly even if THE HOUSE's destination is later changed in the Theme Editor.
+          e.preventDefault();
+          var houseHref = link.href;
+          closeMenu();
+          window.CaviearaLoader.show(function () {
+            window.location.href = houseHref;
+          });
         } else {
           // Cross-page destination, or an in-page hash with no matching element (fail open): just
           // close the menu — native navigation (or the page-transition ceremony) proceeds exactly

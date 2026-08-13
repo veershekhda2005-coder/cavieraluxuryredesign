@@ -42,10 +42,15 @@
   {{ 'caviera-page-transition.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-header.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-footer.css' | asset_url | stylesheet_tag }}
+  {%- comment -%}
+    Ceremonial loader — loaded globally now, not homepage-only: it's triggered by the full-screen
+    menu's THE HOUSE link (see sections/caviera-header.liquid / assets/caviera-header.js), which is
+    reachable from any page, not the homepage load itself any more.
+  {%- endcomment -%}
+  {{ 'caviera-loader.css' | asset_url | stylesheet_tag }}
 
   {%- if template.name == 'index' -%}
     {{ 'caviera-home.css' | asset_url | stylesheet_tag }}
-    {{ 'caviera-loader.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
   {%- if template contains 'product' -%}
     {{ 'caviera-product.css' | asset_url | stylesheet_tag }}
@@ -152,9 +157,11 @@
 <body class="template-{{ template.name | handle }}">
   <a class="skip-link" href="#main-content">{{ 'general.accessibility.skip_to_content' | t }}</a>
 
-  {%- if template.name == 'index' -%}
-    {%- render 'caviera-loader' -%}
-  {%- endif -%}
+  {%- comment -%}
+    Rendered globally now, not homepage-only — see the matching CSS comment above. It stays fully
+    inert on every page unless the full-screen menu's THE HOUSE link is actually clicked.
+  {%- endcomment -%}
+  {%- render 'caviera-loader' -%}
 
   {%- section 'caviera-header' -%}
 

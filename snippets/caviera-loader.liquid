@@ -1,22 +1,24 @@
 {%- comment -%}
-  CAVIERA loader — final 2026 revision: a single walking-Oryx VIDEO
-  (assets/caviera-loader-oryx-2026.mp4) over a full-screen Obsidian field, once per browsing
-  session, homepage only. Rendered unconditionally via `{% render 'caviera-loader' %}` inside
-  `{% if template.name == 'index' %}` in layout/theme.liquid — unchanged, not duplicated here.
-  This is the ONLY loader implementation in the theme (no sections/caviera-loader.liquid exists —
-  do not recreate one).
+  CAVIERA ceremonial loader — MENU → THE HOUSE revision.
 
-  Replaces the previous multi-stage image sequence (oryx walk → House Seal → Master Signature),
-  which existed only as a placeholder while final motion artwork was pending (see git history) —
-  the approved video is now the only visual event, per this round's explicit brief: no decorative
-  graphics, no progress/spinner/loading bar, no House Seal or Master Signature here.
+  IMPORTANT CHANGE from the previous revision: this no longer plays automatically when the
+  website first loads, on refresh, or once-per-session — none of that logic exists any more. It
+  is now tied to one deliberate action only: clicking THE HOUSE inside the full-screen menu (see
+  the data-caviera-house-link attribute in sections/caviera-header.liquid and the click handler in
+  assets/caviera-header.js). Since THE HOUSE can be opened from any page, this snippet is now
+  rendered globally (every page, via layout/theme.liquid — no longer inside a
+  template.name == 'index' gate) rather than homepage-only.
 
-  The root element and the <video> itself always render unconditionally on the homepage —
-  assets/caviera-loader.js and assets/caviera-loader.css decide at runtime whether it actually
-  activates (respecting settings.enable_loader, prefers-reduced-motion, and the once-per-session
-  sessionStorage flag), and the loader always fails open: if the script never runs, or the video
-  fails/stalls/rejects autoplay, the homepage underneath is never blocked (see the script's own
-  header comment for the exact safety paths).
+  The video is the same approved asset (assets/caviera-loader-oryx-2026.mp4) as the retired
+  homepage-load revision — only the trigger changed, not the artwork or the visual treatment.
+
+  assets/caviera-loader.js exposes window.CaviearaLoader.show(onComplete) — a small, reusable,
+  idempotent public API. The root element always renders unconditionally (when settings.
+  enable_loader is on); the script decides at runtime whether a call to .show() actually plays the
+  video (respecting prefers-reduced-motion — navigates immediately instead of forcing the walk —
+  and every failure/safety fallback), so a blocked/failed script, or nobody ever calling .show(),
+  never overlays or blocks any page. No decorative graphics, no House Seal, no Master Signature —
+  the walking Oryx video is the only visual event, exactly as approved.
 {%- endcomment -%}
 {%- if settings.enable_loader -%}
   <div class="caviera-loader" data-caviera-loader aria-hidden="true">
@@ -24,10 +26,9 @@
       class="caviera-loader__video"
       data-loader-video
       src="{{ 'caviera-loader-oryx-2026.mp4' | asset_url }}"
-      autoplay
       muted
       playsinline
-      preload="auto"
+      preload="metadata"
     ></video>
   </div>
   <script src="{{ 'caviera-loader.js' | asset_url }}" defer="defer"></script>

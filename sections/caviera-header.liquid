@@ -224,11 +224,18 @@
             if primary_link contains '#edition-i'
               assign primary_link = routes.root_url | append: '#edition-i'
             endif
+            # Ceremonial-loader trigger: identified by this item's own configured title, not a
+            # hardcoded URL — matches whatever "THE HOUSE" is actually pointed at right now (see
+            # assets/caviera-header.js), so the destination itself is never duplicated/guessed here.
+            assign is_house_link = false
+            if block.settings.title == 'THE HOUSE'
+              assign is_house_link = true
+            endif
           -%}
           <li class="caviera-mobile-nav__item" data-primary-item="{{ forloop.index }}" {{ block.shopify_attributes }}>
             <span class="caviera-mobile-nav__primary-index" aria-hidden="true">{{ index_label }}</span>
             {%- if primary_link != blank -%}
-              <a href="{{ primary_link }}" class="caviera-mobile-nav__primary-link">{{ block.settings.title }}</a>
+              <a href="{{ primary_link }}" class="caviera-mobile-nav__primary-link"{% if is_house_link %} data-caviera-house-link{% endif %}>{{ block.settings.title }}</a>
             {%- else -%}
               {%- comment -%}
                 No link configured — rendered as a quiet, honest "upcoming" entry rather than a

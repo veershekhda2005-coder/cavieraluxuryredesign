@@ -1,24 +1,24 @@
 /*
-  CAVIERA Grand Theme 2026 — Loader (final 2026 revision)
+  CAVIERA Grand Theme 2026 — Ceremonial loader (MENU → THE HOUSE revision)
   Slow, lucid, controlled. No bounce, no elastic easing, no scroll-jacking.
 
-  A single walking-Oryx VIDEO (assets/caviera-loader-oryx-2026.mp4) over a full-screen Obsidian
-  field, once per browsing session, on the homepage only (see layout/theme.liquid — this file is
-  only loaded there in the first place). Replaces the previous multi-stage image sequence
-  (oryx/House Seal/Master Signature) that existed only as a placeholder while final motion artwork
-  was pending — the approved video is now the only visual event, per this round's explicit brief:
-  no decorative graphics, no spinner/progress/loading bar, no House Seal here.
+  IMPORTANT CHANGE: no longer plays automatically on page load/refresh/once-per-session — this
+  file's own rules are unchanged in spirit (invisible by default, JS-driven reveal, plain opacity
+  exit fade), but the loader is now activated on demand only, via window.CaviearaLoader.show() —
+  called exclusively from the full-screen menu's THE HOUSE click handler (see assets/caviera-
+  header.js). Loaded globally now (every page, via layout/theme.liquid), not homepage-only, since
+  THE HOUSE can be opened from any page.
 
-  The root element itself is always present in the homepage DOM (see snippets/caviera-loader.liquid)
-  — this file is what keeps it invisible and inert by default so a blocked/failed script never
-  leaves a dead overlay on screen: nothing below the `.is-active` rule ever paints or takes
-  hit-testing space. assets/caviera-loader.js is solely responsible for adding `.is-active`.
+  The root element itself always renders (see snippets/caviera-loader.liquid, when
+  settings.enable_loader is on) — this file is what keeps it invisible and inert until
+  assets/caviera-loader.js's show() explicitly adds `.is-active`: nothing below that rule ever
+  paints or takes hit-testing space, on any page, unless THE HOUSE is actually clicked.
 */
 
 .caviera-loader {
-  /* Safety default: invisible, out of flow, non-interactive until JS confirms it should run.
-     If caviera-loader.js never runs at all (blocked/failed), the loader never appears and never
-     blocks the page — the homepage underneath is simply visible immediately. */
+  /* Safety default: invisible, out of flow, non-interactive until .show() runs. If caviera-
+     loader.js never loads at all, this never appears on any page — the header's click handler
+     checks for window.CaviearaLoader and fails open straight to native navigation. */
   display: none;
   pointer-events: none;
 }
@@ -39,17 +39,20 @@
   pointer-events: auto;
 }
 
-/* Exit: a plain opacity fade (1 → 0) only — no transform/sweep, no hard cut, no white flash. */
+/* Exit: a plain opacity fade (1 → 0) only — no transform/sweep, no hard cut, no white flash, no
+   layout jump. 600ms, within the requested ~500-650ms range. */
 .caviera-loader.is-leaving {
   opacity: 0;
-  transition: opacity 620ms var(--ease-caviera);
+  transition: opacity 600ms var(--ease-caviera);
 }
 @media (prefers-reduced-motion: reduce) {
   .caviera-loader.is-leaving { transition: none; }
 }
 
-/* Terminal state — reached once the fade finishes (see assets/caviera-loader.js exit()), fully
-   inert from here on. The root element itself is never removed from the DOM, only hidden. */
+/* Terminal state — reached once the fade finishes (see assets/caviera-loader.js finish()), fully
+   inert from here on. The root element itself is never removed from the DOM, only hidden — ready
+   to be reused by a later .show() call on the same page (e.g. reopening the menu and clicking THE
+   HOUSE again before navigation actually completes). */
 .caviera-loader.is-dismissed {
   display: none;
 }
@@ -63,11 +66,11 @@
   background: transparent; /* merges cleanly with the Obsidian field behind it, per the brief */
 }
 @media (max-width: 749px) {
-  .caviera-loader__video { width: clamp(180px, 52vw, 260px); }
+  .caviera-loader__video { width: clamp(180px, 48vw, 250px); }
 }
 
-/* Scroll lock while the loader is active — applied to <html>/<body> per caviera-loader.js, always
-   removed on every exit path (never left behind once the loader is gone). */
+/* Scroll lock while the loader is visibly active — applied to <html>/<body> per caviera-loader.js,
+   always removed once finished (never left behind). */
 html.caviera-loader-active,
 body.caviera-loader-active {
   overflow: hidden;
