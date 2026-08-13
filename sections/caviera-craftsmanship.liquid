@@ -85,7 +85,7 @@
     {%- endcomment -%}
     {%- if section.settings.scroll_progression -%}
       <div class="caviera-craftsmanship__process-video" data-craftsmanship-process-video aria-hidden="true">
-        <video class="caviera-craftsmanship__process-video-el" muted loop playsinline preload="none">
+        <video class="caviera-craftsmanship__process-video-el" autoplay muted loop playsinline preload="metadata">
           <source src="{{ 'caviera-material-truth-full-process-2026-optimized.mp4' | asset_url }}" type="video/mp4">
         </video>
         <div class="caviera-craftsmanship__process-overlay"></div>

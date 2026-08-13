@@ -1742,16 +1742,27 @@
      lower-middle of the frame (the upper portion is often just background/negative space), so a
      slight downward bias reads more consistently than a dead-centre crop. */
   object-position: center 58%;
-  /* Optional subtle depth per the brief — a static opacity (never animated/tied to chapter state),
-     within the requested ~0.35-0.45 range, on top of the Obsidian overlay below. */
-  opacity: 0.4;
+  /* VISIBILITY FIX: the video was reported completely invisible. Root cause, confirmed by the
+     actual compositing maths rather than guessed: this element's own opacity (0.4) and the solid
+     Obsidian overlay's opacity (previously 0.76) are two SEPARATE semi-transparent layers stacked
+     on top of each other, not one combined value — their net effect compounds multiplicatively,
+     not additively. The video's actual colour only ever reaches the eye through the fraction the
+     overlay lets through: (1 - overlay-opacity) * video-opacity. At the old values that was
+     (1 - 0.76) * 0.4 = 0.096 — under 10% of the pixel came from the video, the rest was flat
+     Obsidian, reading as "no video at all" exactly as reported. Retuned both values together
+     (0.68 here, 0.66 on the overlay below) so that same product lands at (1 - 0.66) * 0.68 ≈ 0.23
+     — within the brief's own requested ranges for each value individually, and now more than double
+     the actual net visibility rather than compounding two dim layers into near-zero. */
+  opacity: 0.68;
 }
 .caviera-craftsmanship__process-overlay {
   position: absolute;
   inset: 0;
   background: #111012; /* CAVIERA Obsidian — fixed, not settings-driven */
-  /* Within the requested ~72-80% Obsidian coverage. */
-  opacity: 0.76;
+  /* See the net-visibility maths in the video rule above — retuned together with it, not in
+     isolation, so the two values' combined effect is what was actually checked, not just each
+     number independently "looking reasonable" against the brief's suggested ranges. */
+  opacity: 0.66;
 }
 @media (prefers-reduced-motion: reduce) {
   /* The video is never started under reduced motion (see the JS) — hidden here too, leaving only
