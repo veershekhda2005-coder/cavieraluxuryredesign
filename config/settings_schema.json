@@ -158,19 +158,9 @@
       { "type": "header", "content": "Ceremonial loader" },
       {
         "type": "paragraph",
-        "content": "Loader currently disabled pending approved walking Oryx animation and final House Seal asset verification. Full-body oryx, walking animation and House Seal artwork are uploaded once, under CAVIERA Identity above, and reused everywhere the mark appears — including here — so nothing is ever uploaded twice."
+        "content": "The approved 2026 walking-Oryx loader video (assets/caviera-loader-oryx-2026.mp4) plays once per browser session on the homepage, over an Obsidian field, then fades directly into the hero. Background colour, duration and reduced-motion behaviour are fixed as approved and are no longer separately configurable here."
       },
-      { "type": "checkbox", "id": "enable_loader", "label": "Enable ceremonial loader", "default": false, "info": "Leave off until the walking Oryx animation is approved. Even when on, the loader stays inert on any page where the required artwork is missing." },
-      { "type": "color", "id": "loader_background", "label": "Loader background", "default": "#8F261F" },
-      { "type": "checkbox", "id": "loader_once_per_session", "label": "Show once per browser session", "info": "Off shows it on every homepage visit instead of only the first.", "default": true },
-      { "type": "range", "id": "loader_duration", "label": "Maximum duration", "min": 1600, "max": 3200, "step": 100, "default": 2600, "unit": "ms" },
-      {
-        "type": "select", "id": "loader_reduced_motion", "label": "Reduced-motion behaviour", "default": "static_brief",
-        "options": [
-          { "value": "skip", "label": "Skip entirely" },
-          { "value": "static_brief", "label": "Show static House Seal briefly (recommended)" }
-        ]
-      }
+      { "type": "checkbox", "id": "enable_loader", "label": "Enable loader", "default": true, "info": "Turn off to skip the loader entirely and go straight to the homepage." }
     ]
   }
 ]

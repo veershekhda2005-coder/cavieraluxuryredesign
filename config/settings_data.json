@@ -10,7 +10,7 @@
 {
   "current": {
     "favicon": "shopify://shop_images/caviera-living-mascot-cinnabar.png",
-    "enable_loader": false,
+    "enable_loader": true,
     "sections": {
       "caviera-header": {
         "type": "caviera-header",
