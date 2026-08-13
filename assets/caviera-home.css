@@ -1790,14 +1790,21 @@
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    /* LENGTH FIX: 168svh (before that, 150svh) made the sticky hold far longer than three short
-       chapters need, reading as "several full screens" rather than one concise cinematic moment —
-       the background video's own ~59s runtime has no bearing on this at all (it plays and loops
-       independently of scroll, on its own timer; this height is purely the outer scroll DISTANCE
-       the sticky chapter composition holds for). Reduced to 135svh, within the requested
-       125-145svh range — still enough room to clearly experience Design & Form -> Stone Setting
-       -> Gold & Finishing, without occupying multiple screens before Maker's Mark begins. */
-    height: 135svh;
+    /* LENGTH FIX (final pass): re-verified every other candidate height source first — the
+       sticky .stage-inner just below is exactly 100vh/100svh (correct, unchanged, matches the
+       "sticky inner: 100svh" target exactly); .caviera-section's own shared padding-block
+       (clamp(48px,6vw,96px) top+bottom, unrelated to this fix, used by many other sections) is a
+       small, fixed-px amount, not a viewport-height multiplier, and isn't what was reading as "a
+       second full screen"; no nested min-height/height:100vh, spacer, or leftover element exists
+       anywhere inside .stage beyond .stage-inner itself (grepped the whole file to confirm) — the
+       ONE and only height lever is this value. 135svh (a prior pass, itself already reduced from
+       168svh) was still nearly 1.4 screens of raw scroll DISTANCE — the background video's runtime
+       has no bearing on this at all; it plays/loops independently, on its own timer, purely a
+       background layer. Reduced further to 118svh, within the requested 115-120svh maximum, so the
+       sticky inner (100svh) only needs ~18svh of additional travel — within the requested
+       15-20svh — to complete Design & Form -> Stone Setting -> Gold & Finishing and release
+       directly into Maker's Mark, not a second visible screen. */
+    height: 118svh;
     padding-block: 0; /* the section's own padding-block still applies around .stage; nothing extra needed here */
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
