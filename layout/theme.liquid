@@ -16,32 +16,19 @@
     <meta name="description" content="{{ page_description | escape }}">
   {%- endif -%}
   <link rel="canonical" href="{{ canonical_url }}">
-  {%- liquid
-    assign favicon_source = settings.favicon
-    if favicon_source == blank
-      assign favicon_source = settings.seal_on_dark | default: settings.seal_on_light
-    endif
-  -%}
-  {%- if favicon_source -%}
-    {%- comment -%}
-      SQUARE FIX: width: 96 alone only constrains width — height scales to the source artwork's
-      own aspect ratio. settings.favicon/the House Seal fallback are not square source images
-      (confirmed: the previously-rendered favicon was 96x149px, not 96x96), and both browsers and
-      Google explicitly require a square favicon, or may silently fall back to a default icon
-      instead. crop: 'center' forces an exact 96x96 square regardless of the source image's own
-      proportions, without distorting it (crops, never stretches).
-    {%- endcomment -%}
-    <link rel="icon" type="image/png" sizes="96x96" href="{{ favicon_source | image_url: width: 96, height: 96, crop: 'center' }}">
-  {%- else -%}
-    {%- comment -%}
-      No approved favicon or House Seal exists yet (see docs/required-brand-assets.md). Browsers
-      probe /favicon.ico automatically when no icon link is present at all, which 404s with no code
-      of ours to "fix" — this empty data URI icon suppresses that probe without inventing or
-      substituting any artwork. Remove once a real favicon or House Seal is uploaded via
-      Theme settings → CAVIERA Identity.
-    {%- endcomment -%}
-    <link rel="icon" href="data:,">
-  {%- endif -%}
+  {%- comment -%}
+    FINAL 2026 FAVICON: assets/caviera-favicon-2026.png is the approved, final CAVIERA Oryx
+    favicon artwork — a real theme asset checked into the repository, not dependent on the
+    Theme Editor's settings.favicon picker (which, being merchant-editable, was the source of
+    repeated uncertainty/drift in earlier passes). Referenced via asset_img_url (the correct
+    Liquid filter for a local theme asset, as opposed to image_url which is for Shopify-hosted
+    Files/image_picker images) at 96x96 — the source file is already a true 1600x1600 square
+    with generous padding around the mark, so this resize preserves its proportions exactly,
+    no crop/distortion needed. Always present (checked into the theme), so no blank-icon
+    fallback branch is needed here any more.
+  {%- endcomment -%}
+  <link rel="icon" type="image/png" sizes="96x96" href="{{ 'caviera-favicon-2026.png' | asset_img_url: '96x96' }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ 'caviera-favicon-2026.png' | asset_img_url: '32x32' }}">
 
   {%- render 'social-meta-tags' -%}
 
