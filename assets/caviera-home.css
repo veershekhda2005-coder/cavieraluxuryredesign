@@ -1714,20 +1714,34 @@
    wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
    instead of continuous section progress — see the chapter opacity rules further down, which apply
    at every width). */
-.caviera-craftsmanship__stage[data-caviera-material-progress] { position: relative; }
+/* STACKING-CONTEXT FIX (the actual root cause of the video being completely invisible, not the
+   opacity values retuned in the previous pass — that fix was real but insufficient on its own):
+   position: relative alone does NOT create a new stacking context — only position + an explicit
+   z-index value does (or isolation: isolate, used here instead, since .stage has no z-index value
+   of its own to give it). Without one, the video wrapper's z-index: -1 did not stay scoped to
+   .stage's own children at all — it escaped to whatever ancestor further up the document WAS the
+   nearest real stacking-context root, in the worst case putting the video behind the entire page.
+   isolation: isolate gives .stage its own real, self-contained stacking context, so every z-index
+   below is now guaranteed to only ever compare against its siblings inside .stage — never anything
+   above it in the document. overflow: hidden added too, so the video can never visually spill
+   past this section's own edges at any aspect ratio. */
+.caviera-craftsmanship__stage[data-caviera-material-progress] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
 
 /* Continuous looping craftsmanship footage — a separate visual layer, completely independent of
    the scroll-progress rules below (--material-progress never drives anything here; see assets/
    caviera-craftsmanship-process-video.js for the plain play/pause-on-visibility logic — no scroll
    listener, no RAF, no connection whatsoever to Material Truth's or Maker's Mark's own
-   controllers). Sits behind .stage-inner via a negative z-index within .stage's own stacking
-   context (already position: relative, above) — .stage-inner itself needs no z-index of its own;
-   a static/sticky element at the default z-index: auto already paints above a negative-z-index
-   sibling, on every width, without touching its existing rules. */
+   controllers). Explicit POSITIVE z-index values only, from here on — video (1) < overlay (2) <
+   .stage-inner's own content (3, set just below) — all three compared only against each other,
+   inside .stage's own isolated stacking context above. */
 .caviera-craftsmanship__process-video {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
   overflow: hidden;
   pointer-events: none;
 }
@@ -1755,14 +1769,31 @@
      the actual net visibility rather than compounding two dim layers into near-zero. */
   opacity: 0.68;
 }
+/* TEMPORARY DEBUG OVERRIDE — proves the stacking-context fix actually worked before tuning the
+   final tasteful opacity again. Forces the video to full brightness and removes the overlay
+   entirely, so the footage must be unmistakably, unambiguously visible if the section is correctly
+   layered at all. Remove this whole rule once confirmed — see the commit message. */
+.caviera-craftsmanship__process-video-el { opacity: 1 !important; visibility: visible !important; display: block !important; }
+.caviera-craftsmanship__process-overlay { display: none !important; }
 .caviera-craftsmanship__process-overlay {
   position: absolute;
   inset: 0;
+  z-index: 2;
+  pointer-events: none;
   background: #111012; /* CAVIERA Obsidian — fixed, not settings-driven */
   /* See the net-visibility maths in the video rule above — retuned together with it, not in
      isolation, so the two values' combined effect is what was actually checked, not just each
      number independently "looking reasonable" against the brief's suggested ranges. */
   opacity: 0.66;
+}
+/* .stage-inner holds ALL of Material Truth's existing, unchanged content (heading, chapters,
+   progress line) — given its own explicit stacking position so it reliably paints above the video
+   (1) and overlay (2) now that both use real positive z-index values instead of a negative one.
+   Applies at every width (not just the desktop sticky variant further down), since mobile's plain
+   auto-height .stage-inner needs this exactly as much as desktop's sticky one does. */
+.caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
+  position: relative;
+  z-index: 3;
 }
 @media (prefers-reduced-motion: reduce) {
   /* The video is never started under reduced motion (see the JS) — hidden here too, leaving only
