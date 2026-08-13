@@ -1756,35 +1756,23 @@
      lower-middle of the frame (the upper portion is often just background/negative space), so a
      slight downward bias reads more consistently than a dead-centre crop. */
   object-position: center 58%;
-  /* VISIBILITY FIX: the video was reported completely invisible. Root cause, confirmed by the
-     actual compositing maths rather than guessed: this element's own opacity (0.4) and the solid
-     Obsidian overlay's opacity (previously 0.76) are two SEPARATE semi-transparent layers stacked
-     on top of each other, not one combined value — their net effect compounds multiplicatively,
-     not additively. The video's actual colour only ever reaches the eye through the fraction the
-     overlay lets through: (1 - overlay-opacity) * video-opacity. At the old values that was
-     (1 - 0.76) * 0.4 = 0.096 — under 10% of the pixel came from the video, the rest was flat
-     Obsidian, reading as "no video at all" exactly as reported. Retuned both values together
-     (0.68 here, 0.66 on the overlay below) so that same product lands at (1 - 0.66) * 0.68 ≈ 0.23
-     — within the brief's own requested ranges for each value individually, and now more than double
-     the actual net visibility rather than compounding two dim layers into near-zero. */
-  opacity: 0.68;
+  /* FINAL TREATMENT — confirmed visible after the stacking-context fix. Darkness is now controlled
+     by ONE layer only (the overlay below), not two stacked reductions: the video itself renders at
+     full brightness, and the single overlay opacity IS directly "% Obsidian atmosphere" — simpler
+     to reason about than two compounding multipliers, and avoids the near-zero-visibility trap an
+     earlier pass fell into by stacking a dim video under a strong overlay. */
+  opacity: 1;
 }
-/* TEMPORARY DEBUG OVERRIDE — proves the stacking-context fix actually worked before tuning the
-   final tasteful opacity again. Forces the video to full brightness and removes the overlay
-   entirely, so the footage must be unmistakably, unambiguously visible if the section is correctly
-   layered at all. Remove this whole rule once confirmed — see the commit message. */
-.caviera-craftsmanship__process-video-el { opacity: 1 !important; visibility: visible !important; display: block !important; }
-.caviera-craftsmanship__process-overlay { display: none !important; }
 .caviera-craftsmanship__process-overlay {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
   background: #111012; /* CAVIERA Obsidian — fixed, not settings-driven */
-  /* See the net-visibility maths in the video rule above — retuned together with it, not in
-     isolation, so the two values' combined effect is what was actually checked, not just each
-     number independently "looking reasonable" against the brief's suggested ranges. */
-  opacity: 0.66;
+  /* The one and only darkness control. 0.70 = the requested "~70% Obsidian atmosphere / 30%
+     visible moving craftsmanship" split exactly, since the video above is full-brightness — no
+     second multiplier to account for. */
+  opacity: 0.7;
 }
 /* .stage-inner holds ALL of Material Truth's existing, unchanged content (heading, chapters,
    progress line) — given its own explicit stacking position so it reliably paints above the video
@@ -1802,10 +1790,14 @@
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    /* VISIBILITY FIX: 150svh gave the sticky hold real scroll distance already (verified — see the
-       commit note), but nudged up slightly (still inside the requested 160-175svh ceiling) so each
-       of the three states has a touch more room to actually register while scrolling normally. */
-    height: 168svh;
+    /* LENGTH FIX: 168svh (before that, 150svh) made the sticky hold far longer than three short
+       chapters need, reading as "several full screens" rather than one concise cinematic moment —
+       the background video's own ~59s runtime has no bearing on this at all (it plays and loops
+       independently of scroll, on its own timer; this height is purely the outer scroll DISTANCE
+       the sticky chapter composition holds for). Reduced to 135svh, within the requested
+       125-145svh range — still enough room to clearly experience Design & Form -> Stone Setting
+       -> Gold & Finishing, without occupying multiple screens before Maker's Mark begins. */
+    height: 135svh;
     padding-block: 0; /* the section's own padding-block still applies around .stage; nothing extra needed here */
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
