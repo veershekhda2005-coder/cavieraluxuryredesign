@@ -1715,6 +1715,49 @@
    instead of continuous section progress — see the chapter opacity rules further down, which apply
    at every width). */
 .caviera-craftsmanship__stage[data-caviera-material-progress] { position: relative; }
+
+/* Continuous looping craftsmanship footage — a separate visual layer, completely independent of
+   the scroll-progress rules below (--material-progress never drives anything here; see assets/
+   caviera-craftsmanship-process-video.js for the plain play/pause-on-visibility logic — no scroll
+   listener, no RAF, no connection whatsoever to Material Truth's or Maker's Mark's own
+   controllers). Sits behind .stage-inner via a negative z-index within .stage's own stacking
+   context (already position: relative, above) — .stage-inner itself needs no z-index of its own;
+   a static/sticky element at the default z-index: auto already paints above a negative-z-index
+   sibling, on every width, without touching its existing rules. */
+.caviera-craftsmanship__process-video {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.caviera-craftsmanship__process-video-el {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Source is portrait (1080x1920); inspected several frames of the actual footage directly — the
+     hands/tool/ring action sits centred horizontally throughout, and tends to concentrate in the
+     lower-middle of the frame (the upper portion is often just background/negative space), so a
+     slight downward bias reads more consistently than a dead-centre crop. */
+  object-position: center 58%;
+  /* Optional subtle depth per the brief — a static opacity (never animated/tied to chapter state),
+     within the requested ~0.35-0.45 range, on top of the Obsidian overlay below. */
+  opacity: 0.4;
+}
+.caviera-craftsmanship__process-overlay {
+  position: absolute;
+  inset: 0;
+  background: #111012; /* CAVIERA Obsidian — fixed, not settings-driven */
+  /* Within the requested ~72-80% Obsidian coverage. */
+  opacity: 0.76;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The video is never started under reduced motion (see the JS) — hidden here too, leaving only
+     the Obsidian overlay as the section's static field, per the brief's own fallback. */
+  .caviera-craftsmanship__process-video-el { display: none; }
+}
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
     /* VISIBILITY FIX: 150svh gave the sticky hold real scroll distance already (verified — see the

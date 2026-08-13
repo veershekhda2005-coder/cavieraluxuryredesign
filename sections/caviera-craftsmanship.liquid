@@ -63,6 +63,27 @@
     --edition-exhibition-progress.
   {%- endcomment -%}
   <div class="caviera-craftsmanship__stage"{% if section.settings.scroll_progression %} data-caviera-material-progress{% endif %}>
+    {%- comment -%}
+      Continuous looping craftsmanship footage — a separate, independent visual layer BEHIND the
+      existing chapter content, never wired to Material Truth's own scroll-progress controller
+      (assets/caviera-material-truth.js, untouched). Gated on the same scroll_progression flag as
+      the rest of this homepage-only ceremony (this section is shared with the standalone
+      Craftsmanship page and The House page too, where this footage/overlay treatment wasn't
+      asked for and would fight their own bone/list compositions) — no separate schema setting
+      needed since this flag already, correctly, identifies only this one instance.
+      assets/caviera-craftsmanship-process-video.js is a small, independent IntersectionObserver-
+      based play/pause controller — plain HTML5 video playback, no scroll listener, no RAF loop, no
+      interaction whatsoever with Material Truth's or Maker's Mark's own controllers.
+    {%- endcomment -%}
+    {%- if section.settings.scroll_progression -%}
+      <div class="caviera-craftsmanship__process-video" data-craftsmanship-process-video aria-hidden="true">
+        <video class="caviera-craftsmanship__process-video-el" muted loop playsinline preload="none">
+          <source src="{{ 'caviera-material-truth-full-process-2026.mp4' | asset_url }}" type="video/mp4">
+        </video>
+        <div class="caviera-craftsmanship__process-overlay"></div>
+      </div>
+      <script src="{{ 'caviera-craftsmanship-process-video.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
     <div class="caviera-craftsmanship__stage-inner">
       <div class="container caviera-craftsmanship__head" data-reveal>
         {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
