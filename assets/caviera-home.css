@@ -1714,18 +1714,17 @@
    wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
    instead of continuous section progress — see the chapter opacity rules further down, which apply
    at every width). */
-/* STACKING-CONTEXT FIX (the actual root cause of the video being completely invisible, not the
-   opacity values retuned in the previous pass — that fix was real but insufficient on its own):
-   position: relative alone does NOT create a new stacking context — only position + an explicit
-   z-index value does (or isolation: isolate, used here instead, since .stage has no z-index value
-   of its own to give it). Without one, the video wrapper's z-index: -1 did not stay scoped to
-   .stage's own children at all — it escaped to whatever ancestor further up the document WAS the
-   nearest real stacking-context root, in the worst case putting the video behind the entire page.
-   isolation: isolate gives .stage its own real, self-contained stacking context, so every z-index
-   below is now guaranteed to only ever compare against its siblings inside .stage — never anything
-   above it in the document. overflow: hidden added too, so the video can never visually spill
-   past this section's own edges at any aspect ratio. */
-.caviera-craftsmanship__stage[data-caviera-material-progress] {
+/* TOP/BOTTOM GAP FIX (this round): the video/overlay previously lived inside .stage, which only
+   fills the <section>'s own CONTENT box — .caviera-section's own shared padding-block
+   (clamp(48px,6vw,96px) top+bottom, used by many other sections) sat OUTSIDE .stage entirely,
+   showing as a flat, unlit Obsidian band above and below the video with no footage in it — not a
+   letterbox/object-fit problem (object-fit: cover was already correct and is unchanged below), a
+   padding problem one level further up the tree. Moved the video/overlay to be direct children of
+   the outer <section> instead (see sections/caviera-craftsmanship.liquid — the section itself now
+   also carries data-caviera-material-progress), so the stacking context and isolation live on the
+   SECTION now, covering its full box, padding included. .stage/.stage-inner (the actual text
+   content) are otherwise untouched — only the video's own coverage area changed. */
+.caviera-craftsmanship[data-caviera-material-progress] {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -1735,9 +1734,9 @@
    the scroll-progress rules below (--material-progress never drives anything here; see assets/
    caviera-craftsmanship-process-video.js for the plain play/pause-on-visibility logic — no scroll
    listener, no RAF, no connection whatsoever to Material Truth's or Maker's Mark's own
-   controllers). Explicit POSITIVE z-index values only, from here on — video (1) < overlay (2) <
-   .stage-inner's own content (3, set just below) — all three compared only against each other,
-   inside .stage's own isolated stacking context above. */
+   controllers). Explicit POSITIVE z-index values only — video (1) < overlay (2) < .stage (3, set
+   just below) — all compared only against each other, inside the section's own isolated stacking
+   context above. */
 .caviera-craftsmanship__process-video {
   position: absolute;
   inset: 0;
@@ -1751,16 +1750,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Source is portrait (1080x1920); inspected several frames of the actual footage directly — the
-     hands/tool/ring action sits centred horizontally throughout, and tends to concentrate in the
-     lower-middle of the frame (the upper portion is often just background/negative space), so a
-     slight downward bias reads more consistently than a dead-centre crop. */
-  object-position: center 58%;
-  /* FINAL TREATMENT — confirmed visible after the stacking-context fix. Darkness is now controlled
-     by ONE layer only (the overlay below), not two stacked reductions: the video itself renders at
-     full brightness, and the single overlay opacity IS directly "% Obsidian atmosphere" — simpler
-     to reason about than two compounding multipliers, and avoids the near-zero-visibility trap an
-     earlier pass fell into by stacking a dim video under a strong overlay. */
+  /* Full-bleed, no letterboxing — object-fit: cover already guarantees this regardless of the
+     source's own portrait aspect ratio; per this round's explicit request, centred both axes. */
+  object-position: center center;
+  /* Darkness is controlled by ONE layer only (the overlay below), not two stacked reductions: the
+     video itself renders at full brightness, and the single overlay opacity IS directly "%
+     Obsidian atmosphere" — simpler to reason about than two compounding multipliers. */
   opacity: 1;
 }
 .caviera-craftsmanship__process-overlay {
@@ -1769,17 +1764,14 @@
   z-index: 2;
   pointer-events: none;
   background: #111012; /* CAVIERA Obsidian — fixed, not settings-driven */
-  /* The one and only darkness control. 0.70 = the requested "~70% Obsidian atmosphere / 30%
-     visible moving craftsmanship" split exactly, since the video above is full-brightness — no
-     second multiplier to account for. */
+  /* The one and only darkness control. 0.70 = "~70% Obsidian atmosphere / 30% visible moving
+     craftsmanship", since the video above is full-brightness — no second multiplier to account for. */
   opacity: 0.7;
 }
-/* .stage-inner holds ALL of Material Truth's existing, unchanged content (heading, chapters,
-   progress line) — given its own explicit stacking position so it reliably paints above the video
-   (1) and overlay (2) now that both use real positive z-index values instead of a negative one.
-   Applies at every width (not just the desktop sticky variant further down), since mobile's plain
-   auto-height .stage-inner needs this exactly as much as desktop's sticky one does. */
-.caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
+/* .stage holds ALL of Material Truth's existing, unchanged content (heading, chapters, progress
+   line) — given its own explicit stacking position so it reliably paints above the video (1) and
+   overlay (2), now that all three are siblings inside the section's own isolated context above. */
+.caviera-craftsmanship__stage[data-caviera-material-progress] {
   position: relative;
   z-index: 3;
 }

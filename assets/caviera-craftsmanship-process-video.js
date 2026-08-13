@@ -29,7 +29,11 @@
       var video = wrapper.querySelector('video');
       if (!video) return;
 
-      var stage = wrapper.closest('.caviera-craftsmanship__stage') || wrapper;
+      // The video wrapper is now a direct child of the outer <section> (moved there so it can
+      // cover the section's own padding band too, not just .stage — see sections/caviera-
+      // craftsmanship.liquid) rather than nested inside .stage, so that's the correct visibility
+      // target now; .stage is no longer an ancestor of this wrapper at all.
+      var stage = wrapper.closest('.caviera-craftsmanship') || wrapper;
 
       if (!('IntersectionObserver' in window)) {
         // No observer support — fail open to plain continuous playback rather than never playing.
