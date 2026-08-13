@@ -74,11 +74,19 @@
       assets/caviera-craftsmanship-process-video.js is a small, independent IntersectionObserver-
       based play/pause controller — plain HTML5 video playback, no scroll listener, no RAF loop, no
       interaction whatsoever with Material Truth's or Maker's Mark's own controllers.
+
+      DELIVERY ASSET: the approved source file itself (caviera-material-truth-full-process-
+      2026.mp4, kept exactly as supplied — never renamed, moved or re-encoded) is 48MB, over
+      Shopify's theme-asset upload limit (confirmed directly — a push attempt failed outright with
+      HTTP 413). caviera-material-truth-full-process-2026-optimized.mp4 is a same-footage, re-
+      encoded copy (720x1280, ~11.3MB) created only because the original could not technically be
+      uploaded at all — this is the file actually referenced below. The original source asset is
+      untouched and still present in assets/ exactly as provided.
     {%- endcomment -%}
     {%- if section.settings.scroll_progression -%}
       <div class="caviera-craftsmanship__process-video" data-craftsmanship-process-video aria-hidden="true">
         <video class="caviera-craftsmanship__process-video-el" muted loop playsinline preload="none">
-          <source src="{{ 'caviera-material-truth-full-process-2026.mp4' | asset_url }}" type="video/mp4">
+          <source src="{{ 'caviera-material-truth-full-process-2026-optimized.mp4' | asset_url }}" type="video/mp4">
         </video>
         <div class="caviera-craftsmanship__process-overlay"></div>
       </div>
