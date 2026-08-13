@@ -8,15 +8,22 @@
  * same three chapters:
  *   - Desktop (>=1024px, motion allowed): the three chapters sit SIDE BY SIDE (a wrapped row, not
  *     stacked), so "closest chapter to viewport centre" doesn't apply — they're all at the same Y
- *     position. Active state instead comes from continuous progress (0-1) through .stage's own
- *     pinned scroll distance (see caviera-home.css), the same simple rect-based technique already
- *     used by assets/caviera-scroll-progress.js, just independent and self-contained here — writes
- *     --material-progress (drives the heading drift + progress rule) and data-material-state
- *     (0/1/2, thresholded at ~30%/~62%, tuned for a smooth-feeling handoff rather than exact
- *     thirds).
+ *     position. Active state comes from continuous progress (0-1) through the section's own
+ *     NATURAL viewport passage — no sticky/pinned stage any more (removed per this round's
+ *     explicit brief: the section previously used a tall sticky wrapper, several times reduced in
+ *     scroll distance but never removed, which kept reading as "an extra held screen"). progress =
+ *     0 as .stage's bottom edge first reaches the bottom of the viewport (the section starting to
+ *     enter), progress = 1 once .stage's top edge has fully scrolled past the top of the viewport
+ *     (the section fully exited) — a plain "how far has this element travelled through the
+ *     viewport" measure, the same family of technique as assets/caviera-scroll-progress.js, just
+ *     independent and self-contained here. Writes --material-progress (drives the heading drift +
+ *     progress rule) and data-material-state (0/1/2, thresholded at 0.33/0.66 — the section's own
+ *     natural height is now close to one viewport, so these thirds already line up with roughly
+ *     entering/centred/exiting).
  *   - Mobile (<1024px): chapters stack vertically in normal flow with no sticky/extra height, so
  *     the usual "closest chapter centre to a fixed viewport focal line" calculation (same principle
- *     as assets/caviera-object-focus.js) applies directly.
+ *     as assets/caviera-object-focus.js) applies directly — unchanged, this was already "normal
+ *     viewport passage", never sticky.
  * Both modes are re-evaluated on resize, so crossing the breakpoint always lands in the correct one
  * — including undoing anything the previous mode had set.
  *
@@ -28,8 +35,8 @@
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   var MIN_WIDTH = 1024;
-  var STATE_1_THRESHOLD = 0.3;
-  var STATE_2_THRESHOLD = 0.62;
+  var STATE_1_THRESHOLD = 0.33;
+  var STATE_2_THRESHOLD = 0.66;
 
   function initMaterialTruth(stage) {
     var list = stage.querySelector('.caviera-craftsmanship__list');
@@ -52,8 +59,12 @@
       ticking = false;
       var rect = stage.getBoundingClientRect();
       var vh = window.innerHeight;
-      var total = rect.height - vh;
-      var progress = total > 0 ? (0 - rect.top) / total : 0;
+      // Natural viewport-passage progress (no sticky stage): 0 when the section's bottom edge is
+      // just reaching the bottom of the viewport (first starting to enter), 1 once the section's
+      // top edge has fully scrolled past the top of the viewport (fully exited). total is the full
+      // distance travelled over that whole passage — the section's own height plus one viewport.
+      var total = rect.height + vh;
+      var progress = total > 0 ? (vh - rect.top) / total : 0;
       progress = Math.max(0, Math.min(1, progress));
       stage.style.setProperty('--material-progress', progress.toFixed(4));
       var index = 0;

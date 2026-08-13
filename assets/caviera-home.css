@@ -1702,13 +1702,13 @@
    on; every rule below is gated on that attribute, so the Craftsmanship/House page instances (that
    attribute never present there) render exactly as before — completely unaffected.
 
-   DESKTOP (1024px+, motion allowed): .stage gets an explicit height (150svh — inside the 145-155svh
-   target, well short of anything resembling a giant pin) so there's real scroll room for the three
-   states to read; .stage-inner is the sticky, vertically-centred child that holds the (unchanged)
-   head + chapter composition on screen for that whole distance, then releases the instant .stage
-   ends — no lingering over Maker's Mark. assets/caviera-material-truth.js writes --material-
-   progress (0-1) and data-material-state (0/1/2) onto .stage; nothing here ever reads or writes
-   --caviera-progress, --house-code-progress, or --edition-exhibition-progress.
+   DESKTOP (1024px+, motion allowed): NO sticky/pinned stage (removed — see the final-pass comment
+   further down this block for why). .stage is a plain min-height: 100svh flex box that scrolls
+   past normally, like any other section; assets/caviera-material-truth.js's updateDesktop()
+   computes --material-progress (0-1) from .stage's own natural viewport passage instead of a
+   pinned-scroll fraction. data-material-state (0/1/2) still comes from that same progress value.
+   Nothing here ever reads or writes --caviera-progress, --house-code-progress, or
+   --edition-exhibition-progress.
 
    MOBILE (<1024px): no extra height, no sticky — .stage/.stage-inner stay plain, auto-height
    wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
@@ -1789,33 +1789,29 @@
   .caviera-craftsmanship__process-video-el { display: none; }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  /* STICKY ARCHITECTURE REMOVED (final pass): every previous pass in this project reduced the
+     pinned scroll DISTANCE (168svh -> 135svh -> 118svh) but kept the underlying sticky/pinned
+     mechanism itself — which is what kept reading as "an extra held screen", regardless of how
+     short that held distance got, because the section visually FROZE in place for that whole
+     extra distance rather than scrolling normally. Per this round's explicit brief: the sticky
+     .stage-inner and the tall explicit .stage height are both removed outright. .stage is now a
+     plain min-height: 100svh flex box — tall enough to read as one full cinematic room when its
+     own content is shorter than a viewport, but it scrolls past NORMALLY like any other section
+     rather than pinning. assets/caviera-material-truth.js's updateDesktop() was updated to match
+     (natural viewport-passage progress instead of pinned-scroll-fraction progress) — see that
+     file's own comment for the exact formula; --material-progress and the 0/1/2 chapter state
+     keep working exactly as before, just driven by a different (and now much shorter) scroll
+     distance. */
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    /* LENGTH FIX (final pass): re-verified every other candidate height source first — the
-       sticky .stage-inner just below is exactly 100vh/100svh (correct, unchanged, matches the
-       "sticky inner: 100svh" target exactly); .caviera-section's own shared padding-block
-       (clamp(48px,6vw,96px) top+bottom, unrelated to this fix, used by many other sections) is a
-       small, fixed-px amount, not a viewport-height multiplier, and isn't what was reading as "a
-       second full screen"; no nested min-height/height:100vh, spacer, or leftover element exists
-       anywhere inside .stage beyond .stage-inner itself (grepped the whole file to confirm) — the
-       ONE and only height lever is this value. 135svh (a prior pass, itself already reduced from
-       168svh) was still nearly 1.4 screens of raw scroll DISTANCE — the background video's runtime
-       has no bearing on this at all; it plays/loops independently, on its own timer, purely a
-       background layer. Reduced further to 118svh, within the requested 115-120svh maximum, so the
-       sticky inner (100svh) only needs ~18svh of additional travel — within the requested
-       15-20svh — to complete Design & Form -> Stone Setting -> Gold & Finishing and release
-       directly into Maker's Mark, not a second visible screen. */
-    height: 118svh;
-    padding-block: 0; /* the section's own padding-block still applies around .stage; nothing extra needed here */
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    height: 100svh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
   }
   /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
      [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it.
@@ -1833,8 +1829,7 @@
 
 /* Active/inactive chapter cue — opacity + a lift, never a size/layout change. Base rules here are
    the MOBILE values (simpler, no scale, per brief); the min-width: 1024px override further down
-   strengthens them for the desktop side-by-side composition, where the sticky hold gives scroll
-   room for a more noticeable handoff. Gated behind [data-observing="true"] (set by the JS only
+   strengthens them for the desktop side-by-side composition. Gated behind [data-observing="true"] (set by the JS only
    once detection is actually wired up) so every chapter reads at full strength before/without JS.
    VISIBILITY FIX: the previous delta (0.42->1 opacity, 0px->-5px translateY, no scale at all) was
    real and working (confirmed via code review — data-observing/.is-active toggle correctly) but too
