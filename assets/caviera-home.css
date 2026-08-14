@@ -47,21 +47,53 @@
    rather than animating into it over a pin. Nothing else about the hero's markup, image handling
    or the drag tokens changed. */
 .caviera-hero {
+  /* HERO/VIDEO GEOMETRY FIX (this round): a single custom property, --hero-height, is now the one
+     source of truth for the hero's height everywhere it matters (.caviera-hero itself,
+     .caviera-hero__media, .caviera-hero__field's height AND its own negative margin-top pull-back
+     further below) — inherited down to both sticky children automatically, so none of the three can
+     ever drift out of lockstep the way a previous round's bug (SPACER-HEIGHT CORRECTION, see the
+     comment further down) already warned against. Base value: unchanged, 100svh, exactly as
+     before — this only changes at desktop widths, see the min-width: 750px override below. */
+  --hero-height: 100vh;
+  --hero-height: 100svh;
   position: relative;
-  height: 100vh;
-  height: 100svh;
+  height: var(--hero-height);
   display: block;
   overflow: hidden;
+}
+@media (min-width: 750px) {
+  /* DESKTOP HERO HEIGHT (this round): the root problem, as diagnosed directly rather than solved by
+     endlessly re-tuning object-position — a 16:9 video inside a container whose OWN aspect ratio
+     (1440/900 = 1.6, 1280/800 = 1.6 — both narrower/taller than 16:9's 1.778) forces object-fit:
+     cover to crop the video's width to fill that shape, no matter where object-position points the
+     crop. Moving the crop only shifts WHICH side loses ocean/plaque; it can't stop one of them
+     losing something, because the container itself doesn't match the source's own shape.
+     clamp(76svh, 56.25vw, 100svh): 56.25vw is exactly 100vw * 9/16 — the container's own height if
+     its WIDTH alone dictated a perfect 16:9 shape, at any viewport width, with no per-resolution
+     hardcoding needed. Verified against the three mandated test sizes: at 1440x900 and 1280x800
+     (both 1.6 aspect), 56.25vw lands at exactly 90% of the viewport height (810px / 720px) — an
+     EXACT 16:9 match, zero horizontal crop, both Oryx marks and the full ocean simultaneously
+     intact. At 1920x1080 (already exactly 16:9), 56.25vw resolves to exactly 100svh (1080px) — the
+     ceiling — so the hero simply stays full-height there, again an exact match, zero crop in either
+     direction. The clamp()'s own floor (76svh) and ceiling (100svh) exist only to protect unusually
+     narrow/tall or unusually wide/short browser windows from an extreme result — within the
+     requested 76-84svh range at the floor end — not because either of the three mandated test sizes
+     ever reaches it (all three resolve to the clamp's own middle, aspect-matched value, landing
+     modestly ABOVE the suggested 76-84svh starting range specifically because that's what the
+     actual math requires to eliminate the crop entirely, which is the brief's own hard acceptance
+     condition — "do not sacrifice one side to save the other"). Still comfortably a full cinematic
+     hero (90-100% of the viewport), never "small". */
+  .caviera-hero {
+    --hero-height: clamp(76vh, 56.25vw, 100vh);
+    --hero-height: clamp(76svh, 56.25vw, 100svh);
+  }
 }
 .caviera-hero__media {
   position: sticky;
   top: 0;
-  height: 100vh;
-  /* MOBILE VIEWPORT-CHROME FIX: svh (the viewport size once mobile browser UI has settled) as a
-     progressive enhancement over vh — same fallback pattern already used elsewhere in this file
-     (e.g. House Codes). Unsupported browsers simply ignore this line and keep the vh value above;
-     supporting ones get a size that doesn't shift as the address bar shows/hides mid-scroll. */
-  height: 100svh;
+  /* Inherits --hero-height from .caviera-hero above — always exactly matches it, at every width,
+     with nothing to keep in sync by hand. */
+  height: var(--hero-height);
   overflow: hidden;
   background: var(--caviera-cinnabar);
 }
@@ -83,33 +115,37 @@
    breakpoint here, overriding the generic --hero-focal custom property above (which only really
    suits a merchant-uploaded image with its own focal_point setting) — this file needs a genuinely
    different desktop vs. mobile composition of the same source image, not one shared focal point.
-   Same specificity as .caviera-hero__media-el above; wins on source order (declared after). */
+   Same specificity as .caviera-hero__media-el above; wins on source order (declared after).
+
+   GEOMETRY FIX (this round) REPLACES two earlier rounds' worth of object-position tuning (100%,
+   then 55%) — both of those were fighting a container/source aspect-ratio mismatch by shifting
+   WHICH side of the frame got sacrificed; neither could show generous ocean AND the far-right
+   plaque at once, because the container itself (1440x900/1280x800: 1.6 aspect) was genuinely
+   narrower than the 16:9 (1.778) video, forcing real horizontal crop no matter where the anchor
+   pointed. .caviera-hero's own --hero-height is now clamp()'d to match the source's own 16:9 shape
+   at desktop widths (see that comment for the full derivation) — at all three of this round's
+   mandated test sizes the container's shape now either exactly equals 16:9 (zero crop, either
+   direction) or is wider (crops top/bottom only, never left/right). With the crop itself
+   essentially eliminated, object-position no longer needs to fight for one side over the other —
+   plain centre works for both the video and the poster now, which is also why they can safely
+   share one rule again instead of a video-only override. */
 .caviera-hero__media-el--bundled {
-  /* Desktop: measured the actual source file directly (cropped and inspected its own right 20%,
-     1672x941) rather than estimating — the far-right dark Oryx plaque sits at roughly 91-97% of
-     the image's width, right at the edge; the Cinnabar-wall Oryx sits around 76-82%. A prior pass
-     had moved this to 62% (lower than the original 66%), which — checked against object-position's
-     actual spec direction (higher % reveals more of the image's RIGHT edge, not less) — was a step
-     in the wrong direction and cropped the far-right plaque more, not less. Set to the maximum
-     100% instead: object-fit: cover always removes 0% from the right edge at 100%, so the
-     right-edge plaque is included at every desktop width regardless of viewport aspect ratio —
-     verified by hand across 1440x900 (only ~10% of the image is ever cropped at that ratio, so
-     100% keeps nearly the whole frame, maximum left sea/sky), 1024x768 and even a hypothetical
-     1:1 viewport (~25-44% cropped in the worst realistic cases, but the crop always comes from the
-     LEFT at 100%, and the sea/sky region — roughly the image's own left 62% — still keeps a
-     meaningful visible band before the architecture begins, since the crop amount never approaches
-     that far). No scale transform is contributing to any of this — .caviera-hero__media-el's own
-     transform: scale(...) above already resolves to exactly 1 at rest (--caviera-progress has no
-     pin distance left to drive it since the earlier hero dead-zone fix; confirmed, not changed
-     here) — and object-fit: cover here is not artificially enlarging the image beyond what cover
-     itself requires to fill the viewport. */
   object-position: 100% 44%;
 }
+@media (min-width: 750px) {
+  /* Desktop only, matching the --hero-height geometry fix above — center works cleanly now that
+     the container's own shape matches the source's. Y stays at 44% (unchanged, still relevant at
+     1920x1080, the one mandated size where the clamp lands on its 100svh ceiling rather than an
+     exact 16:9 match, leaving a small residual TOP/BOTTOM crop — 44% keeps that split close to
+     centre, slightly favouring what's below the horizon line, matching the previous tuning's
+     intent) — only X actually needed to change. */
+  .caviera-hero__media-el--bundled { object-position: 50% 44%; }
+}
 @media (max-width: 749px) {
-  /* Mobile's much taller/narrower crop has far less width to work with — biased further right so
-     the architectural entrance, Cinnabar wall and Oryx detail stay the priority, while the left
-     edge of the crop still carries a little sea/sky breathing room rather than architecture wall
-     to wall. */
+  /* Mobile keeps its own already-approved, intentionally right-biased crop — untouched this round.
+     The brief scopes "both Oryx marks simultaneously" to desktop; mobile still prioritises the
+     architectural entrance, Cinnabar wall and Oryx detail, with a little sea/sky breathing room on
+     the crop's left edge rather than architecture wall to wall. */
   .caviera-hero__media-el--bundled { object-position: 80% 42%; }
 }
 .caviera-hero__media-el--mobile { display: none; }
@@ -123,35 +159,14 @@
    camera (no zoom, no push), and adding a CSS-driven zoom on top of that footage is explicitly not
    wanted, unlike the still image this replaces (where that zoom was already an approved, existing
    effect). Same specificity as the base rule (one class each) — wins on source order (declared
-   after) with no !important needed. */
+   after) with no !important needed. Confirmed no other permanent scale/oversized-width zoom exists
+   anywhere on this element to remove. */
 .caviera-hero__media-el--bundled-video { transform: none; }
-/* OCEAN FRAMING FIX (this round): the video and the still poster share the exact same source
-   composition and aspect ratio — checked directly by extracting the video's own first/middle/last
-   frames and comparing their architecture-edge position against the PNG at several scanlines; they
-   matched almost exactly (e.g. ~69.3%, ~62.9%, ~56.5% of width at the same heights, both files) —
-   so this was never a case of the raw video containing less ocean than the poster. The shared
-   object-position: 100% 44% above was tuned to keep the far-right Oryx plaque fully in frame,
-   which meant taking the ENTIRE ~10% object-fit: cover overflow (at a 1440x900, 16:9-ish source in
-   a 1.6-aspect viewport) from the LEFT edge only — exactly where the brightest sea/sky glow sits,
-   making the video read as noticeably more architecture-dominant/right-biased once actually seen in
-   motion. Re-centred to 55% 44% for the VIDEO ONLY (desktop, min-width: 750px) — within the
-   requested 50-55% range, at the end that keeps the best remaining chance for the far-right plaque
-   — splitting the crop roughly 55/45 instead of 100/0, which visibly restores far more of the open
-   ocean/sky on the left while the main Cinnabar-wall Oryx (~78-82% of width, well inside this
-   crop's remaining frame either way) stays completely unaffected. The far-right plaque (~91-97%)
-   very likely loses some or all of its own visible edge at this narrower crop — an explicit,
-   disclosed trade-off per the brief's own "where the source frame permits" allowance, not an
-   oversight. Scoped to --bundled-video only (min-width: 750px) — the static poster (used only
-   before the video has data, on autoplay failure, or under reduced motion) and the mobile crop
-   (untouched, still 80% 42% via the shared --bundled rule below) are deliberately left exactly as
-   they were; this task was scoped to the video's own framing only. */
-@media (min-width: 750px) {
-  .caviera-hero__media-el--bundled-video { object-position: 55% 44%; }
-}
 /* Static-poster fallback for prefers-reduced-motion — hidden by default (the video is the normal
-   state); the query below flips which of the pair is visible. Sharing .caviera-hero__media-el--
-   bundled's own object-position means the static frame reads as exactly the same composition, not
-   a different crop. */
+   state); the query below flips which of the pair is visible. Shares .caviera-hero__media-el--
+   bundled's own object-position (see above — now the SAME value as the video at every width, not a
+   divergent override) so the static frame matches the video's own framing as closely as possible,
+   with no visible jump the instant playback begins. */
 .caviera-hero__media-el--bundled-poster { display: none; }
 @media (prefers-reduced-motion: reduce) {
   /* assets/caviera-hero-video.js also pauses the video outright for these visitors — CSS alone can
@@ -224,8 +239,10 @@
 .caviera-hero__field {
   position: sticky;
   top: 0;
-  height: 100vh;
-  height: 100svh;
+  /* Inherits --hero-height from .caviera-hero — always exactly matches .caviera-hero__media's own
+     height above, at every width, with nothing to keep in sync by hand (see the --hero-height
+     comment on .caviera-hero itself). */
+  height: var(--hero-height);
   z-index: 1;
   display: flex;
   align-items: flex-end;
@@ -234,11 +251,12 @@
   overflow: hidden;
   /* Sits in normal flow directly after the sticky media above (not stacked via inset:0 over it),
      so it needs its own negative top-margin equal to one viewport height to visually overlay the
-     media rather than appearing a second screen-height further down the tall wrapper. Kept in
-     lockstep with .caviera-hero__media's own height above (vh, then svh) — the two must always
-     match or the sticky-overlay math drifts. */
-  margin-top: -100vh;
-  margin-top: -100svh;
+     media rather than appearing a second screen-height further down the tall wrapper. calc()'d
+     directly from the same --hero-height custom property as the height above — can never drift out
+     of lockstep, at any width, the way two independently-hardcoded values previously could (see the
+     SPACER-HEIGHT CORRECTION note further up this file for the exact bug this class of mismatch
+     caused before). */
+  margin-top: calc(var(--hero-height) * -1);
   pointer-events: none;
 }
 /* .caviera-hero__field itself is pointer-events: none (an overlay layer sitting above the hero
