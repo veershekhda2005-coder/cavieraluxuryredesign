@@ -1731,9 +1731,11 @@
   margin-block: clamp(40px, 6vw, 72px);
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  /* Thin ivory frame — CAVIERA Warm Bone, the theme's own existing "ivory/warm off-white" brand
-     colour (never a new colour introduced), at a deliberately quiet 1px weight. */
-  border: 1px solid var(--caviera-bone);
+  /* VISUAL POLISH: the bright solid Warm Bone border read as "announced" rather than "perceived" —
+     switched to Brushed Rhodium at 40% opacity (within the requested 35-45% range), the theme's
+     established pattern for a quiet, restrained line (see the same color-mix technique used for
+     --border-subtle-on-dark elsewhere in this project). Still exactly 1px. */
+  border: 1px solid color-mix(in srgb, var(--caviera-rhodium) 40%, transparent);
 }
 .caviera-craftsmanship__film-video {
   position: absolute;
@@ -1751,11 +1753,11 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* A light tonal wash only, NOT a text-legibility overlay (no text sits over the film any more) —
-     keeps the panel feeling quiet/restrained rather than a raw bright clip, consistent with the
-     section's overall Obsidian mood. */
+  /* VISUAL POLISH: 0.2 read as darkening the footage rather than a bare tonal touch — reduced to
+     0.12 (within the requested 10-15%), a very subtle Obsidian tint only. Hands, metal and tools
+     stay clearly visible; this is not a text-legibility overlay (no text sits over the film). */
   background: #111012;
-  opacity: 0.2;
+  opacity: 0.12;
 }
 @media (prefers-reduced-motion: reduce) {
   /* The video is never started under reduced motion (see the JS) — hidden here too, leaving the
@@ -1783,15 +1785,21 @@
   .caviera-craftsmanship__stage[data-caviera-material-progress] [data-reveal-style="drkst"].is-visible { transform: none; }
 }
 
-/* Active/inactive chapter cue — opacity + a lift, never a size/layout change. Base rules here are
-   the MOBILE values (simpler, no scale, per brief); the min-width: 1024px override further down
-   strengthens them for the desktop side-by-side composition. Gated behind [data-observing="true"] (set by the JS only
-   once detection is actually wired up) so every chapter reads at full strength before/without JS.
-   VISIBILITY FIX: the previous delta (0.42->1 opacity, 0px->-5px translateY, no scale at all) was
-   real and working (confirmed via code review — data-observing/.is-active toggle correctly) but too
-   small to read as a clear state change; both tiers below are deliberately stronger. */
+/* Active/inactive chapter cue — opacity + a lift, never a size/layout change. Gated behind
+   [data-observing="true"] (set by the JS only once detection is actually wired up) so every
+   chapter reads at full strength before/without JS.
+   VISIBILITY FIX (this round): the previous rules set opacity on .row AND separately, again, on
+   its own .label/.body-text children for the inactive state — CSS opacity compounds
+   multiplicatively across nested elements, not additively, so the label/body-text were actually
+   rendering at ~0.34 * 0.3 = 0.10 / ~0.34 * 0.35 = 0.12 effective visibility, not the ~0.34
+   the .row rule alone suggests — reading as "almost disappearing", exactly as reported. A parent's
+   own opacity already applies to everything inside it; the separate child-level opacity roles were
+   redundant and the actual cause of the extra dimming. Removed the child-level opacity entirely
+   (keeping their own transform-only rules, a genuine additional effect, not a duplicate) and
+   unified the row's own opacity at 0.33 for both mobile and desktop — within the requested
+   0.30-0.35 target, and now the true, uncompounded effective visibility. */
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row {
-  opacity: 0.42;
+  opacity: 0.33;
   transform: translateY(4px);
   transition: opacity 460ms var(--ease-caviera), transform 460ms var(--ease-caviera);
 }
@@ -1801,7 +1809,7 @@
 }
 @media (min-width: 1024px) {
   .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row {
-    opacity: 0.34;
+    opacity: 0.33;
     transform: translateY(6px) scale(1);
     transition: opacity 550ms var(--ease-caviera), transform 550ms var(--ease-caviera);
   }
@@ -1811,18 +1819,11 @@
   }
 }
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .label {
-  opacity: 0.3;
-  transition: opacity 460ms var(--ease-caviera), transform 460ms var(--ease-caviera);
+  transition: transform 460ms var(--ease-caviera);
 }
 .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .label {
-  opacity: 1;
   transform: translateY(-2px);
 }
-.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .body-text {
-  opacity: 0.35;
-  transition: opacity 460ms var(--ease-caviera);
-}
-.caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row.is-active .body-text { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row,
   .caviera-craftsmanship__list[data-observing="true"] .caviera-craftsmanship__row .label,
