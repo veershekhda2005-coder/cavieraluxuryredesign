@@ -190,10 +190,10 @@
   margin-top: -100svh;
   pointer-events: none;
 }
-/* .caviera-hero__tokens (the small per-artifact anchor wrappers) deliberately NOT listed here —
-   only .caviera-hero__field-inner and the token itself (.caviera-drag-token, see its own rule)
-   opt back into pointer-events: auto, so an anchor wrapper's box never becomes an invisible click
-   blocker over the hero image beyond the token's own actual visible footprint. */
+/* .caviera-hero__field itself is pointer-events: none (an overlay layer sitting above the hero
+   image) — only .caviera-hero__field-inner (the headline/CTA block) opts back into pointer-events:
+   auto, so nothing about this sticky overlay ever blocks clicks reaching the media beneath it
+   beyond the actual content's own footprint. */
 .caviera-hero__field-inner { pointer-events: auto; }
 .caviera-hero[data-media-position="right"] .caviera-hero__field { justify-content: flex-end; }
 /* Scrim — a soft directional gradient rising from the bottom edge so text stays legible over any
@@ -265,53 +265,13 @@
 [data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
 .caviera-hero__secondary { color: inherit; }
 
-/* ---- Toasted Buns-inspired draggable House artifacts ----
-   DRAG-RANGE FIX: previously each artifact's own small positioning wrapper WAS the drag zone,
-   bounding travel to little more than its own footprint. .caviera-hero__artifact-layer is now the
-   single shared drag surface — almost the entire pinned hero, inset only enough to keep a token
-   retrievable at the very edge — and assets/caviera-drag-token.js resolves bounds against THIS
-   layer (via token.closest('[data-caviera-drag-zone]'), which now lives here, not on the wrappers
-   below), so all three artifacts share one large movable canvas: the whole hero composition. */
-.caviera-hero__artifact-layer {
-  position: absolute;
-  inset: 24px;
-  z-index: 1;
-  /* Inherits pointer-events: none from .caviera-hero__field — never a full-hero click blocker over
-     the headline/CTA/scroll cue. .caviera-drag-token below explicitly opts itself back into
-     pointer-events: auto, which is the only part of this layer that's ever actually clickable. */
-}
-/* Each wrapper below sets an artifact's INITIAL resting corner only (unchanged from the previous
-   pass — Seal top right, plaque top left, tag right-middle) — no longer a bounded drag zone, no
-   z-index of its own (a per-wrapper z-index would trap its token inside a separate stacking
-   context, defeating "actively dragged artifact rises above the other two" — see .is-dragging
-   below, which now competes directly against its siblings inside the shared layer's one context). */
-.caviera-hero__tokens { position: absolute; }
-.caviera-hero__tokens--seal {
-  top: clamp(64px, 12vh, 152px);
-  right: clamp(0px, 2vw, 48px);
-  width: clamp(160px, 22vw, 260px);
-  height: clamp(160px, 22vh, 260px);
-}
-.caviera-hero__tokens--plaque {
-  top: clamp(64px, 12vh, 152px);
-  left: clamp(0px, 2vw, 48px);
-  width: clamp(150px, 20vw, 230px);
-  height: clamp(140px, 18vh, 220px);
-}
-.caviera-hero__tokens--tag {
-  top: 50%;
-  right: clamp(-4px, 1vw, 32px);
-  width: clamp(120px, 16vw, 190px);
-  height: clamp(120px, 16vh, 190px);
-  transform: translateY(-50%);
-}
-/* Secondary artifacts hide on mobile — a small viewport with three floating, semi-decorative
-   objects reads as clutter, and per the visual-tuning brief dragging isn't required on touch
-   anyway. The House Seal alone remains as a small, static House artifact there. */
-@media (max-width: 749px) {
-  .caviera-hero__tokens--plaque,
-  .caviera-hero__tokens--tag { display: none; }
-}
+/* ---- Hero floating draggable artifacts — REMOVED (this round, explicit request) ----
+   .caviera-hero__artifact-layer and the three .caviera-hero__tokens--* positioning wrappers (House
+   Seal, Edition plaque, provenance tag) are gone from sections/caviera-hero.liquid, so their rules
+   are removed here too — not just hidden, so no orphaned absolutely-positioned drag zone or hit
+   area is left behind. The shared .caviera-drag-token component further below is untouched and
+   still used by sections/caviera-edition-teaser.liquid's own token (its own drag zone is
+   .caviera-edition-teaser__media, a different element entirely — see further down this file). */
 
 /* Positioned absolute within .caviera-hero__field (not .caviera-hero itself) — see the markup
    move in sections/caviera-hero.liquid — because .caviera-hero is now a tall pin wrapper, not a
@@ -328,8 +288,9 @@
    Rhodium edge) so any brand mark or plaque text stays legible over any photograph, with a small
    "Drag" cue that only ever appears on hover/focus/while dragging — never a persistent label
    competing with the photography. Always position: absolute inside a sized [data-caviera-drag-zone]
-   ancestor (see .caviera-hero__tokens above and .caviera-edition-teaser__media below) so it floats
-   over the composition without participating in layout flow.
+   ancestor (see .caviera-edition-teaser__media below — the hero's own former drag zone was removed,
+   see the comment further up this file) so it floats over the composition without participating in
+   layout flow.
 
    Desktop pointer only, per the JS. Touch pointers and prefers-reduced-motion keep the token fully
    visible, at its default resting position, simply not draggable — never hidden, never a dead
@@ -339,9 +300,9 @@
   top: 28px;
   right: 28px;
   z-index: 2;
-  /* Explicit opt-back-in — its ancestor chain (.caviera-hero__field -> .caviera-hero__artifact-
-     layer -> .caviera-hero__tokens--*) is pointer-events: none by inheritance, so without this the
-     token itself would be unclickable, not just its wrapper's empty space. */
+  /* Explicit opt-back-in — a pointer-events: none ancestor (e.g. .caviera-hero__field, in sections
+     that have one) would otherwise make the token unclickable, not just its wrapper's empty
+     space. */
   pointer-events: auto;
   display: inline-flex;
   flex-direction: column;

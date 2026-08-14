@@ -205,49 +205,22 @@
     </div>
 
     {%- comment -%}
-      Toasted Buns' "movable sticker" idea, translated into a trio of luxury CAVIERA House
-      artifacts, each nested inside the sticky .caviera-hero__field (not a sibling of it) so they
-      ride along with the pinned viewport while the hero is pinned, rather than sitting fixed at
-      one point in the tall scroll wrapper.
-
-      DRAG-RANGE FIX: all three now share ONE hero-wide drag surface — .caviera-hero__artifact-layer
-      (data-caviera-drag-zone lives there now, not on each artifact's own small positioning
-      wrapper) — covering almost the entire pinned hero, so a token's travel is bounded by the
-      hero itself, not by the small box it happens to start in. The three .caviera-hero__tokens--*
-      wrappers below still set each artifact's own INITIAL resting corner (unchanged: Seal top
-      right, plaque top left, tag right-middle) but no longer define the draggable region — see
-      assets/caviera-drag-token.js's bounds(), which now resolves the shared layer via
-      token.closest('[data-caviera-drag-zone]') skipping straight past these small wrappers.
-
-      Desktop pointer only — static and fully visible (not hidden) on touch/reduced-motion/JS-
-      blocked, per assets/caviera-drag-token.js. The two secondary artifacts are hidden on mobile
-      (see caviera-home.css) to keep a small viewport uncluttered; the House Seal alone remains as
-      a small, static House artifact there. Each has its own merchant toggle.
+      REMOVED (this round, explicit request): the trio of draggable "movable sticker"-style House
+      artifacts (House Seal medallion, Edition plaque, provenance "No. __ / __" tag) that used to
+      float over the hero here, plus their shared .caviera-hero__artifact-layer drag zone and the
+      "Draggable House artifacts" schema settings — removed outright, not just hidden, so no
+      orphaned drag layer, hit area, or dead schema setting is left behind. assets/caviera-drag-
+      token.js and its CSS component (assets/caviera-home.css, .caviera-drag-token and friends) are
+      untouched and still shared by sections/caviera-edition-teaser.liquid's own draggable token —
+      only the hero's use of that shared system was removed. The Oryx/House Seal mark that is
+      physically part of the campaign photograph itself (not this floating UI) is untouched below.
     {%- endcomment -%}
-    <div class="caviera-hero__artifact-layer" data-caviera-drag-zone>
-      {%- if section.settings.show_token -%}
-        <div class="caviera-hero__tokens caviera-hero__tokens--seal">
-          {%- comment -%} mode: 'dark' (Bone-coloured seal) regardless of text_mode — the token floats over the photograph itself, not the editorial scrim, and campaign photography is overwhelmingly darker-toned. {%- endcomment -%}
-          {%- render 'caviera-drag-token', type: 'seal', mode: 'dark', face_size: 76, cue: 'Drag' -%}
-        </div>
-      {%- endif -%}
-      {%- if section.settings.show_edition_token -%}
-        <div class="caviera-hero__tokens caviera-hero__tokens--plaque">
-          {%- render 'caviera-drag-token', type: 'plaque', line1: section.settings.edition_token_number, line2: section.settings.edition_token_heading, line3: section.settings.edition_token_year, cue: 'Move' -%}
-        </div>
-      {%- endif -%}
-      {%- if section.settings.show_provenance_token -%}
-        <div class="caviera-hero__tokens caviera-hero__tokens--tag">
-          {%- render 'caviera-drag-token', type: 'number', text: 'No. __ / __', cue: 'Move' -%}
-        </div>
-      {%- endif -%}
-    </div>
 
     {%- comment -%}
-      Nested inside .caviera-hero__field (not a sibling of it, see assets/caviera-home.css) for the
-      same reason as the tokens above — this is the sticky 100vh slice that stays matched to the
-      visible viewport for as long as the hero is pinned; .caviera-hero itself is now a much taller
-      wrapper that the scroll cue would otherwise anchor incorrectly within.
+      Nested inside .caviera-hero__field (not a sibling of it, see assets/caviera-home.css) — this
+      is the sticky 100vh slice that stays matched to the visible viewport for as long as the hero
+      is pinned; .caviera-hero itself is now a much taller wrapper that the scroll cue would
+      otherwise anchor incorrectly within.
     {%- endcomment -%}
     {%- if section.settings.show_scroll_cue -%}
       <button type="button" class="caviera-hero__scroll-cue" data-caviera-scroll-cue aria-label="Scroll to explore">
@@ -303,15 +276,7 @@
     { "type": "url", "id": "primary_cta_url", "label": "Primary CTA link" },
     { "type": "text", "id": "secondary_cta_text", "label": "Secondary link text" },
     { "type": "url", "id": "secondary_cta_url", "label": "Secondary link" },
-    { "type": "checkbox", "id": "show_scroll_cue", "label": "Show scroll cue", "default": true },
-    { "type": "header", "content": "Draggable House artifacts" },
-    { "type": "paragraph", "content": "A small trio of collectible House artifacts, draggable on desktop pointer input — never playful stickers. Each stays static and fully visible (not hidden) on touch, keyboard-only, and reduced-motion visits; the two secondary artifacts hide on mobile to keep a small viewport uncluttered." },
-    { "type": "checkbox", "id": "show_token", "label": "Show draggable House Seal token", "default": true, "info": "Top right. A small, bounded, draggable House Seal medallion floating over the hero." },
-    { "type": "checkbox", "id": "show_edition_token", "label": "Show draggable Edition plaque token", "default": true, "info": "Top left. A small rectangular archival plaque." },
-    { "type": "text", "id": "edition_token_number", "label": "Edition plaque — small top line", "default": "01" },
-    { "type": "text", "id": "edition_token_heading", "label": "Edition plaque — main line", "default": "EDITION I" },
-    { "type": "text", "id": "edition_token_year", "label": "Edition plaque — small bottom line", "default": "2026" },
-    { "type": "checkbox", "id": "show_provenance_token", "label": "Show draggable provenance tag token", "default": true, "info": "Right, vertically centred. Reads \"No. __ / __\" — deliberately quantity-neutral; never implies a real production count." }
+    { "type": "checkbox", "id": "show_scroll_cue", "label": "Show scroll cue", "default": true }
   ],
   "presets": [{ "name": "Cinematic hero" }],
   "enabled_on": {
