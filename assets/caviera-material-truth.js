@@ -28,7 +28,8 @@
  *     stacked), so "closest chapter to viewport centre" doesn't apply — they're all at the same Y
  *     position. Active state comes from the local activation-point progress described above.
  *     Writes --material-progress (drives the heading drift + progress rule) and data-material-
- *     state (0/1/2, thresholded at 0.32/0.66).
+ *     state (0/1/2, thresholded at 0.38/0.72 — chapter 03 deliberately moved later in the runway
+ *     so it isn't sitting "already done" for a large share of the section's remaining scroll).
  *   - Mobile (<1024px): chapters stack vertically in normal flow with no sticky/extra height, so
  *     the usual "closest chapter centre to a fixed viewport focal line" calculation (same principle
  *     as assets/caviera-object-focus.js) applies — but gated behind the SAME activation check first
@@ -45,8 +46,8 @@
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   var MIN_WIDTH = 1024;
-  var STATE_1_THRESHOLD = 0.32;
-  var STATE_2_THRESHOLD = 0.66;
+  var STATE_1_THRESHOLD = 0.38;
+  var STATE_2_THRESHOLD = 0.72;
   // Fractions of the current viewport height — re-evaluated every frame, so these scale correctly
   // with window size rather than being fixed pixel values.
   var ACTIVATION_FRACTION = 0.10; // section's top edge reaches ~10vh from the top of the viewport

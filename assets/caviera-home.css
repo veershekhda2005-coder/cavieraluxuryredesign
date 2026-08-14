@@ -1771,16 +1771,22 @@
   .caviera-craftsmanship__film { aspect-ratio: 4 / 3; margin-block: clamp(28px, 8vw, 48px); }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  /* ACTIVATION/RUNWAY HEIGHT (this round): assets/caviera-material-truth.js's updateDesktop() now
-     computes chapter progress from a fixed ~10vh activation point + ~35vh runway, entirely
-     independent of .stage's own declared height — the chapter timing itself doesn't need this rule
-     to work. This min-height only bounds the section's OVERALL length predictably: ~100svh for the
-     composed frame to read as fully presented, plus the ~35svh runway, landing at the requested
-     ~130-140svh total — not a sticky/pinned hold (no position: sticky anywhere here), just a floor
-     so the section doesn't end abruptly right as chapter 03 activates. If real content ever needs
-     more than this, min-height (not height) lets it grow rather than clipping anything. */
+  /* BOTTOM DEAD SPACE FIX (this round): 135svh was well past what the real content (heading +
+     framed film + chapter row) actually needs to fill, and — since this is a plain min-height on a
+     non-sticky box — any extra beyond the real content simply rendered as literal empty Obsidian
+     space inside .stage's own box, after the last chapter row and before .stage's closing edge. That
+     empty band was the reported gap, not leftover "scroll runway": the activation (~10vh) + runway
+     (~35vh) that assets/caviera-material-truth.js uses to drive chapter progress was never the
+     issue (it's purely rect.top-vs-viewport, independent of this value) — it was this min-height
+     forcing extra box height nothing was designed to fill. Reduced to 120svh (within the requested
+     115-125svh, at the upper/preferred end) so the floor sits much closer to the real content's own
+     height — chapter 03's activation was also moved later within the same runway (thresholds 0.38/
+     0.72 in the JS, was 0.32/0.66) so it isn't sitting "already done" for as long relative to the
+     section's own remaining length. Still not a sticky/pinned hold (no position: sticky anywhere
+     here) — just a floor; if real content ever needs more, min-height lets it grow rather than
+     clipping anything. */
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    min-height: 135svh;
+    min-height: 120svh;
   }
   /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
      [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it.
