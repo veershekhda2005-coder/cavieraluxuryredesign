@@ -1713,13 +1713,70 @@
    wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
    instead of continuous section progress — see the chapter opacity rules further down, which apply
    at every width). */
-/* FRAMED FILM WINDOW (this round): the craftsmanship footage previously ran full-bleed as an
+/* FRAMED FILM WINDOW (earlier round): the craftsmanship footage previously ran full-bleed as an
    absolutely-positioned background layer behind the whole section — every full-bleed rule
    (position: absolute video/overlay covering .stage or the section, the isolation/z-index stack
    needed to keep text above it, and the min-height: 100svh forcing .stage to "hold a room" for
    that background) is removed outright. The video is now a normal, CONTAINED media element in
    document flow, between the heading and the chapter list — see sections/caviera-craftsmanship.
    liquid — so none of that stacking machinery is needed any more. */
+/* ONE-SCREEN COMPOSITION (this round): desktop only, homepage instance only ([data-caviera-
+   material-progress] never exists on the shared Craftsmanship/House page instances of this same
+   section — the :has() below scopes the outer section's own padding to homepage without touching
+   those other two pages at all). .stage-inner becomes a flex column with a single shared `gap`
+   between heading / framed film / chapter row, replacing the previous separate margin-bottom /
+   margin-block values that (added on top of a min-height taller than real content) were exactly
+   what created the earlier bottom-dead-space bug. justify-content: space-between on the flex
+   column means any slack between .stage's min-height and its real content's own height is spread
+   BETWEEN elements, never appended after the last one — the chapter row is always flush against
+   .stage's own closing edge, so a trailing empty gap under it is now structurally impossible, not
+   just numerically unlikely. The outer section's shared --section-spacing padding-block (48-96px
+   top and bottom) is also tightened for this instance only, and the film itself is narrowed from
+   900px to 800px max-width (~61% of the same effective content column .head/.list render within —
+   see the .film override further down for why this is a flat value, not a percentage), which alone
+   meaningfully shortens its rendered height too (aspect-ratio: 16/9 scales down with it). Together
+   these bring the section's
+   overall height down to the requested ~100-110svh, without touching typography, the video's crop/
+   overlay/autoplay behaviour, or the chapter row's own position. */
+@media (min-width: 1024px) {
+  .caviera-craftsmanship:has(.caviera-craftsmanship__stage[data-caviera-material-progress]) {
+    padding-block: clamp(28px, 3.5vw, 44px);
+  }
+  /* Layout structure only (not motion) — applies regardless of prefers-reduced-motion, so the
+     one-screen composition itself is not an animation-dependent feature. Only the drkst continuous
+     drift transform further below stays gated behind prefers-reduced-motion: no-preference. */
+  .caviera-craftsmanship__stage[data-caviera-material-progress] {
+    min-height: 100svh;
+    display: flex;
+  }
+  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* flex: 1, not height: 100% — .stage's own size comes from min-height (a floor, not a fixed
+       height), and percentage heights don't reliably resolve against a min-height-only parent;
+       flex-grow fills whatever space the flex layout algorithm actually gives .stage. */
+    flex: 1 1 auto;
+    gap: clamp(20px, 2.5vw, 32px);
+  }
+  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__head {
+    margin-bottom: 0;
+  }
+  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__film {
+    margin-block: 0;
+    /* A flat max-width, not a percentage: .film has no shared wrapper with .head/.list to take a
+       percentage of (each centres itself independently via its own .container class) — a percentage
+       here would resolve against .stage-inner's full, near-viewport width instead of the same
+       effective ~1300px content column .head/.list actually render within. 800px against that
+       effective column is ~61% — inside the requested 58-66% of content width — and, being a flat
+       reduction from the previous 900px, also directly shortens the video's own rendered height
+       (aspect-ratio: 16/9 scales down with it: ~506px tall -> ~450px tall). */
+    max-width: 800px;
+  }
+  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__list[data-media="no"] {
+    justify-content: space-between;
+  }
+}
 .caviera-craftsmanship__film {
   position: relative;
   /* A contained cinematic panel, not full section width — reads as a deliberate framed window
@@ -1771,23 +1828,6 @@
   .caviera-craftsmanship__film { aspect-ratio: 4 / 3; margin-block: clamp(28px, 8vw, 48px); }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  /* BOTTOM DEAD SPACE FIX (this round): 135svh was well past what the real content (heading +
-     framed film + chapter row) actually needs to fill, and — since this is a plain min-height on a
-     non-sticky box — any extra beyond the real content simply rendered as literal empty Obsidian
-     space inside .stage's own box, after the last chapter row and before .stage's closing edge. That
-     empty band was the reported gap, not leftover "scroll runway": the activation (~10vh) + runway
-     (~35vh) that assets/caviera-material-truth.js uses to drive chapter progress was never the
-     issue (it's purely rect.top-vs-viewport, independent of this value) — it was this min-height
-     forcing extra box height nothing was designed to fill. Reduced to 120svh (within the requested
-     115-125svh, at the upper/preferred end) so the floor sits much closer to the real content's own
-     height — chapter 03's activation was also moved later within the same runway (thresholds 0.38/
-     0.72 in the JS, was 0.32/0.66) so it isn't sitting "already done" for as long relative to the
-     section's own remaining length. Still not a sticky/pinned hold (no position: sticky anywhere
-     here) — just a floor; if real content ever needs more, min-height lets it grow rather than
-     clipping anything. */
-  .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    min-height: 120svh;
-  }
   /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
      [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it.
      VISIBILITY FIX: was max -2vw / scale 1.025 — confirmed via code review to be updating
