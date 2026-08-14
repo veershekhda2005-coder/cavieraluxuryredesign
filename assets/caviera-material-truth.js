@@ -4,21 +4,26 @@
  * the Craftsmanship and House pages reuse the same section file without it, so this script simply
  * finds nothing to do there).
  *
- * ACTIVATION-POINT FIX (this round): the previous progress formula counted the section's ENTRANCE
- * travel (scrolling up from fully-below-the-viewport to on-screen) as part of chapter progress —
- * total = rect.height + vh, progress = (vh - rect.top) / total. By the time the section was
- * actually fully composed on screen (top near the top of the viewport), a large fraction of that
- * total distance had already elapsed purely from the entrance, so progress had already sailed past
- * the first chapter's threshold before the visitor could really see the section at all — arriving
- * on "02 Stone Setting" the instant it became properly visible. Fixed by splitting position into
- * two phases instead of one continuous entrance-to-exit measure:
- *   1. BEFORE the section's top edge reaches ACTIVATION_FRACTION (10vh, within the requested
- *      8-12vh) from the top of the viewport — chapter 01 is forced active and progress is forced
- *      to 0, full stop. No chapter can ever activate while the section is still entering.
- *   2. ONCE that activation point is reached, a fresh LOCAL progress value starts at exactly 0
- *      there and advances to 1 over RUNWAY_FRACTION (35vh, within the requested 30-40vh) of
- *      further scrolling — not the section's own full height, a fixed, short, deliberate runway.
- * Both checks are purely positional (rect.top vs. viewport), re-evaluated every frame with no
+ * REAL STICKY ARCHITECTURE (this round): earlier rounds deliberately removed position: sticky
+ * entirely and approximated a "pinned" feel with a plain block + a hand-tuned viewport-relative
+ * formula. This round reintroduces genuine position: sticky (see .caviera-craftsmanship__stage-
+ * inner in assets/caviera-home.css — sticky, top: 0, height: 100svh, inside a taller ~130svh
+ * .stage), per explicit request. With real sticky in play, desktop's progress formula is now the
+ * standard sticky-scroll-progress calculation, not an approximation:
+ *   - isActivated: stage.getBoundingClientRect().top <= 0 — this is the EXACT instant sticky
+ *     visually engages (the browser itself won't stick .stage-inner to the viewport top until
+ *     .stage's own top has scrolled up to it), so gating chapter progress on this same condition
+ *     means chapter 01 is guaranteed active up to and including the moment sticky engages, and
+ *     never before — no separate activation-distance constant to keep in sync with the CSS.
+ *   - runway: stage.offsetHeight - vh — the real, measured scroll distance .stage-inner stays
+ *     pinned for (~130svh outer - 100svh inner = ~30svh at typical viewports), not a guessed
+ *     constant. Progress = -rect.top / (runway * (1 - HOLD_FRACTION)), clamped 0-1 — the
+ *     (1 - HOLD_FRACTION) factor completes progress slightly before the runway itself is fully
+ *     consumed, so the last HOLD_FRACTION (5%) of the actual sticky hold is a brief, deliberate
+ *     pause with chapter 03 already fully active, before position: sticky releases on its own via
+ *     ordinary CSS/layout mechanics (no JS "release" logic needed — once .stage's own bottom edge
+ *     passes the viewport bottom, sticky simply stops, exactly like any position: sticky element).
+ * Both checks are purely positional (rect.top vs. viewport, runway measured fresh every frame), no
  * stored/directional state, so scrolling upward naturally reverses through the same values and
  * re-entering the section from above always starts back at chapter 01 — nothing to reset by hand.
  *
@@ -26,32 +31,40 @@
  * same three chapters:
  *   - Desktop (>=1024px, motion allowed): the three chapters sit SIDE BY SIDE (a wrapped row, not
  *     stacked), so "closest chapter to viewport centre" doesn't apply — they're all at the same Y
- *     position. Active state comes from the local activation-point progress described above.
- *     Writes --material-progress (drives the heading drift + progress rule) and data-material-
- *     state (0/1/2, thresholded at 0.38/0.72 — chapter 03 deliberately moved later in the runway
- *     so it isn't sitting "already done" for a large share of the section's remaining scroll).
- *   - Mobile (<1024px): chapters stack vertically in normal flow with no sticky/extra height, so
- *     the usual "closest chapter centre to a fixed viewport focal line" calculation (same principle
- *     as assets/caviera-object-focus.js) applies — but gated behind the SAME activation check first
- *     (chapter 01 forced until the section reaches its own composed viewing position), so mobile
- *     can't arrive already on chapter 02 either.
+ *     position. Active state comes from the real sticky-progress formula described above. Writes
+ *     --material-progress (drives the heading drift + progress rule) and data-material-state
+ *     (0/1/2, thresholded at 0.34/0.68 per this round's explicit spec).
+ *   - Mobile (<1024px): deliberately NOT converted to the sticky architecture — the full desktop
+ *     composition (heading + framed video + three SIDE-BY-SIDE columns) cannot fit inside a single
+ *     100dvh pinned room once the three chapters stack vertically instead, per this same section's
+ *     own mobile layout (see caviera-home.css) — attempting it would either clip real copy or force
+ *     a much taller mobile sticky hold, exactly the "long scroll trap" this round explicitly warns
+ *     against. Per the brief's own explicit fallback ("if the full desktop composition cannot
+ *     physically fit on mobile, preserve the existing mobile layout while using the same chapter-
+ *     state logic"), mobile keeps its pre-existing, unconverted behaviour: no sticky, no extra
+ *     height, chapters stack in normal flow, and the usual "closest chapter centre to a fixed
+ *     viewport focal line" calculation (same principle as assets/caviera-object-focus.js) applies —
+ *     gated behind the pre-existing ACTIVATION_FRACTION check first (chapter 01 forced until the
+ *     section reaches its own composed viewing position), so mobile still can't arrive already on
+ *     chapter 02.
  * Both modes are re-evaluated on resize, so crossing the breakpoint always lands in the correct one
  * — including undoing anything the previous mode had set.
  *
  * No wheel interception, no preventDefault, no scroll snapping — normal scroll is the only input.
  * Skips entirely under prefers-reduced-motion (the section already renders completely — every
- * chapter at full, equal opacity — without it).
+ * chapter at full, equal opacity — without it; .stage-inner also isn't made sticky under reduced
+ * motion, see caviera-home.css, so nothing pins for visitors who've asked for none of this).
  */
 (function () {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   var MIN_WIDTH = 1024;
-  var STATE_1_THRESHOLD = 0.38;
-  var STATE_2_THRESHOLD = 0.72;
-  // Fractions of the current viewport height — re-evaluated every frame, so these scale correctly
-  // with window size rather than being fixed pixel values.
+  var STATE_1_THRESHOLD = 0.34;
+  var STATE_2_THRESHOLD = 0.68;
+  var HOLD_FRACTION = 0.05; // last 5% of the real sticky runway is a brief hold on chapter 03
+  // Mobile-only — desktop's own activation check is now the real sticky engagement point
+  // (rect.top <= 0), see isDesktopActivated() below.
   var ACTIVATION_FRACTION = 0.10; // section's top edge reaches ~10vh from the top of the viewport
-  var RUNWAY_FRACTION = 0.35; // then 01 -> 02 -> 03 completes over this much further scrolling
 
   function initMaterialTruth(stage) {
     var list = stage.querySelector('.caviera-craftsmanship__list');
@@ -70,10 +83,12 @@
       });
     }
 
-    // Shared activation gate — true only once the section's own top edge has reached its composed
-    // viewing position (ACTIVATION_FRACTION from the top of the viewport). Purely positional, no
-    // stored state, so it re-evaluates correctly on every frame in either scroll direction.
-    function isActivated(rect, vh) {
+    // Mobile-only activation gate — true only once the section's own top edge has reached its
+    // composed viewing position (ACTIVATION_FRACTION from the top of the viewport). Purely
+    // positional, no stored state, so it re-evaluates correctly on every frame in either scroll
+    // direction. Desktop uses its own, stricter gate (rect.top <= 0 — the real sticky engagement
+    // point) directly inside updateDesktop() below.
+    function isMobileActivated(rect, vh) {
       return rect.top <= vh * ACTIVATION_FRACTION;
     }
 
@@ -81,17 +96,21 @@
       ticking = false;
       var rect = stage.getBoundingClientRect();
       var vh = window.innerHeight;
-      if (!isActivated(rect, vh)) {
-        // Still entering — chapter 01, no progress, full stop. Never lets 02/03 activate early.
+      if (rect.top > 0) {
+        // .stage-inner hasn't stuck to the viewport top yet (position: sticky hasn't engaged) —
+        // still entering. Chapter 01, no progress, full stop. Never lets 02/03 activate early.
         stage.style.setProperty('--material-progress', '0.0000');
         setActive(0);
         return;
       }
-      // Local progress: 0 exactly at the activation point, 1 after RUNWAY_FRACTION of further
-      // scrolling — a fixed, short runway, not the section's own full height.
-      var activationOffset = vh * ACTIVATION_FRACTION;
-      var runway = vh * RUNWAY_FRACTION;
-      var progress = runway > 0 ? (activationOffset - rect.top) / runway : 0;
+      // Real sticky runway: how far .stage's own top has scrolled past the viewport top is exactly
+      // how far .stage-inner has left to travel before .stage's bottom edge reaches the viewport
+      // bottom and sticky releases on its own. Measured fresh every frame (stage.offsetHeight), not
+      // a guessed constant, so it always matches the CSS's actual ~130svh outer / 100svh inner
+      // regardless of exact viewport height.
+      var runway = stage.offsetHeight - vh;
+      var effectiveRunway = runway * (1 - HOLD_FRACTION);
+      var progress = effectiveRunway > 0 ? (-rect.top) / effectiveRunway : 0;
       progress = Math.max(0, Math.min(1, progress));
       stage.style.setProperty('--material-progress', progress.toFixed(4));
       var index = 0;
@@ -104,9 +123,9 @@
       ticking = false;
       var rect = stage.getBoundingClientRect();
       var vh = window.innerHeight;
-      if (!isActivated(rect, vh)) {
-        // Same gate as desktop — the section itself hasn't reached its composed viewing position
-        // yet, so chapter 01 stays forced regardless of where individual chapter rows sit.
+      if (!isMobileActivated(rect, vh)) {
+        // Mobile isn't sticky (see caviera-home.css) — this just confirms the section itself has
+        // reached its composed viewing position before letting any chapter but 01 activate.
         setActive(0);
         return;
       }

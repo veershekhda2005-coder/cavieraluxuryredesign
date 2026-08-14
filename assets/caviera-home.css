@@ -1702,93 +1702,74 @@
    on; every rule below is gated on that attribute, so the Craftsmanship/House page instances (that
    attribute never present there) render exactly as before — completely unaffected.
 
-   DESKTOP (1024px+, motion allowed): no sticky/pinned stage, no forced min-height — .stage is a
-   plain block that takes exactly the height its real content (heading, framed film, chapter row)
-   needs, scrolling past normally like any other section. assets/caviera-material-truth.js's
-   updateDesktop() computes --material-progress (0-1) from .stage's own natural viewport passage.
-   data-material-state (0/1/2) still comes from that same progress value. Nothing here ever reads
-   or writes --caviera-progress, --house-code-progress, or --edition-exhibition-progress.
+   REAL STICKY SEQUENCE (this round, replacing every earlier non-sticky approximation): per
+   explicit request, .stage is now a genuinely taller box (~130svh) whose only child, .stage-inner,
+   is position: sticky; top: 0; height: 100svh — a real pinned "room" holding the heading, framed
+   film and chapter row together as ONE unit while the user scrolls through .stage's own extra
+   ~30svh of height. assets/caviera-material-truth.js's updateDesktop() derives progress straight
+   from that real geometry (stage.offsetHeight - vh is the actual sticky-hold distance, measured
+   fresh every frame — never a guessed constant), so the CSS and JS can't drift out of sync with
+   each other. Sticky is gated behind prefers-reduced-motion: no-preference — a visitor who's asked
+   for no motion gets the plain, non-pinned stacked section instead (see that media query below).
 
-   MOBILE (<1024px): no extra height, no sticky — .stage/.stage-inner stay plain, auto-height
-   wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
-   instead of continuous section progress — see the chapter opacity rules further down, which apply
-   at every width). */
-/* FRAMED FILM WINDOW (earlier round): the craftsmanship footage previously ran full-bleed as an
-   absolutely-positioned background layer behind the whole section — every full-bleed rule
-   (position: absolute video/overlay covering .stage or the section, the isolation/z-index stack
-   needed to keep text above it, and the min-height: 100svh forcing .stage to "hold a room" for
-   that background) is removed outright. The video is now a normal, CONTAINED media element in
-   document flow, between the heading and the chapter list — see sections/caviera-craftsmanship.
-   liquid — so none of that stacking machinery is needed any more. */
-/* ONE-SCREEN COMPOSITION (this round): desktop only, homepage instance only ([data-caviera-
-   material-progress] never exists on the shared Craftsmanship/House page instances of this same
-   section — the :has() below scopes the outer section's own padding to homepage without touching
-   those other two pages at all). .stage-inner becomes a flex column with a single shared `gap`
-   between heading / framed film / chapter row, replacing the previous separate margin-bottom /
-   margin-block values that (added on top of a min-height taller than real content) were exactly
-   what created the earlier bottom-dead-space bug. justify-content: space-between on the flex
-   column means any slack between .stage's min-height and its real content's own height is spread
-   BETWEEN elements, never appended after the last one — the chapter row is always flush against
-   .stage's own closing edge, so a trailing empty gap under it is now structurally impossible, not
-   just numerically unlikely. The outer section's shared --section-spacing padding-block (48-96px
-   top and bottom) is also tightened for this instance only, and the film itself is narrowed from
-   900px to 800px max-width (~61% of the same effective content column .head/.list render within —
-   see the .film override further down for why this is a flat value, not a percentage), which alone
-   meaningfully shortens its rendered height too (aspect-ratio: 16/9 scales down with it). Together
-   these bring the section's
-   overall height down to the requested ~100-110svh, without touching typography, the video's crop/
-   overlay/autoplay behaviour, or the chapter row's own position. */
-@media (min-width: 1024px) {
+   MOBILE (<1024px): deliberately NOT converted to the sticky architecture — see the JS file's own
+   header comment for why (the three chapters stack vertically there instead of sitting side by
+   side, so the full composition can't fit one pinned 100dvh room without clipping or a much longer
+   hold). .stage/.stage-inner stay plain, auto-height, non-sticky wrappers exactly as before. */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .caviera-craftsmanship:has(.caviera-craftsmanship__stage[data-caviera-material-progress]) {
     padding-block: clamp(28px, 3.5vw, 44px);
   }
-  /* Layout structure only (not motion) — applies regardless of prefers-reduced-motion, so the
-     one-screen composition itself is not an animation-dependent feature. Only the drkst continuous
-     drift transform further below stays gated behind prefers-reduced-motion: no-preference. */
+  /* OUTER STAGE: ~130svh total — 100svh for the pinned room itself, plus ~30svh of real scroll-
+     through runway for .stage-inner to travel across while stuck (the distance
+     assets/caviera-material-truth.js measures as stage.offsetHeight - vh). This is a real used
+     height now (not a min-height floor sitting behind a differently-sized natural layout) — the
+     sticky child's own 100svh occupies its normal in-flow space, and this literal height supplies
+     the additional runway on top of that. Deliberately NOT 160/200/250/300svh — a short, controlled
+     hold, per the explicit brief. */
   .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    min-height: 100svh;
-    display: flex;
+    height: 130svh;
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
+    position: sticky;
+    top: 0;
+    height: 100svh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    /* flex: 1, not height: 100% — .stage's own size comes from min-height (a floor, not a fixed
-       height), and percentage heights don't reliably resolve against a min-height-only parent;
-       flex-grow fills whatever space the flex layout algorithm actually gives .stage. */
-    flex: 1 1 auto;
-    gap: clamp(20px, 2.5vw, 32px);
+    /* Default justify-content (flex-start) — content stacks from the top with explicit, tuned
+       margins between each piece (see .head/.film below) rather than an auto-distributed
+       space-between gap. Real content (heading + narrowed film + one-line chapter row) comes in
+       under 100svh, so whatever's left over falls naturally below the chapter row as the
+       "comfortable bottom breathing space" the brief asks for — never as a gap dumped between
+       unrelated pieces, and never requiring a corrective transform on the row itself.
+       Deliberately no overflow: hidden here — if real content ever runs slightly taller than
+       100svh (a longer merchant-edited chapter body, a narrower viewport), it simply extends
+       past the sticky box rather than clipping; "no clipping" was explicit in the brief. */
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__head {
-    margin-bottom: 0;
+    /* Slightly tightened from the shared default so the whole composition breathes inside 100svh —
+       not a dramatic move, per the brief's own priority order (heading position stays put; only
+       the space below it is trimmed a little). */
+    margin-bottom: clamp(16px, 1.8vw, 26px);
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__film {
     margin-block: 0;
+    /* VIDEO-TO-CHAPTER-ROW GAP (this round): was 0 (flush against the row, which then relied on a
+       corrective -50px transform on the row to open any breathing room at all). Now a direct,
+       intentional gap below the film only — 34px at 1440px width (clamp(28px, 2.4vw, 42px): 2.4vw
+       * 1440px = 34.56px), within the requested 28-42px, "start around 34px". A flat clamp, not a
+       percentage — same reasoning as the film's own max-width below: no shared ancestor with .list
+       to take a meaningful percentage of. */
+    margin-bottom: clamp(28px, 2.4vw, 42px);
     /* A flat max-width, not a percentage: .film has no shared wrapper with .head/.list to take a
        percentage of (each centres itself independently via its own .container class) — a percentage
        here would resolve against .stage-inner's full, near-viewport width instead of the same
        effective ~1300px content column .head/.list actually render within. 800px against that
-       effective column is ~61% — inside the requested 58-66% of content width — and, being a flat
-       reduction from the previous 900px, also directly shortens the video's own rendered height
-       (aspect-ratio: 16/9 scales down with it: ~506px tall -> ~450px tall). */
+       effective column is ~61% — inside the previously-requested 58-66% of content width — and,
+       being a flat reduction from the original 900px, also shortens the video's own rendered height
+       (aspect-ratio: 16/9 scales down with it: ~506px tall -> ~450px tall), helping the whole
+       composition fit inside 100svh. */
     max-width: 800px;
-  }
-  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__list[data-media="no"] {
-    justify-content: space-between;
-    /* ROW LIFT (this round): the flex space-between rule above sits the chapter row flush against
-       .stage-inner's own closing edge by design (see the ONE-SCREEN COMPOSITION comment further up
-       — that flush position is exactly what makes a trailing dead-space gap structurally
-       impossible). Flush also meant the body copy sat right at the section's own edge with no
-       breathing room beneath it. A transform, not a margin/gap change: it shifts the whole row as
-       one rigid block without touching .stage's own height, without re-running the space-between
-       distribution, and without moving the video or heading at all — the row's own internal
-       three-column alignment (equal flex basis, shared flex-start baseline) is completely
-       unaffected, since translateY moves the row's rendered box as a whole, not each column
-       independently. -50px (within the requested 40-60px, at the "start around 50px" point) opens
-       up an equivalent ~50px of breathing room below the copy (within the requested 35-55px) —
-       taken from the slack space-between already leaves between the video and the row, not from
-       extra section height. */
-    transform: translateY(-50px);
   }
 }
 .caviera-craftsmanship__film {
