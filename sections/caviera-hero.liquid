@@ -8,21 +8,23 @@
   header, not here (see show_wordmark below).
 
   Media priority per breakpoint: 1) dedicated Theme Editor image/video (image_desktop / image_mobile
-  / video_url / video_url_mobile) — always wins outright, 2) the bundled default first-screen image
-  (assets/15_oryx_necklace_on_model.png), used only where a breakpoint has neither of its own, 3) a
-  considered gradient/frame placeholder (see assets/caviera-home.css, .caviera-hero__field-fallback)
-  for the rare case neither exists (kept in the CSS/markup but effectively unreachable now that the
-  bundled image always fills the gap). There is still deliberately no fallback to any product or
-  collection image at any point — an unrelated catalogue photo (however good) reads as a stand-in,
-  not a campaign entrance, and risks surfacing whatever image happens to be first in the catalogue
-  (including one still carrying temporary/marketplace artwork). See
-  docs/homepage-media-requirements.md for the desktop/mobile hero image specification.
+  / video_url / video_url_mobile) — always wins outright, 2) the bundled default (this round: the
+  2026 approved House loop video, assets/caviera-house-hero-loop-2026.mp4, poster'd by the approved
+  still assets/caviera-house-hero-2026.png), used only where a breakpoint has neither of its own,
+  3) a considered gradient/frame placeholder (see assets/caviera-home.css,
+  .caviera-hero__field-fallback) for the rare case neither exists (kept in the CSS/markup but
+  effectively unreachable now that the bundled video always fills the gap). There is still
+  deliberately no fallback to any product or collection image at any point — an unrelated catalogue
+  photo (however good) reads as a stand-in, not a campaign entrance, and risks surfacing whatever
+  image happens to be first in the catalogue (including one still carrying temporary/marketplace
+  artwork). See docs/homepage-media-requirements.md for the desktop/mobile hero image specification.
 
-  Desktop and mobile images share one <picture> element so the browser fetches only the variant
-  that actually matches the current viewport — never both. Desktop/mobile video (an optional,
-  advanced path) render as two separate <video> elements with preload="metadata" rather than a
-  full eager fetch, since a browser cannot conditionally skip fetching a hidden video element the
-  way <picture> lets it skip an unmatched <source>.
+  Desktop and mobile images share one <picture> element (or, for the bundled video, one <video>
+  element reused at every breakpoint via CSS object-position — see .caviera-hero__media-el--bundled)
+  so the browser fetches only the variant that actually matches the current viewport — never both.
+  Desktop/mobile video (an optional, advanced merchant path) render as two separate <video> elements
+  with preload="metadata" rather than a full eager fetch, since a browser cannot conditionally skip
+  fetching a hidden video element the way <picture> lets it skip an unmatched <source>.
 {%- endcomment -%}
 {%- liquid
   assign hero_image = section.settings.image_desktop
@@ -52,6 +54,7 @@
     assign has_mobile_media = true
   endunless
   assign bundled_hero_file = 'caviera-house-hero-2026.png'
+  assign bundled_hero_video_file = 'caviera-house-hero-loop-2026.mp4'
 -%}
 <section class="caviera-hero" data-scheme="{{ section.settings.text_mode }}" data-media-position="{{ section.settings.media_position }}" data-caviera-pin>
   <div
@@ -95,34 +98,58 @@
         >
       </picture>
     {%- elsif use_bundled_desktop -%}
-      <picture>
-        {%- comment -%} A merchant may still have set only a mobile image with no desktop image/video — respect it here too, same as the branch above. {%- endcomment -%}
-        {%- if hero_image_mobile != blank -%}
-          <source
-            media="(max-width: 749px)"
-            srcset="{{ hero_image_mobile | image_url: width: 600 }} 600w, {{ hero_image_mobile | image_url: width: 900 }} 900w, {{ hero_image_mobile | image_url: width: 1200 }} 1200w"
-            sizes="100vw"
-          >
-        {%- endif -%}
-        {%- comment -%}
-          2026 approved House campaign image (assets/caviera-house-hero-2026.png, 1672x941) — a
-          coastal architectural composition: open sea/sky negative space on the left, the House's
-          Cinnabar architectural wall and Oryx plaque dominant on the right. object-position is set
-          per breakpoint in assets/caviera-home.css (.caviera-hero__media-el--bundled), not inline
-          here, since desktop and mobile need genuinely different crops of the same file — desktop
-          keeps the full cinematic composition (sea negative space + architecture), mobile biases
-          further right toward the entrance/Cinnabar wall/Oryx detail while still keeping some
-          sea/sky breathing room on the left edge of the crop.
-        {%- endcomment -%}
-        <img
-          class="caviera-hero__media-el caviera-hero__media-el--bundled"
-          src="{{ bundled_hero_file | asset_url }}"
-          width="1672" height="941"
-          alt=""
-          loading="eager"
-          fetchpriority="high"
-        >
-      </picture>
+      {%- comment -%}
+        FINAL APPROVED HERO LOOP (this round): the bundled default is now the 2026 House loop video
+        (assets/caviera-house-hero-loop-2026.mp4, 1280x720/24fps/~6s, same locked-camera coastal
+        architectural composition as the still campaign image below — verified directly by
+        extracting its first/last frames and comparing them against the still: sea/sky negative
+        space on the left, Cinnabar architectural wall + both Oryx marks dominant on the right,
+        first and last frames close to identical, confirming it was built as a genuine loop, not
+        looping over a visible jump). Reuses the exact same .caviera-hero__media-el--bundled
+        object-position tuning as the still image below (desktop 100% 44% / mobile 80% 42%, see
+        assets/caviera-home.css) rather than re-deriving it, since the composition itself matches.
+        A SINGLE video element serves both desktop and mobile — no separate mobile crop was
+        supplied for this asset, and object-position already reads differently per breakpoint via
+        the shared --bundled class, exactly like the still image it replaces — so this never
+        duplicates the media element.
+
+        poster is the approved still image (caviera-house-hero-2026.png) — shown immediately before
+        the video has enough data to play, if autoplay is blocked, or if the video fails to load
+        entirely, so a visitor is never looking at an empty black hero.
+      {%- endcomment -%}
+      {%- comment -%}
+        A merchant may still have set only a mobile image with no desktop image/video (unchanged
+        edge case from the previous still-image version of this branch) — respected here too: the
+        bundled video then renders desktop-only (--desktop, hidden <749px by the existing rule
+        below) and their own mobile image takes over at that breakpoint instead, in the mobile
+        block further down. Otherwise (the common case — nothing dedicated set at all) the same
+        single video/poster pair serves every breakpoint, exactly like the still image it replaces.
+      {%- endcomment -%}
+      <video
+        class="caviera-hero__media-el caviera-hero__media-el--bundled caviera-hero__media-el--bundled-video{% if hero_image_mobile != blank %} caviera-hero__media-el--desktop{% endif %}"
+        autoplay muted loop playsinline preload="metadata"
+        poster="{{ bundled_hero_file | asset_url }}"
+        data-caviera-hero-video
+      >
+        <source src="{{ bundled_hero_video_file | asset_url }}" type="video/mp4">
+      </video>
+      {%- comment -%}
+        REDUCED MOTION: a plain static <img> of the exact same approved still, sharing the same
+        --bundled crop — assets/caviera-home.css shows this instead of the video (and hides the
+        video) under prefers-reduced-motion: reduce; assets/caviera-hero-video.js additionally
+        pauses the video outright for those visitors, since the video's own autoplay attribute
+        starts playback before any script runs and CSS alone can only hide it, not stop it playing
+        unseen. Same file, same crop, same composition — reduced motion here means "no motion", not
+        "different framing".
+      {%- endcomment -%}
+      <img
+        class="caviera-hero__media-el caviera-hero__media-el--bundled caviera-hero__media-el--bundled-poster{% if hero_image_mobile != blank %} caviera-hero__media-el--desktop{% endif %}"
+        src="{{ bundled_hero_file | asset_url }}"
+        width="1672" height="941"
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+      >
     {%- endif -%}
 
     {%- comment -%}
@@ -162,15 +189,39 @@
           fetchpriority="high"
         >
       {%- endif -%}
+    {%- elsif use_bundled_desktop and hero_image_mobile != blank -%}
+      {%- comment -%} Same edge case as above — a merchant-set mobile image takes over from the bundled desktop video at this breakpoint. {%- endcomment -%}
+      <img
+        class="caviera-hero__media-el caviera-hero__media-el--mobile"
+        src="{{ hero_image_mobile | image_url: width: 900 }}"
+        srcset="{{ hero_image_mobile | image_url: width: 600 }} 600w, {{ hero_image_mobile | image_url: width: 900 }} 900w, {{ hero_image_mobile | image_url: width: 1200 }} 1200w"
+        sizes="100vw"
+        width="{{ hero_image_mobile.width }}"
+        height="{{ hero_image_mobile.height }}"
+        alt="{{ hero_image_mobile.alt | default: '' | escape }}"
+        loading="eager"
+        fetchpriority="high"
+      >
     {%- endif -%}
     {%- if section.settings.overlay_opacity > 0 and has_desktop_media -%}
       <div class="caviera-hero__overlay" style="opacity:{{ section.settings.overlay_opacity | divided_by: 100.0 }};"></div>
     {%- endif -%}
     <div class="caviera-hero__field-fallback" aria-hidden="true"></div>
     {%- if request.design_mode and use_bundled_desktop or request.design_mode and use_bundled_mobile -%}
-      <div class="caviera-editor-note">Showing the bundled default campaign image ({% if use_bundled_desktop and use_bundled_mobile %}desktop and mobile{% elsif use_bundled_desktop %}desktop{% else %}mobile{% endif %}) — select dedicated media above to replace it with your own.</div>
+      <div class="caviera-editor-note">Showing the bundled default campaign {% if use_bundled_desktop %}video{% else %}image{% endif %} ({% if use_bundled_desktop and use_bundled_mobile %}desktop and mobile{% elsif use_bundled_desktop %}desktop{% else %}mobile{% endif %}) — select dedicated media above to replace it with your own.</div>
     {%- endif -%}
   </div>
+  {%- if use_bundled_desktop -%}
+    {%- comment -%}
+      Reduced-motion safeguard only — see assets/caviera-hero-video.js. The <video autoplay>
+      attribute above starts playback before any script runs, and CSS (which already hides the
+      video and shows the static poster <img> instead, see caviera-home.css) cannot stop that
+      playback, only hide it — this pauses it outright for prefers-reduced-motion visitors so
+      nothing plays unseen. Also defensively re-asserts video.muted = true for reliable autoplay,
+      per the brief. Loaded only when the bundled video can actually render.
+    {%- endcomment -%}
+    <script src="{{ 'caviera-hero-video.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
 
   <div class="caviera-hero__field">
     <span class="caviera-hero__hinge" aria-hidden="true"></span>

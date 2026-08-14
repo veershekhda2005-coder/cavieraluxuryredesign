@@ -117,6 +117,34 @@
   .caviera-hero__media-el--desktop { display: none; }
   .caviera-hero__media-el--mobile { display: block; }
 }
+/* FINAL APPROVED HERO LOOP: the bundled video reuses .caviera-hero__media-el's own object-fit/
+   object-position (inherited, unchanged) but must NOT inherit its scroll-driven
+   transform: scale(...) zoom above — the approved footage was shot with a deliberately locked
+   camera (no zoom, no push), and adding a CSS-driven zoom on top of that footage is explicitly not
+   wanted, unlike the still image this replaces (where that zoom was already an approved, existing
+   effect). Same specificity as the base rule (one class each) — wins on source order (declared
+   after) with no !important needed. */
+.caviera-hero__media-el--bundled-video { transform: none; }
+/* Static-poster fallback for prefers-reduced-motion — hidden by default (the video is the normal
+   state); the query below flips which of the pair is visible. Sharing .caviera-hero__media-el--
+   bundled's own object-position means the static frame reads as exactly the same composition, not
+   a different crop. */
+.caviera-hero__media-el--bundled-poster { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  /* assets/caviera-hero-video.js also pauses the video outright for these visitors — CSS alone can
+     hide it but cannot stop an already-playing <video autoplay> decoding unseen. */
+  .caviera-hero__media-el--bundled-video { display: none; }
+  .caviera-hero__media-el--bundled-poster { display: block; }
+}
+@media (max-width: 749px) {
+  /* Edge case: a merchant sets only a mobile image with no desktop image/video (see
+     sections/caviera-hero.liquid) — the bundled video/poster pair then also carries --desktop, and
+     their own mobile image takes over instead. Compound (two-class) selectors here so this hide
+     always wins over the single-class rules above regardless of prefers-reduced-motion or
+     declaration order — a mobile viewport must never show the desktop-only bundled pair. */
+  .caviera-hero__media-el--desktop.caviera-hero__media-el--bundled-video,
+  .caviera-hero__media-el--desktop.caviera-hero__media-el--bundled-poster { display: none; }
+}
 .caviera-hero__overlay { position: absolute; inset: 0; background: var(--caviera-obsidian); }
 /* Load-in resolve for the copy only (the image's motion is now entirely scroll-driven above, not
    a one-shot load animation — see the note above). Pure CSS, animation-fill-mode: backwards holds
