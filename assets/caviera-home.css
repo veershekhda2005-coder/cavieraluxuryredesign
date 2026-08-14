@@ -1771,6 +1771,17 @@
   .caviera-craftsmanship__film { aspect-ratio: 4 / 3; margin-block: clamp(28px, 8vw, 48px); }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  /* ACTIVATION/RUNWAY HEIGHT (this round): assets/caviera-material-truth.js's updateDesktop() now
+     computes chapter progress from a fixed ~10vh activation point + ~35vh runway, entirely
+     independent of .stage's own declared height — the chapter timing itself doesn't need this rule
+     to work. This min-height only bounds the section's OVERALL length predictably: ~100svh for the
+     composed frame to read as fully presented, plus the ~35svh runway, landing at the requested
+     ~130-140svh total — not a sticky/pinned hold (no position: sticky anywhere here), just a floor
+     so the section doesn't end abruptly right as chapter 03 activates. If real content ever needs
+     more than this, min-height (not height) lets it grow rather than clipping anything. */
+  .caviera-craftsmanship__stage[data-caviera-material-progress] {
+    min-height: 135svh;
+  }
   /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
      [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it.
      VISIBILITY FIX: was max -2vw / scale 1.025 — confirmed via code review to be updating

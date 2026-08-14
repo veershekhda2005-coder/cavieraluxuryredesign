@@ -4,26 +4,36 @@
  * the Craftsmanship and House pages reuse the same section file without it, so this script simply
  * finds nothing to do there).
  *
+ * ACTIVATION-POINT FIX (this round): the previous progress formula counted the section's ENTRANCE
+ * travel (scrolling up from fully-below-the-viewport to on-screen) as part of chapter progress —
+ * total = rect.height + vh, progress = (vh - rect.top) / total. By the time the section was
+ * actually fully composed on screen (top near the top of the viewport), a large fraction of that
+ * total distance had already elapsed purely from the entrance, so progress had already sailed past
+ * the first chapter's threshold before the visitor could really see the section at all — arriving
+ * on "02 Stone Setting" the instant it became properly visible. Fixed by splitting position into
+ * two phases instead of one continuous entrance-to-exit measure:
+ *   1. BEFORE the section's top edge reaches ACTIVATION_FRACTION (10vh, within the requested
+ *      8-12vh) from the top of the viewport — chapter 01 is forced active and progress is forced
+ *      to 0, full stop. No chapter can ever activate while the section is still entering.
+ *   2. ONCE that activation point is reached, a fresh LOCAL progress value starts at exactly 0
+ *      there and advances to 1 over RUNWAY_FRACTION (35vh, within the requested 30-40vh) of
+ *      further scrolling — not the section's own full height, a fixed, short, deliberate runway.
+ * Both checks are purely positional (rect.top vs. viewport), re-evaluated every frame with no
+ * stored/directional state, so scrolling upward naturally reverses through the same values and
+ * re-entering the section from above always starts back at chapter 01 — nothing to reset by hand.
+ *
  * TWO independent detection modes, matching the two very different desktop/mobile layouts of the
  * same three chapters:
  *   - Desktop (>=1024px, motion allowed): the three chapters sit SIDE BY SIDE (a wrapped row, not
  *     stacked), so "closest chapter to viewport centre" doesn't apply — they're all at the same Y
- *     position. Active state comes from continuous progress (0-1) through the section's own
- *     NATURAL viewport passage — no sticky/pinned stage any more (removed per this round's
- *     explicit brief: the section previously used a tall sticky wrapper, several times reduced in
- *     scroll distance but never removed, which kept reading as "an extra held screen"). progress =
- *     0 as .stage's bottom edge first reaches the bottom of the viewport (the section starting to
- *     enter), progress = 1 once .stage's top edge has fully scrolled past the top of the viewport
- *     (the section fully exited) — a plain "how far has this element travelled through the
- *     viewport" measure, the same family of technique as assets/caviera-scroll-progress.js, just
- *     independent and self-contained here. Writes --material-progress (drives the heading drift +
- *     progress rule) and data-material-state (0/1/2, thresholded at 0.33/0.66 — the section's own
- *     natural height is now close to one viewport, so these thirds already line up with roughly
- *     entering/centred/exiting).
+ *     position. Active state comes from the local activation-point progress described above.
+ *     Writes --material-progress (drives the heading drift + progress rule) and data-material-
+ *     state (0/1/2, thresholded at 0.32/0.66).
  *   - Mobile (<1024px): chapters stack vertically in normal flow with no sticky/extra height, so
  *     the usual "closest chapter centre to a fixed viewport focal line" calculation (same principle
- *     as assets/caviera-object-focus.js) applies directly — unchanged, this was already "normal
- *     viewport passage", never sticky.
+ *     as assets/caviera-object-focus.js) applies — but gated behind the SAME activation check first
+ *     (chapter 01 forced until the section reaches its own composed viewing position), so mobile
+ *     can't arrive already on chapter 02 either.
  * Both modes are re-evaluated on resize, so crossing the breakpoint always lands in the correct one
  * — including undoing anything the previous mode had set.
  *
@@ -35,8 +45,12 @@
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   var MIN_WIDTH = 1024;
-  var STATE_1_THRESHOLD = 0.33;
+  var STATE_1_THRESHOLD = 0.32;
   var STATE_2_THRESHOLD = 0.66;
+  // Fractions of the current viewport height — re-evaluated every frame, so these scale correctly
+  // with window size rather than being fixed pixel values.
+  var ACTIVATION_FRACTION = 0.10; // section's top edge reaches ~10vh from the top of the viewport
+  var RUNWAY_FRACTION = 0.35; // then 01 -> 02 -> 03 completes over this much further scrolling
 
   function initMaterialTruth(stage) {
     var list = stage.querySelector('.caviera-craftsmanship__list');
@@ -55,16 +69,28 @@
       });
     }
 
+    // Shared activation gate — true only once the section's own top edge has reached its composed
+    // viewing position (ACTIVATION_FRACTION from the top of the viewport). Purely positional, no
+    // stored state, so it re-evaluates correctly on every frame in either scroll direction.
+    function isActivated(rect, vh) {
+      return rect.top <= vh * ACTIVATION_FRACTION;
+    }
+
     function updateDesktop() {
       ticking = false;
       var rect = stage.getBoundingClientRect();
       var vh = window.innerHeight;
-      // Natural viewport-passage progress (no sticky stage): 0 when the section's bottom edge is
-      // just reaching the bottom of the viewport (first starting to enter), 1 once the section's
-      // top edge has fully scrolled past the top of the viewport (fully exited). total is the full
-      // distance travelled over that whole passage — the section's own height plus one viewport.
-      var total = rect.height + vh;
-      var progress = total > 0 ? (vh - rect.top) / total : 0;
+      if (!isActivated(rect, vh)) {
+        // Still entering — chapter 01, no progress, full stop. Never lets 02/03 activate early.
+        stage.style.setProperty('--material-progress', '0.0000');
+        setActive(0);
+        return;
+      }
+      // Local progress: 0 exactly at the activation point, 1 after RUNWAY_FRACTION of further
+      // scrolling — a fixed, short runway, not the section's own full height.
+      var activationOffset = vh * ACTIVATION_FRACTION;
+      var runway = vh * RUNWAY_FRACTION;
+      var progress = runway > 0 ? (activationOffset - rect.top) / runway : 0;
       progress = Math.max(0, Math.min(1, progress));
       stage.style.setProperty('--material-progress', progress.toFixed(4));
       var index = 0;
@@ -75,12 +101,20 @@
 
     function updateMobile() {
       ticking = false;
-      var focalY = window.innerHeight * 0.5;
+      var rect = stage.getBoundingClientRect();
+      var vh = window.innerHeight;
+      if (!isActivated(rect, vh)) {
+        // Same gate as desktop — the section itself hasn't reached its composed viewing position
+        // yet, so chapter 01 stays forced regardless of where individual chapter rows sit.
+        setActive(0);
+        return;
+      }
+      var focalY = vh * 0.5;
       var bestIndex = -1;
       var bestDelta = Infinity;
       chapters.forEach(function (chapter, i) {
-        var rect = chapter.getBoundingClientRect();
-        var chapterCenter = rect.top + rect.height / 2;
+        var chapterRect = chapter.getBoundingClientRect();
+        var chapterCenter = chapterRect.top + chapterRect.height / 2;
         var delta = Math.abs(chapterCenter - focalY);
         if (delta < bestDelta) {
           bestDelta = delta;
