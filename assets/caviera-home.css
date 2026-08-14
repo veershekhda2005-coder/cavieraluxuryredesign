@@ -1747,20 +1747,25 @@
        past the sticky box rather than clipping; "no clipping" was explicit in the brief. */
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__head {
-    /* Slightly tightened from the shared default so the whole composition breathes inside 100svh —
-       not a dramatic move, per the brief's own priority order (heading position stays put; only
-       the space below it is trimmed a little). */
-    margin-bottom: clamp(16px, 1.8vw, 26px);
+    /* VERTICAL COMPOSITION POLISH (this round): the title group sat right at .stage-inner's own
+       pinned top edge (0px) with no breathing room, reading as "attached to the browser edge".
+       margin-top suspends the whole group (label + heading + underline, moved together, their own
+       internal relationship untouched) ~48px at 1440px width (clamp(44px, 3.5vw, 56px): 3.5vw *
+       1440px = 50.4px) — within the requested 44-56px top breathing space, comfortably past the
+       "move down ~28-36px" minimum too. margin-bottom (the gap before the framed film) increased
+       from ~26px to ~46px at 1440px (clamp(42px, 3.2vw, 52px): 3.2vw * 1440px = 46.08px) — within
+       the requested 42-52px. Both taken from the bottom slack .stage-inner already had to spare
+       (per the brief's own observation), not from any extra section/stage height. */
+    margin-top: clamp(44px, 3.5vw, 56px);
+    margin-bottom: clamp(42px, 3.2vw, 52px);
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__film {
     margin-block: 0;
-    /* VIDEO-TO-CHAPTER-ROW GAP (this round): was 0 (flush against the row, which then relied on a
-       corrective -50px transform on the row to open any breathing room at all). Now a direct,
-       intentional gap below the film only — 34px at 1440px width (clamp(28px, 2.4vw, 42px): 2.4vw
-       * 1440px = 34.56px), within the requested 28-42px, "start around 34px". A flat clamp, not a
-       percentage — same reasoning as the film's own max-width below: no shared ancestor with .list
-       to take a meaningful percentage of. */
-    margin-bottom: clamp(28px, 2.4vw, 42px);
+    /* VIDEO-TO-CHAPTER-ROW GAP (this round): increased from ~34.56px to ~54px at 1440px width
+       (clamp(50px, 3.75vw, 60px): 3.75vw * 1440px = 54px exactly) — within the requested 50-60px,
+       "start around 54px" — so the row reads as related to the film but no longer attached to its
+       frame. Taken from the same existing bottom slack, not extra height. */
+    margin-bottom: clamp(50px, 3.75vw, 60px);
     /* A flat max-width, not a percentage: .film has no shared wrapper with .head/.list to take a
        percentage of (each centres itself independently via its own .container class) — a percentage
        here would resolve against .stage-inner's full, near-viewport width instead of the same
