@@ -1775,6 +1775,20 @@
   }
   .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__list[data-media="no"] {
     justify-content: space-between;
+    /* ROW LIFT (this round): the flex space-between rule above sits the chapter row flush against
+       .stage-inner's own closing edge by design (see the ONE-SCREEN COMPOSITION comment further up
+       — that flush position is exactly what makes a trailing dead-space gap structurally
+       impossible). Flush also meant the body copy sat right at the section's own edge with no
+       breathing room beneath it. A transform, not a margin/gap change: it shifts the whole row as
+       one rigid block without touching .stage's own height, without re-running the space-between
+       distribution, and without moving the video or heading at all — the row's own internal
+       three-column alignment (equal flex basis, shared flex-start baseline) is completely
+       unaffected, since translateY moves the row's rendered box as a whole, not each column
+       independently. -50px (within the requested 40-60px, at the "start around 50px" point) opens
+       up an equivalent ~50px of breathing room below the copy (within the requested 35-55px) —
+       taken from the slack space-between already leaves between the video and the row, not from
+       extra section height. */
+    transform: translateY(-50px);
   }
 }
 .caviera-craftsmanship__film {
