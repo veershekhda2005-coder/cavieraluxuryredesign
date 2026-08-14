@@ -50,7 +50,7 @@
   endif
 -%}
 {%- if has_content -%}
-<section class="caviera-section caviera-craftsmanship" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}"{% if section.settings.scroll_progression %} data-caviera-material-progress{% endif %}>
+<section class="caviera-section caviera-craftsmanship" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}">
   {%- comment -%}
     Scroll progression — opt-in (see scroll_progression below), off by default since this same
     section renders on the dedicated Craftsmanship page and The House page too, where a scroll-
@@ -62,45 +62,15 @@
     progress and data-material-state here, never --caviera-progress, --house-code-progress, or
     --edition-exhibition-progress.
 
-    TOP/BOTTOM GAP FIX: the video+overlay used to live INSIDE .stage, which only fills the
-    <section>'s own CONTENT box — the section's own shared padding-block (.caviera-section,
-    clamp(48px,6vw,96px) top+bottom, used by many other sections) sat OUTSIDE that box, showing as
-    a flat, unlit Obsidian band above and below the video with no footage in it at all. Moved the
-    video/overlay to be direct children of <section> itself instead (this same
-    data-caviera-material-progress attribute is now ALSO on <section>, in addition to .stage, so
-    both can be styled independently) so they cover the section's FULL box, padding included — a
-    true edge-to-edge background. .stage/.stage-inner (the actual text content) keep their own
-    layout untouched; only the video's own coverage area changed.
+    FRAMED FILM WINDOW (this round): the craftsmanship footage previously ran full-bleed behind
+    the whole section (edge to edge, top and bottom flush with the section's own bounds) — per
+    this round's explicit brief, that full-bleed treatment is retired in favour of a contained,
+    bordered cinematic panel sitting BETWEEN the heading and the chapter list, in normal document
+    flow, with generous breathing room above and below it. No more absolutely-positioned section-
+    wide background layer, so the whole class of "does it cover the section's own padding /
+    stacking-context / letterboxing" bugs from the previous full-bleed passes is structurally no
+    longer possible — it's just a normal, contained media element now.
   {%- endcomment -%}
-  {%- if section.settings.scroll_progression -%}
-    {%- comment -%}
-      Continuous looping craftsmanship footage — a separate, independent visual layer BEHIND the
-      existing chapter content, never wired to Material Truth's own scroll-progress controller
-      (assets/caviera-material-truth.js, untouched). Gated on the same scroll_progression flag as
-      the rest of this homepage-only ceremony (this section is shared with the standalone
-      Craftsmanship page and The House page too, where this footage/overlay treatment wasn't
-      asked for and would fight their own bone/list compositions) — no separate schema setting
-      needed since this flag already, correctly, identifies only this one instance.
-      assets/caviera-craftsmanship-process-video.js is a small, independent IntersectionObserver-
-      based play/pause controller — plain HTML5 video playback, no scroll listener, no RAF loop, no
-      interaction whatsoever with Material Truth's or Maker's Mark's own controllers.
-
-      DELIVERY ASSET: the approved source file itself (caviera-material-truth-full-process-
-      2026.mp4, kept exactly as supplied — never renamed, moved or re-encoded) is 48MB, over
-      Shopify's theme-asset upload limit (confirmed directly — a push attempt failed outright with
-      HTTP 413). caviera-material-truth-full-process-2026-optimized.mp4 is a same-footage, re-
-      encoded copy (720x1280, ~11.3MB) created only because the original could not technically be
-      uploaded at all — this is the file actually referenced below. The original source asset is
-      untouched and still present in assets/ exactly as provided.
-    {%- endcomment -%}
-    <div class="caviera-craftsmanship__process-video" data-craftsmanship-process-video aria-hidden="true">
-      <video class="caviera-craftsmanship__process-video-el" autoplay muted loop playsinline preload="metadata">
-        <source src="{{ 'caviera-material-truth-full-process-2026-optimized.mp4' | asset_url }}" type="video/mp4">
-      </video>
-      <div class="caviera-craftsmanship__process-overlay"></div>
-    </div>
-    <script src="{{ 'caviera-craftsmanship-process-video.js' | asset_url }}" defer="defer"></script>
-  {%- endif -%}
   <div class="caviera-craftsmanship__stage"{% if section.settings.scroll_progression %} data-caviera-material-progress{% endif %}>
     <div class="caviera-craftsmanship__stage-inner">
       <div class="container caviera-craftsmanship__head" data-reveal>
@@ -123,6 +93,35 @@
           <span class="caviera-craftsmanship__progress" aria-hidden="true"></span>
         {%- endif -%}
       </div>
+
+      {%- if section.settings.scroll_progression -%}
+        {%- comment -%}
+          Continuous looping craftsmanship footage — a contained cinematic panel, completely
+          independent of the scroll-progress rules elsewhere in this file (--material-progress
+          never drives anything here; see assets/caviera-craftsmanship-process-video.js for the
+          plain play/pause-on-visibility logic — no scroll listener, no RAF, no interaction
+          whatsoever with Material Truth's own chapter controller or Maker's Mark). Gated on the
+          same scroll_progression flag as the rest of this homepage-only ceremony (this section is
+          shared with the standalone Craftsmanship page and The House page too, where this footage
+          wasn't asked for) — no separate schema setting needed since this flag already, correctly,
+          identifies only this one instance.
+
+          DELIVERY ASSET: the approved source file itself (caviera-material-truth-full-process-
+          2026.mp4, kept exactly as supplied — never renamed, moved or re-encoded) is 48MB, over
+          Shopify's theme-asset upload limit (confirmed directly — a push attempt failed outright
+          with HTTP 413). caviera-material-truth-full-process-2026-optimized.mp4 is a same-footage,
+          re-encoded copy (720x1280, ~11.3MB) created only because the original could not
+          technically be uploaded at all — this is the file actually referenced below. The original
+          source asset is untouched and still present in assets/ exactly as provided.
+        {%- endcomment -%}
+        <div class="container caviera-craftsmanship__film" data-craftsmanship-process-video>
+          <video class="caviera-craftsmanship__film-video" autoplay muted loop playsinline preload="metadata">
+            <source src="{{ 'caviera-material-truth-full-process-2026-optimized.mp4' | asset_url }}" type="video/mp4">
+          </video>
+          <div class="caviera-craftsmanship__film-overlay" aria-hidden="true"></div>
+        </div>
+        <script src="{{ 'caviera-craftsmanship-process-video.js' | asset_url }}" defer="defer"></script>
+      {%- endif -%}
 
       {%- if layout == 'dominant_image' -%}
     <div class="container caviera-craftsmanship__split">

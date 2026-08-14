@@ -1702,109 +1702,73 @@
    on; every rule below is gated on that attribute, so the Craftsmanship/House page instances (that
    attribute never present there) render exactly as before — completely unaffected.
 
-   DESKTOP (1024px+, motion allowed): NO sticky/pinned stage (removed — see the final-pass comment
-   further down this block for why). .stage is a plain min-height: 100svh flex box that scrolls
-   past normally, like any other section; assets/caviera-material-truth.js's updateDesktop()
-   computes --material-progress (0-1) from .stage's own natural viewport passage instead of a
-   pinned-scroll fraction. data-material-state (0/1/2) still comes from that same progress value.
-   Nothing here ever reads or writes --caviera-progress, --house-code-progress, or
-   --edition-exhibition-progress.
+   DESKTOP (1024px+, motion allowed): no sticky/pinned stage, no forced min-height — .stage is a
+   plain block that takes exactly the height its real content (heading, framed film, chapter row)
+   needs, scrolling past normally like any other section. assets/caviera-material-truth.js's
+   updateDesktop() computes --material-progress (0-1) from .stage's own natural viewport passage.
+   data-material-state (0/1/2) still comes from that same progress value. Nothing here ever reads
+   or writes --caviera-progress, --house-code-progress, or --edition-exhibition-progress.
 
    MOBILE (<1024px): no extra height, no sticky — .stage/.stage-inner stay plain, auto-height
    wrappers (the same JS still writes data-material-state, using per-chapter centre-distance there
    instead of continuous section progress — see the chapter opacity rules further down, which apply
    at every width). */
-/* TOP/BOTTOM GAP FIX (this round): the video/overlay previously lived inside .stage, which only
-   fills the <section>'s own CONTENT box — .caviera-section's own shared padding-block
-   (clamp(48px,6vw,96px) top+bottom, used by many other sections) sat OUTSIDE .stage entirely,
-   showing as a flat, unlit Obsidian band above and below the video with no footage in it — not a
-   letterbox/object-fit problem (object-fit: cover was already correct and is unchanged below), a
-   padding problem one level further up the tree. Moved the video/overlay to be direct children of
-   the outer <section> instead (see sections/caviera-craftsmanship.liquid — the section itself now
-   also carries data-caviera-material-progress), so the stacking context and isolation live on the
-   SECTION now, covering its full box, padding included. .stage/.stage-inner (the actual text
-   content) are otherwise untouched — only the video's own coverage area changed. */
-.caviera-craftsmanship[data-caviera-material-progress] {
+/* FRAMED FILM WINDOW (this round): the craftsmanship footage previously ran full-bleed as an
+   absolutely-positioned background layer behind the whole section — every full-bleed rule
+   (position: absolute video/overlay covering .stage or the section, the isolation/z-index stack
+   needed to keep text above it, and the min-height: 100svh forcing .stage to "hold a room" for
+   that background) is removed outright. The video is now a normal, CONTAINED media element in
+   document flow, between the heading and the chapter list — see sections/caviera-craftsmanship.
+   liquid — so none of that stacking machinery is needed any more. */
+.caviera-craftsmanship__film {
   position: relative;
-  isolation: isolate;
+  /* A contained cinematic panel, not full section width — reads as a deliberate framed window
+     rather than another full-bleed strip. */
+  max-width: 900px;
+  margin-inline: auto;
+  /* Generous breathing room above and below, per the brief — clamp so it stays proportional at
+     very tall/short viewports rather than a fixed px value. */
+  margin-block: clamp(40px, 6vw, 72px);
+  aspect-ratio: 16 / 9;
   overflow: hidden;
+  /* Thin ivory frame — CAVIERA Warm Bone, the theme's own existing "ivory/warm off-white" brand
+     colour (never a new colour introduced), at a deliberately quiet 1px weight. */
+  border: 1px solid var(--caviera-bone);
 }
-
-/* Continuous looping craftsmanship footage — a separate visual layer, completely independent of
-   the scroll-progress rules below (--material-progress never drives anything here; see assets/
-   caviera-craftsmanship-process-video.js for the plain play/pause-on-visibility logic — no scroll
-   listener, no RAF, no connection whatsoever to Material Truth's or Maker's Mark's own
-   controllers). Explicit POSITIVE z-index values only — video (1) < overlay (2) < .stage (3, set
-   just below) — all compared only against each other, inside the section's own isolated stacking
-   context above. */
-.caviera-craftsmanship__process-video {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-.caviera-craftsmanship__process-video-el {
+.caviera-craftsmanship__film-video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Full-bleed, no letterboxing — object-fit: cover already guarantees this regardless of the
-     source's own portrait aspect ratio; per this round's explicit request, centred both axes. */
-  object-position: center center;
-  /* Darkness is controlled by ONE layer only (the overlay below), not two stacked reductions: the
-     video itself renders at full brightness, and the single overlay opacity IS directly "%
-     Obsidian atmosphere" — simpler to reason about than two compounding multipliers. */
-  opacity: 1;
+  /* Source is portrait (1080x1920); inspected several actual frames of the footage directly in an
+     earlier pass — the hands/tool/ring action concentrates in the lower-middle of the frame, so
+     this crop keeps that in view rather than a dead-centre crop (which would favour the emptier
+     upper portion of the source, given how much a 16:9 window discards of a 9:16 source either way). */
+  object-position: center 58%;
 }
-.caviera-craftsmanship__process-overlay {
+.caviera-craftsmanship__film-overlay {
   position: absolute;
   inset: 0;
-  z-index: 2;
   pointer-events: none;
-  background: #111012; /* CAVIERA Obsidian — fixed, not settings-driven */
-  /* The one and only darkness control. 0.70 = "~70% Obsidian atmosphere / 30% visible moving
-     craftsmanship", since the video above is full-brightness — no second multiplier to account for. */
-  opacity: 0.7;
-}
-/* .stage holds ALL of Material Truth's existing, unchanged content (heading, chapters, progress
-   line) — given its own explicit stacking position so it reliably paints above the video (1) and
-   overlay (2), now that all three are siblings inside the section's own isolated context above. */
-.caviera-craftsmanship__stage[data-caviera-material-progress] {
-  position: relative;
-  z-index: 3;
+  /* A light tonal wash only, NOT a text-legibility overlay (no text sits over the film any more) —
+     keeps the panel feeling quiet/restrained rather than a raw bright clip, consistent with the
+     section's overall Obsidian mood. */
+  background: #111012;
+  opacity: 0.2;
 }
 @media (prefers-reduced-motion: reduce) {
-  /* The video is never started under reduced motion (see the JS) — hidden here too, leaving only
-     the Obsidian overlay as the section's static field, per the brief's own fallback. */
-  .caviera-craftsmanship__process-video-el { display: none; }
+  /* The video is never started under reduced motion (see the JS) — hidden here too, leaving the
+     frame itself (border + dark field) as the section's static state, per the brief's own
+     fallback. */
+  .caviera-craftsmanship__film-video { display: none; }
+}
+@media (max-width: 599px) {
+  /* A touch less extreme than 16:9 on narrow phones, where a very wide/short window would leave
+     little of the tall source visible at all — still clearly a landscape "window", not full height. */
+  .caviera-craftsmanship__film { aspect-ratio: 4 / 3; margin-block: clamp(28px, 8vw, 48px); }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  /* STICKY ARCHITECTURE REMOVED (final pass): every previous pass in this project reduced the
-     pinned scroll DISTANCE (168svh -> 135svh -> 118svh) but kept the underlying sticky/pinned
-     mechanism itself — which is what kept reading as "an extra held screen", regardless of how
-     short that held distance got, because the section visually FROZE in place for that whole
-     extra distance rather than scrolling normally. Per this round's explicit brief: the sticky
-     .stage-inner and the tall explicit .stage height are both removed outright. .stage is now a
-     plain min-height: 100svh flex box — tall enough to read as one full cinematic room when its
-     own content is shorter than a viewport, but it scrolls past NORMALLY like any other section
-     rather than pinning. assets/caviera-material-truth.js's updateDesktop() was updated to match
-     (natural viewport-passage progress instead of pinned-scroll-fraction progress) — see that
-     file's own comment for the exact formula; --material-progress and the 0/1/2 chapter state
-     keep working exactly as before, just driven by a different (and now much shorter) scroll
-     distance. */
-  .caviera-craftsmanship__stage[data-caviera-material-progress] {
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .caviera-craftsmanship__stage[data-caviera-material-progress] .caviera-craftsmanship__stage-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
   /* Drkst continuous drift — layered on top of the heading's existing one-shot entrance (see
      [data-reveal-style="drkst"] in caviera-motion.css), not a replacement for it.
      VISIBILITY FIX: was max -2vw / scale 1.025 — confirmed via code review to be updating
