@@ -125,6 +125,29 @@
    effect). Same specificity as the base rule (one class each) — wins on source order (declared
    after) with no !important needed. */
 .caviera-hero__media-el--bundled-video { transform: none; }
+/* OCEAN FRAMING FIX (this round): the video and the still poster share the exact same source
+   composition and aspect ratio — checked directly by extracting the video's own first/middle/last
+   frames and comparing their architecture-edge position against the PNG at several scanlines; they
+   matched almost exactly (e.g. ~69.3%, ~62.9%, ~56.5% of width at the same heights, both files) —
+   so this was never a case of the raw video containing less ocean than the poster. The shared
+   object-position: 100% 44% above was tuned to keep the far-right Oryx plaque fully in frame,
+   which meant taking the ENTIRE ~10% object-fit: cover overflow (at a 1440x900, 16:9-ish source in
+   a 1.6-aspect viewport) from the LEFT edge only — exactly where the brightest sea/sky glow sits,
+   making the video read as noticeably more architecture-dominant/right-biased once actually seen in
+   motion. Re-centred to 55% 44% for the VIDEO ONLY (desktop, min-width: 750px) — within the
+   requested 50-55% range, at the end that keeps the best remaining chance for the far-right plaque
+   — splitting the crop roughly 55/45 instead of 100/0, which visibly restores far more of the open
+   ocean/sky on the left while the main Cinnabar-wall Oryx (~78-82% of width, well inside this
+   crop's remaining frame either way) stays completely unaffected. The far-right plaque (~91-97%)
+   very likely loses some or all of its own visible edge at this narrower crop — an explicit,
+   disclosed trade-off per the brief's own "where the source frame permits" allowance, not an
+   oversight. Scoped to --bundled-video only (min-width: 750px) — the static poster (used only
+   before the video has data, on autoplay failure, or under reduced motion) and the mobile crop
+   (untouched, still 80% 42% via the shared --bundled rule below) are deliberately left exactly as
+   they were; this task was scoped to the video's own framing only. */
+@media (min-width: 750px) {
+  .caviera-hero__media-el--bundled-video { object-position: 55% 44%; }
+}
 /* Static-poster fallback for prefers-reduced-motion — hidden by default (the video is the normal
    state); the query below flips which of the pair is visible. Sharing .caviera-hero__media-el--
    bundled's own object-position means the static frame reads as exactly the same composition, not
