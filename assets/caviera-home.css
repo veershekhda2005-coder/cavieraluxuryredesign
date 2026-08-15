@@ -326,6 +326,133 @@
 [data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
 .caviera-hero__secondary { color: inherit; }
 
+/* ---- MOBILE HERO REBUILD (max-width: 749px only) ----
+   FINAL MOBILE HERO ARCHITECTURE, per explicit brief. Everything above this query is the approved
+   DESKTOP hero — full-bleed, pinned/sticky, object-fit: cover — and is completely untouched by
+   anything below; every rule here only ever applies under max-width: 749px, this project's own
+   existing canonical mobile breakpoint (used consistently throughout this file, including this
+   same hero's own .caviera-hero__media-el--bundled mobile crop further up) — used in place of the
+   brief's suggested 767px per its own explicit "unless the theme already uses a different
+   canonical breakpoint" allowance.
+
+   THE PROBLEM this replaces: forcing the approved 16:9 hero video to fill a full-bleed PORTRAIT
+   mobile screen via object-fit: cover requires real horizontal crop (the same aspect-ratio
+   mismatch already solved for desktop, but far more severe in portrait — a phone viewport is much
+   narrower relative to its height than the video is wide relative to its own height), and there is
+   no object-position value that keeps both the left-edge ocean and the far-right Oryx plaque
+   simultaneously intact once that much of the frame's width has to be cropped away. Continuing to
+   force cover and re-tune object-position, as several desktop-crop rounds already had to do, would
+   only repeat that same trade-off on a much worse ratio.
+
+   THE FIX: mobile no longer tries to fill the screen with a cropped video at all. Instead, the
+   EXACT same approved video renders as a complete, uncropped 16:9 "cinematic window" — full width,
+   object-fit: contain (never cover), so the entire frame (ocean, architecture, both Oryx marks) is
+   always visible with zero crop, by construction, regardless of exact phone width/height — followed
+   immediately by a plain Obsidian editorial text block holding the existing headline/supporting
+   line/CTA in normal document flow. No sticky, no pin, no overlay scrim, no negative-margin
+   overlay trick — .caviera-hero becomes an ordinary auto-height, in-flow section on mobile, so
+   House Statement simply begins right after it, exactly like any other two adjacent sections. */
+@media (max-width: 749px) {
+  .caviera-hero {
+    height: auto;
+    overflow: visible;
+  }
+  .caviera-hero__media {
+    /* No longer the sticky, viewport-height, full-bleed background layer — a plain in-flow box
+       exactly as tall as a 16:9 frame at the current width, so the video is never stretched,
+       never cropped, and never taller than it needs to be. */
+    position: static;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: var(--caviera-obsidian);
+  }
+  .caviera-hero__media picture { position: static; }
+  .caviera-hero__media-el {
+    /* contain, not cover — the entire source frame stays visible, at every mobile width, by
+       construction, not by tuning object-position. Static positioning, not the desktop absolute
+       overlay: the video now participates in normal layout as the section's own first block. */
+    position: static;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center center;
+    /* No zoom on mobile either, per the brief — the desktop scroll-driven crop/zoom above never
+       applied here in practice anyway (assets/caviera-scroll-progress.js's own total = rect.height
+       - vh is <= 0 once .caviera-hero is no longer taller than the viewport, so --caviera-progress
+       already falls back to its safe 0 — but this makes that explicit and unconditional rather
+       than depending on that arithmetic). */
+    transform: none;
+    transition: none;
+  }
+  .caviera-hero__media-el--bundled {
+    /* Explicit override of the pre-existing 80% 42% mobile cover-crop bias further up this file —
+       harmless in practice once object-fit: contain + aspect-ratio: 16/9 above already makes
+       object-position a no-op (container and source share the exact same shape, so there is no
+       letterbox slack left to shift), but made explicit rather than relying on that coincidence. */
+    object-position: center center;
+  }
+  /* The dark legibility scrim and the low-opacity Obsidian tint both existed only to keep text
+     readable OVER the photograph — mobile text no longer sits over the video at all, so neither is
+     needed; showing them here would just dim the video for no reason. The gradient-placeholder
+     fallback (shown only if no media exists at all) is likewise irrelevant here — the bundled video
+     is always present. */
+  .caviera-hero__field::before,
+  .caviera-hero__overlay,
+  .caviera-hero__field-fallback { display: none; }
+
+  .caviera-hero__field {
+    /* A plain block sitting directly after the video in normal flow — not a sticky overlay pulled
+       back up over it. Fixed Obsidian/Warm Bone per the brief, regardless of this section's own
+       merchant-configurable text_mode/colour-scheme setting (which only ever mattered for
+       legibility over a photograph; a solid field doesn't need it). */
+    position: static;
+    height: auto;
+    margin-top: 0;
+    display: block;
+    padding-block: clamp(32px, 8vw, 42px);
+    background: var(--caviera-obsidian);
+    pointer-events: auto;
+  }
+  [data-scheme="cinnabar"] .caviera-hero__field-inner,
+  [data-scheme="obsidian"] .caviera-hero__field-inner,
+  [data-scheme="bone"] .caviera-hero__field-inner {
+    color: var(--caviera-bone);
+  }
+  .caviera-hero__field-inner {
+    /* Neutralises the desktop pin-driven fade/drift entirely (belt-and-braces — the JS total above
+       already resolves to <= 0 here, but this removes any dependency on that arithmetic). No more
+       max-width/container clipping now that this is a plain stacked block, not an overlay anchored
+       to one side of a full-bleed image. Explicit padding-inline rather than relying on the shared
+       .container class's own --gutter-desktop (which resolves to --gutter-tablet, 40px, between
+       600-749px — above the requested 20-24px; only below 599px does .container's own rule already
+       land in range) — clamp(20px, 5vw, 24px) keeps it inside the requested range across this
+       entire query's full width, not just the specific phone widths tested. */
+    opacity: 1;
+    transform: none;
+    transition: none;
+    max-width: none;
+    padding-inline: clamp(20px, 5vw, 24px);
+  }
+  .caviera-hero__heading {
+    /* Mobile-specific scale per the brief — clamp(42px, 12vw, 58px) — independent of the shared
+       .heading-display-derived clamp() used above (which already lands close to this at small
+       widths, but this is explicit rather than coincidental). */
+    font-size: clamp(42px, 12vw, 58px);
+  }
+  .caviera-hero__actions {
+    /* 36px (desktop) nudged down into the requested 26-34px range for mobile; .btn's own
+       min-height: var(--button-height) is already 48px (assets/caviera-base.css) — comfortably
+       past the requested ~44px touch target with no override needed. */
+    margin-top: 30px;
+  }
+  .caviera-hero__scroll-cue {
+    /* A "scroll to explore" cue belonging to the desktop full-viewport pin experience — mobile is
+       no longer a single pinned screen the visitor scrolls "through", just an ordinary stacked
+       section, so this cue no longer has anything to refer to. */
+    display: none;
+  }
+}
+
 /* ---- Hero floating draggable artifacts — REMOVED (this round, explicit request) ----
    .caviera-hero__artifact-layer and the three .caviera-hero__tokens--* positioning wrappers (House
    Seal, Edition plaque, provenance tag) are gone from sections/caviera-hero.liquid, so their rules
