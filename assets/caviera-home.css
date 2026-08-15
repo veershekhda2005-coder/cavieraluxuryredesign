@@ -366,18 +366,26 @@
     overflow: visible;
   }
   .caviera-hero__media {
-    /* The room's own top section: no longer the sticky, full-bleed background layer — a plain
-       in-flow box that INSETS the film frame rather than filling edge to edge. padding-block-start
-       clears the transparent header plus 24px of deliberate breathing room (within the requested
-       18-28px) so the frame reads as connected to the House entrance without touching the header;
-       padding-block-end adds the requested 24-30px gap before the headline (kept here, not on
-       .caviera-hero__field, so every mobile spacing value lives beside the element it actually
-       measures from). padding-inline: 12px each side — matches "width: calc(100% - 24px)" /
-       ~94-96vw exactly (with the box-sizing: border-box below, 12px padding each side = 24px total
-       inset). Same Obsidian as .caviera-hero__field below — one continuous room, not two blocks. */
+    /* TOP-GAP FIX (this round): padding-block-start was var(--header-height) + 24px — var(--header-
+       height) alone (64px below 600px, assets/caviera-base.css) is the real, necessary clearance so
+       the video never sits underneath the transparent header's own clickable logo/menu/cart hit
+       areas (position: absolute, out of flow, but still interactive there — reducing BELOW this
+       would risk exactly that overlap, which "do not attach the video directly to the header" and
+       "keep a small intentional luxury breathing space" both still require). The reported ~80-90px
+       gap is larger than this rule's own calculated 24px delta above that clearance — most likely
+       because the header renders with no visible background/edge of its own (transparent), so what
+       reads, to the eye, as "the gap" is measured from the header's own top (or its visible glyphs)
+       rather than from the true bottom edge of its full, invisible 64px box; the two measurements
+       necessarily disagree by roughly the header's own height. Addressed the only way available
+       without touching header height or using a negative margin: reduced the CONTROLLABLE component
+       of this padding — the deliberate breathing room ABOVE the required header clearance — from
+       24px down to 8px, a real, meaningful cut, while keeping var(--header-height) itself intact so
+       the video still never overlaps the header's own interactive area. padding-block-end (the
+       video-to-headline gap, unrelated to this fix) and padding-inline (the video's own side inset,
+       also unrelated) are both untouched, per the brief's own scope. */
     position: static;
     height: auto;
-    padding-block: calc(var(--header-height) + 24px) clamp(24px, 7vw, 30px);
+    padding-block: calc(var(--header-height) + 8px) clamp(24px, 7vw, 30px);
     padding-inline: 12px;
     background: var(--caviera-obsidian);
     box-sizing: border-box;
