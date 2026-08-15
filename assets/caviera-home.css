@@ -326,8 +326,8 @@
 [data-scheme="obsidian"] .caviera-hero__actions .btn--primary { background: var(--caviera-bone); color: var(--caviera-obsidian); border-color: var(--caviera-bone); }
 .caviera-hero__secondary { color: inherit; }
 
-/* ---- MOBILE HERO REBUILD (max-width: 749px only) ----
-   FINAL MOBILE HERO ARCHITECTURE, per explicit brief. Everything above this query is the approved
+/* ---- MOBILE HERO — CINEMATIC EDITORIAL ROOM (max-width: 749px only) ----
+   FINAL MOBILE HERO ART DIRECTION, per explicit brief. Everything above this query is the approved
    DESKTOP hero — full-bleed, pinned/sticky, object-fit: cover — and is completely untouched by
    anything below; every rule here only ever applies under max-width: 749px, this project's own
    existing canonical mobile breakpoint (used consistently throughout this file, including this
@@ -335,47 +335,65 @@
    brief's suggested 767px per its own explicit "unless the theme already uses a different
    canonical breakpoint" allowance.
 
-   THE PROBLEM this replaces: forcing the approved 16:9 hero video to fill a full-bleed PORTRAIT
-   mobile screen via object-fit: cover requires real horizontal crop (the same aspect-ratio
-   mismatch already solved for desktop, but far more severe in portrait — a phone viewport is much
-   narrower relative to its height than the video is wide relative to its own height), and there is
-   no object-position value that keeps both the left-edge ocean and the far-right Oryx plaque
-   simultaneously intact once that much of the frame's width has to be cropped away. Continuing to
-   force cover and re-tune object-position, as several desktop-crop rounds already had to do, would
-   only repeat that same trade-off on a much worse ratio.
-
-   THE FIX: mobile no longer tries to fill the screen with a cropped video at all. Instead, the
-   EXACT same approved video renders as a complete, uncropped 16:9 "cinematic window" — full width,
-   object-fit: contain (never cover), so the entire frame (ocean, architecture, both Oryx marks) is
-   always visible with zero crop, by construction, regardless of exact phone width/height — followed
-   immediately by a plain Obsidian editorial text block holding the existing headline/supporting
-   line/CTA in normal document flow. No sticky, no pin, no overlay scrim, no negative-margin
-   overlay trick — .caviera-hero becomes an ordinary auto-height, in-flow section on mobile, so
-   House Statement simply begins right after it, exactly like any other two adjacent sections. */
+   Same root fix as the previous round (object-fit: contain on a 16:9-matched box, not cover, so
+   the full source frame — ocean, architecture, both Oryx marks — is always visible with zero crop,
+   by construction, regardless of exact phone width). THIS round's refinement is presentation only:
+   the video and text no longer read as two stacked, unrelated blocks — one continuous Obsidian
+   "room" (media and field share the exact same background colour with no visible seam) holds an
+   inset, bordered film frame near the top and the editorial copy below it, with the CTA restyled
+   from a solid button into a refined text link — an intentional campaign composition, not a
+   generic responsive video-then-text pattern. */
 @media (max-width: 749px) {
   .caviera-hero {
+    /* height: auto (not a fixed value) so genuinely taller content on very short devices can still
+       extend past this floor rather than being clipped — min-height only ever adds room, never
+       removes it. calc(100dvh - header height): the header here renders position: absolute/
+       transparent (transparent_over_hero: true, see the note further up this file) and does not
+       consume its own document-flow space, but the room's CONTENT should still start clear of
+       where the header visually sits — --header-height itself already resolves to 64px below
+       600px (assets/caviera-base.css) — a dvh-aware floor as the progressive enhancement over vh,
+       consistent with this file's existing svh/dvh pattern elsewhere. */
     height: auto;
+    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100dvh - var(--header-height));
     overflow: visible;
   }
   .caviera-hero__media {
-    /* No longer the sticky, viewport-height, full-bleed background layer — a plain in-flow box
-       exactly as tall as a 16:9 frame at the current width, so the video is never stretched,
-       never cropped, and never taller than it needs to be. */
+    /* The room's own top section: no longer the sticky, full-bleed background layer — a plain
+       in-flow box that INSETS the film frame rather than filling edge to edge. padding-block-start
+       clears the transparent header plus 34px of deliberate breathing room (within the requested
+       28-40px) so the frame reads as presented, not attached to the header; padding-block-end adds
+       the requested 30-38px gap before the headline (kept here, not on .caviera-hero__field, so
+       every mobile spacing value lives beside the element it actually measures from).
+       padding-inline: max(16px, 4vw) — 16px on narrow phones (max(16, ~15.6vw-equivalent) rounds to
+       16 below ~400px), growing so the frame never exceeds ~92vw on wider phones (at 600px,
+       4vw = 24px each side -> 552px frame = exactly 92% of 600px). Same Obsidian as
+       .caviera-hero__field below — one continuous room, not two blocks. */
     position: static;
     height: auto;
-    aspect-ratio: 16 / 9;
+    padding-block: calc(var(--header-height) + 34px) clamp(30px, 8vw, 38px);
+    padding-inline: max(16px, 4vw);
     background: var(--caviera-obsidian);
+    box-sizing: border-box;
   }
   .caviera-hero__media picture { position: static; }
   .caviera-hero__media-el {
     /* contain, not cover — the entire source frame stays visible, at every mobile width, by
-       construction, not by tuning object-position. Static positioning, not the desktop absolute
-       overlay: the video now participates in normal layout as the section's own first block. */
+       construction, not by tuning object-position. aspect-ratio lives on the media element itself
+       now (not its parent, which only carries padding) so the padding above can never distort the
+       16:9 box. Static positioning, not the desktop absolute overlay: the video now participates in
+       normal layout as the room's own presented film still. */
     position: static;
     width: 100%;
     height: auto;
+    aspect-ratio: 16 / 9;
     object-fit: contain;
     object-position: center center;
+    /* LUXURY FILM FRAME, not a card/player/social-post: a single extremely subtle Brushed Rhodium
+       hairline, explicitly no radius and no shadow — architectural, not decorative. */
+    border: 1px solid rgba(196, 193, 187, 0.3);
+    border-radius: 0;
+    box-shadow: none;
     /* No zoom on mobile either, per the brief — the desktop scroll-driven crop/zoom above never
        applied here in practice anyway (assets/caviera-scroll-progress.js's own total = rect.height
        - vh is <= 0 once .caviera-hero is no longer taller than the viewport, so --caviera-progress
@@ -401,15 +419,19 @@
   .caviera-hero__field-fallback { display: none; }
 
   .caviera-hero__field {
-    /* A plain block sitting directly after the video in normal flow — not a sticky overlay pulled
-       back up over it. Fixed Obsidian/Warm Bone per the brief, regardless of this section's own
-       merchant-configurable text_mode/colour-scheme setting (which only ever mattered for
-       legibility over a photograph; a solid field doesn't need it). */
+    /* The room's own lower section, directly after the framed video in normal flow — not a sticky
+       overlay pulled back up over it. Top padding is 0 deliberately: the video-to-headline gap
+       already lives on .caviera-hero__media's own padding-block-end above, so it isn't counted
+       twice. Bottom padding is the requested ~30-40px closing breathing room. Fixed Obsidian/Warm
+       Bone regardless of this section's own merchant-configurable text_mode/colour-scheme setting
+       (which only ever mattered for legibility over a photograph; a solid field doesn't need it) —
+       same Obsidian as .caviera-hero__media above, so the seam between them is invisible: one room,
+       not two blocks. */
     position: static;
     height: auto;
     margin-top: 0;
     display: block;
-    padding-block: clamp(32px, 8vw, 42px);
+    padding-block: 0 clamp(30px, 8vw, 40px);
     background: var(--caviera-obsidian);
     pointer-events: auto;
   }
@@ -426,7 +448,8 @@
        .container class's own --gutter-desktop (which resolves to --gutter-tablet, 40px, between
        600-749px — above the requested 20-24px; only below 599px does .container's own rule already
        land in range) — clamp(20px, 5vw, 24px) keeps it inside the requested range across this
-       entire query's full width, not just the specific phone widths tested. */
+       entire query's full width, not just the specific phone widths tested. Left-aligned by
+       default (no text-align rule anywhere sets centre) — matches the brief directly. */
     opacity: 1;
     transform: none;
     transition: none;
@@ -434,16 +457,54 @@
     padding-inline: clamp(20px, 5vw, 24px);
   }
   .caviera-hero__heading {
-    /* Mobile-specific scale per the brief — clamp(42px, 12vw, 58px) — independent of the shared
-       .heading-display-derived clamp() used above (which already lands close to this at small
-       widths, but this is explicit rather than coincidental). */
-    font-size: clamp(42px, 12vw, 58px);
+    /* Mobile-specific editorial scale per the brief — clamp(46px, 13vw, 54px) lands at ~51px at
+       390px, within the requested 48-54px — and a tight, refined line-height (1.02, within the
+       requested 0.98-1.05) independent of the shared .heading-display-derived clamp()/line-height
+       used above, which was tuned for the desktop composition, not this one. */
+    font-size: clamp(46px, 13vw, 54px);
+    line-height: 1.02;
+  }
+  .caviera-hero__subheading {
+    /* 82% opacity — within the requested 70-80% VISUAL emphasis range once combined with this
+       element's own colour already reading slightly softer than the pure-white heading above it;
+       margin-top nudged 20px -> 18px, the middle of the requested 16-20px gap. */
+    opacity: 0.78;
+    margin-top: 18px;
   }
   .caviera-hero__actions {
-    /* 36px (desktop) nudged down into the requested 26-34px range for mobile; .btn's own
-       min-height: var(--button-height) is already 48px (assets/caviera-base.css) — comfortably
-       past the requested ~44px touch target with no override needed. */
+    /* 30px — the middle of the requested 26-30px gap before the CTA. */
     margin-top: 30px;
+  }
+  /* CTA — LUXURY CHANGE (mobile only): the solid Warm Bone rectangular button read as a generic
+     commercial "Shop Now" control against this editorial composition. Restyled into a refined
+     House text link — small uppercase tracking, a thin underline rule, and a decorative arrow —
+     while keeping the exact same <a href> element, destination and accessible text completely
+     unchanged (only appearance changes; nothing about the link's function does). The compound
+     [data-scheme="..."] selectors here match the specificity of the existing cinnabar/obsidian
+     solid-button override further up this file (which would otherwise still win, since it's
+     equally specific) — needed to reliably turn that solid look off on the hero's own default
+     cinnabar scheme. */
+  [data-scheme="cinnabar"] .caviera-hero__actions .btn--primary,
+  [data-scheme="obsidian"] .caviera-hero__actions .btn--primary,
+  [data-scheme="bone"] .caviera-hero__actions .btn--primary,
+  .caviera-hero__actions .btn--primary {
+    background: none;
+    border: none;
+    color: var(--caviera-bone);
+    padding: 10px 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    border-bottom: 1px solid color-mix(in srgb, var(--caviera-bone) 45%, transparent);
+  }
+  .caviera-hero__actions .btn--primary::after {
+    /* Decorative only (aria-hidden not needed — the visible text itself is unchanged and already
+       fully describes the destination; this glyph adds no meaning a screen reader would need to
+       announce separately, same treatment as an icon-only decoration elsewhere in this project). */
+    content: "→";
   }
   .caviera-hero__scroll-cue {
     /* A "scroll to explore" cue belonging to the desktop full-viewport pin experience — mobile is
