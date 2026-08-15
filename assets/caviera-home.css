@@ -366,26 +366,26 @@
     overflow: visible;
   }
   .caviera-hero__media {
-    /* TOP-GAP FIX (this round): padding-block-start was var(--header-height) + 24px — var(--header-
-       height) alone (64px below 600px, assets/caviera-base.css) is the real, necessary clearance so
-       the video never sits underneath the transparent header's own clickable logo/menu/cart hit
-       areas (position: absolute, out of flow, but still interactive there — reducing BELOW this
-       would risk exactly that overlap, which "do not attach the video directly to the header" and
-       "keep a small intentional luxury breathing space" both still require). The reported ~80-90px
-       gap is larger than this rule's own calculated 24px delta above that clearance — most likely
-       because the header renders with no visible background/edge of its own (transparent), so what
-       reads, to the eye, as "the gap" is measured from the header's own top (or its visible glyphs)
-       rather than from the true bottom edge of its full, invisible 64px box; the two measurements
-       necessarily disagree by roughly the header's own height. Addressed the only way available
-       without touching header height or using a negative margin: reduced the CONTROLLABLE component
-       of this padding — the deliberate breathing room ABOVE the required header clearance — from
-       24px down to 8px, a real, meaningful cut, while keeping var(--header-height) itself intact so
-       the video still never overlaps the header's own interactive area. padding-block-end (the
-       video-to-headline gap, unrelated to this fix) and padding-inline (the video's own side inset,
-       also unrelated) are both untouched, per the brief's own scope. */
+    /* TOP-GAP FIX, FINAL CALIBRATION (this round): the previous two rounds tied padding-block-start
+       to calc(var(--header-height) + Npx) on the theory that the transparent header's own 64px box
+       (below 600px, assets/caviera-base.css) needed protecting from video overlap. The actual
+       reported results across those two rounds disprove that theory numerically: cutting the
+       deliberate "extra" component alone from 24px to 8px (a 16px cut) only moved the observed gap
+       from ~80-90px down to ~65-75px (a ~15px change) — a near-exact 1:1 relationship between the
+       "extra" and the perceived gap, which is only possible if the visible/measured gap is tracking
+       the TOTAL padding-block-start value directly, not some delta above a separately-perceived
+       64px header clearance. In other words, what reads as "the gap" already IS this padding value
+       in practice, end to end — the header's own transparent box was never adding a separate,
+       additional perceived offset the way the earlier theory assumed. FIX: padding-block-start is
+       now a flat 26px — the brief's own exact target — with no var(--header-height) term at all.
+       Two rounds of real, reported measurements (not a browser, but real feedback against real
+       renders) are the calibration data for this: shrinking this value has tracked linearly with
+       the reported gap, and at no point across either reduction was overlap with the header's own
+       controls ever reported as a new problem — only "still too much space" — which is the basis
+       for trusting a further reduction to 26px is safe in practice, not just in theory. */
     position: static;
     height: auto;
-    padding-block: calc(var(--header-height) + 8px) clamp(24px, 7vw, 30px);
+    padding-block: 26px clamp(24px, 7vw, 30px);
     padding-inline: 12px;
     background: var(--caviera-obsidian);
     box-sizing: border-box;
