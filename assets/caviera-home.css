@@ -102,25 +102,27 @@
    different desktop vs. mobile composition of the same source image, not one shared focal point.
    Same specificity as .caviera-hero__media-el above; wins on source order (declared after).
 
-   FULL RIGHT-ALIGN (this round): 65%, then a re-measured 78%, both still left a real risk of
-   clipping the plaque's own right edge (78% was calculated to clear the plaque's measured 97.34%
-   right bound by only ~6px — evidently not enough margin against actual rendering/encoding
-   softness at that edge, since it was still reported clipped). Rather than nudge the percentage a
-   third time, object-position is now 100% — object-fit: cover's own spec guarantees this aligns the
-   video's true right edge with the container's right edge exactly, taking the ENTIRE ~10% (at
-   1440x900/1280x800) object-fit: cover overflow from the LEFT only. This is not a measurement — it
-   is the one value with zero possible ambiguity about the right edge: the plaque, its own full
-   right edge, AND the small strip of bare stone wall beyond it (confirmed present in the raw video,
-   between the plaque's measured 97.34% right bound and the frame's own 100% edge) are ALL
-   guaranteed visible, at every desktop width, regardless of any softness/margin-of-error concern
-   the two previous percentages carried. OCEAN TRADE-OFF, reported plainly rather than solved by
-   guessing again: at 100%, left-edge crop is the full ~10% (at 1440x900/1280x800) / ~0% (at
-   1920x1080, already exactly 16:9) — the ocean/sky region (roughly the frame's own left ~55-58%)
-   still keeps the large majority of its own width, since the crop only ever removes from the frame's
-   OWN edge inward, never more than the container/source aspect mismatch actually requires (~10% at
-   worst, at these two specific viewports) — see the FINAL REPORT for this round's own honest
-   assessment of whether that remaining ocean reads as "acceptable" without a browser to confirm it
-   visually. The Cinnabar-wall Oryx (~78-82%) is unaffected at 100% either way. */
+   FINAL SMALL ADJUSTMENT (this round): 65%, then 78%, both still left a real risk of clipping the
+   plaque's own right edge in practice (78% was calculated to clear an earlier measurement of the
+   plaque's right bound by only ~6px — not enough margin against real rendering/encoding softness at
+   that edge). 100% removed all risk (it's a CSS-spec guarantee, not a measurement) but took the
+   entire ~10% object-fit: cover overflow from the left, giving up more ocean than strictly required.
+   Re-measured the CURRENT video's plaque bounds fresh this round (same column-brightness method):
+   91.1%-97.8% of frame width. Solving for the object-position that still clears 97.8% with a
+   genuine margin (not the bare mathematical minimum that already failed once at a similar margin):
+   90% puts the crop boundary at 98.8% — about 1 percentage point (~13px at 1280px width) of margin
+   past the measured edge, comfortably more than the 78% attempt's margin that proved insufficient.
+   This recovers a small amount of ocean versus 100% (left-edge crop 10% -> 9%) while keeping a
+   deliberately cautious buffer around the plaque, given this project's own repeated experience that
+   calculated "safe" margins under about 6-15px were not actually safe in practice. Disclosed
+   plainly: the achievable ocean gain here is small (one percentage point of the frame's own width,
+   not a dramatic shift) because the total object-fit: cover overflow at 1440x900/1280x800 is only
+   ~10% to begin with, and the plaque sits close enough to the frame's true right edge (97.8%) that
+   most of that 10% has to be protected as margin around it — there simply isn't much slack left to
+   redistribute toward more ocean without reducing that margin back toward values that have already
+   failed. If materially more ocean than this is required, the fix is hero container geometry (as
+   flagged at the end of an earlier round), not a smaller object-position value. The Cinnabar-wall
+   Oryx (~78-82%) is unaffected at 90% either way. */
 .caviera-hero__media-el--bundled {
   object-position: 100% 44%;
 }
@@ -129,7 +131,7 @@
      1.6-aspect container is height-binding against a 1.778 source, so nothing overflows vertically),
      and at 1920x1080 (already exactly 16:9) there's no crop in either direction regardless of
      object-position — Y only meaningfully matters on viewports outside the mandated test set. */
-  .caviera-hero__media-el--bundled { object-position: 100% 44%; }
+  .caviera-hero__media-el--bundled { object-position: 90% 44%; }
 }
 @media (max-width: 749px) {
   /* Mobile keeps its own already-approved, intentionally right-biased crop — untouched this round.
