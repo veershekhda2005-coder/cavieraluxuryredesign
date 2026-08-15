@@ -361,18 +361,18 @@
   .caviera-hero__media {
     /* The room's own top section: no longer the sticky, full-bleed background layer — a plain
        in-flow box that INSETS the film frame rather than filling edge to edge. padding-block-start
-       clears the transparent header plus 34px of deliberate breathing room (within the requested
-       28-40px) so the frame reads as presented, not attached to the header; padding-block-end adds
-       the requested 30-38px gap before the headline (kept here, not on .caviera-hero__field, so
+       clears the transparent header plus 32px of deliberate breathing room (within the requested
+       28-34px) so the frame reads as presented, not attached to the header; padding-block-end adds
+       the requested 30-36px gap before the headline (kept here, not on .caviera-hero__field, so
        every mobile spacing value lives beside the element it actually measures from).
-       padding-inline: max(16px, 4vw) — 16px on narrow phones (max(16, ~15.6vw-equivalent) rounds to
-       16 below ~400px), growing so the frame never exceeds ~92vw on wider phones (at 600px,
-       4vw = 24px each side -> 552px frame = exactly 92% of 600px). Same Obsidian as
+       padding-inline: 14px each side — matches "width: calc(100% - 28px)" exactly (with the
+       box-sizing: border-box below, 14px padding each side = 28px total inset, same effect as
+       setting the media element's own width to 100% minus 28px and centring it). Same Obsidian as
        .caviera-hero__field below — one continuous room, not two blocks. */
     position: static;
     height: auto;
-    padding-block: calc(var(--header-height) + 34px) clamp(30px, 8vw, 38px);
-    padding-inline: max(16px, 4vw);
+    padding-block: calc(var(--header-height) + 32px) clamp(30px, 8vw, 36px);
+    padding-inline: 14px;
     background: var(--caviera-obsidian);
     box-sizing: border-box;
   }
@@ -457,11 +457,13 @@
     padding-inline: clamp(20px, 5vw, 24px);
   }
   .caviera-hero__heading {
-    /* Mobile-specific editorial scale per the brief — clamp(46px, 13vw, 54px) lands at ~51px at
-       390px, within the requested 48-54px — and a tight, refined line-height (1.02, within the
-       requested 0.98-1.05) independent of the shared .heading-display-derived clamp()/line-height
+    /* Mobile-specific editorial scale per the brief — clamp(48px, 13vw, 54px): a flat 48px floor
+       (rather than a purely vw-scaled value) guarantees every one of the five mandated test widths
+       (360-430px) lands inside the requested 48-54px, not just 390px — at 360px, 13vw alone would
+       resolve to ~46.8px, just under the floor. Tight, refined line-height (1.02, within the
+       requested 0.98-1.05), independent of the shared .heading-display-derived clamp()/line-height
        used above, which was tuned for the desktop composition, not this one. */
-    font-size: clamp(46px, 13vw, 54px);
+    font-size: clamp(48px, 13vw, 54px);
     line-height: 1.02;
   }
   .caviera-hero__subheading {
