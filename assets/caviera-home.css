@@ -345,34 +345,40 @@
    generic responsive video-then-text pattern. */
 @media (max-width: 749px) {
   .caviera-hero {
-    /* height: auto (not a fixed value) so genuinely taller content on very short devices can still
-       extend past this floor rather than being clipped — min-height only ever adds room, never
-       removes it. calc(100dvh - header height): the header here renders position: absolute/
-       transparent (transparent_over_hero: true, see the note further up this file) and does not
-       consume its own document-flow space, but the room's CONTENT should still start clear of
-       where the header visually sits — --header-height itself already resolves to 64px below
-       600px (assets/caviera-base.css) — a dvh-aware floor as the progressive enhancement over vh,
-       consistent with this file's existing svh/dvh pattern elsewhere. */
+    /* BOTTOM-DEAD-SPACE FIX (this round): min-height: calc(100dvh - header height) had been forcing
+       .caviera-hero taller than its real content (video + editorial field) actually needed —
+       exactly the same "floor exceeds real content" bug class already fixed twice before in this
+       project (Material Truth's own stage height, see assets/caviera-material-truth.js's history).
+       The leftover space rendered as a large block of Cinnabar, not transparent/Obsidian, because
+       .caviera-hero carries data-scheme="cinnabar" (this section's default text_mode) and
+       assets/caviera-base.css has a universal [data-scheme="cinnabar"] { background:
+       var(--scheme-cinnabar-bg); ... } rule that paints ANY element with that attribute — including
+       .caviera-hero itself — a purely global convenience rule, never intended to matter here since
+       every visible pixel used to be covered by the sticky/pinned desktop media. Once mobile became
+       a plain, non-stretched, content-driven layout, any unused floor height exposed that base
+       colour directly. FIX: removed the min-height floor entirely — .caviera-hero is now purely
+       content-driven height: auto with no artificial minimum, so there is no leftover space left to
+       expose, on any device (the actual, real fix — not hidden with a negative margin). An explicit
+       background is also set below, belt-and-braces, so even a future content change that leaves a
+       sliver of unused space reads as Obsidian, matching the room, never Cinnabar. */
     height: auto;
-    min-height: calc(100vh - var(--header-height));
-    min-height: calc(100dvh - var(--header-height));
+    background: var(--caviera-obsidian);
     overflow: visible;
   }
   .caviera-hero__media {
     /* The room's own top section: no longer the sticky, full-bleed background layer — a plain
        in-flow box that INSETS the film frame rather than filling edge to edge. padding-block-start
-       clears the transparent header plus 32px of deliberate breathing room (within the requested
-       28-34px) so the frame reads as presented, not attached to the header; padding-block-end adds
-       the requested 30-36px gap before the headline (kept here, not on .caviera-hero__field, so
-       every mobile spacing value lives beside the element it actually measures from).
-       padding-inline: 14px each side — matches "width: calc(100% - 28px)" exactly (with the
-       box-sizing: border-box below, 14px padding each side = 28px total inset, same effect as
-       setting the media element's own width to 100% minus 28px and centring it). Same Obsidian as
-       .caviera-hero__field below — one continuous room, not two blocks. */
+       clears the transparent header plus 24px of deliberate breathing room (within the requested
+       18-28px) so the frame reads as connected to the House entrance without touching the header;
+       padding-block-end adds the requested 24-30px gap before the headline (kept here, not on
+       .caviera-hero__field, so every mobile spacing value lives beside the element it actually
+       measures from). padding-inline: 12px each side — matches "width: calc(100% - 24px)" /
+       ~94-96vw exactly (with the box-sizing: border-box below, 12px padding each side = 24px total
+       inset). Same Obsidian as .caviera-hero__field below — one continuous room, not two blocks. */
     position: static;
     height: auto;
-    padding-block: calc(var(--header-height) + 32px) clamp(30px, 8vw, 36px);
-    padding-inline: 14px;
+    padding-block: calc(var(--header-height) + 24px) clamp(24px, 7vw, 30px);
+    padding-inline: 12px;
     background: var(--caviera-obsidian);
     box-sizing: border-box;
   }
@@ -422,7 +428,7 @@
     /* The room's own lower section, directly after the framed video in normal flow — not a sticky
        overlay pulled back up over it. Top padding is 0 deliberately: the video-to-headline gap
        already lives on .caviera-hero__media's own padding-block-end above, so it isn't counted
-       twice. Bottom padding is the requested ~30-40px closing breathing room. Fixed Obsidian/Warm
+       twice. Bottom padding is the requested ~30-38px closing breathing room. Fixed Obsidian/Warm
        Bone regardless of this section's own merchant-configurable text_mode/colour-scheme setting
        (which only ever mattered for legibility over a photograph; a solid field doesn't need it) —
        same Obsidian as .caviera-hero__media above, so the seam between them is invisible: one room,
@@ -431,7 +437,7 @@
     height: auto;
     margin-top: 0;
     display: block;
-    padding-block: 0 clamp(30px, 8vw, 40px);
+    padding-block: 0 clamp(30px, 8vw, 38px);
     background: var(--caviera-obsidian);
     pointer-events: auto;
   }
@@ -457,25 +463,31 @@
     padding-inline: clamp(20px, 5vw, 24px);
   }
   .caviera-hero__heading {
-    /* Mobile-specific editorial scale per the brief — clamp(48px, 13vw, 54px): a flat 48px floor
-       (rather than a purely vw-scaled value) guarantees every one of the five mandated test widths
-       (360-430px) lands inside the requested 48-54px, not just 390px — at 360px, 13vw alone would
-       resolve to ~46.8px, just under the floor. Tight, refined line-height (1.02, within the
+    /* Mobile-specific editorial scale per the brief — clamp(48px, 12.5vw, 52px): a flat 48px floor
+       guarantees every one of the five mandated test widths (360-430px) lands inside the requested
+       48-52px (at 360px, 12.5vw alone would resolve to ~45px, under the floor without it; at 430px,
+       12.5vw = ~53.75px, capped at the 52px ceiling). Tight, refined line-height (1.02, within the
        requested 0.98-1.05), independent of the shared .heading-display-derived clamp()/line-height
        used above, which was tuned for the desktop composition, not this one. */
-    font-size: clamp(48px, 13vw, 54px);
+    font-size: clamp(48px, 12.5vw, 52px);
     line-height: 1.02;
   }
   .caviera-hero__subheading {
-    /* 82% opacity — within the requested 70-80% VISUAL emphasis range once combined with this
-       element's own colour already reading slightly softer than the pure-white heading above it;
-       margin-top nudged 20px -> 18px, the middle of the requested 16-20px gap. */
-    opacity: 0.78;
-    margin-top: 18px;
+    /* font-size explicitly reduced to the requested 14-15px (was inheriting .body-text's shared
+       16px base) — secondary to the headline, softened further via colour + opacity rather than
+       size alone. Colour blended toward Brushed Rhodium (was plain Bone at 78% opacity) — "softened
+       Warm Bone / Brushed Rhodium" per the brief — using this project's own established
+       color-mix() pattern for blended brand tones. margin-top 16px, the middle of the requested
+       14-18px gap; comfortable 1.5 line-height for the two-line wrap at this width. */
+    font-size: 14px;
+    line-height: 1.5;
+    opacity: 1;
+    color: color-mix(in srgb, var(--caviera-bone) 78%, var(--caviera-rhodium) 22%);
+    margin-top: 16px;
   }
   .caviera-hero__actions {
-    /* 30px — the middle of the requested 26-30px gap before the CTA. */
-    margin-top: 30px;
+    /* 26px — the middle of the requested 24-28px gap before the CTA. */
+    margin-top: 26px;
   }
   /* CTA — LUXURY CHANGE (mobile only): the solid Warm Bone rectangular button read as a generic
      commercial "Shop Now" control against this editorial composition. Restyled into a refined
