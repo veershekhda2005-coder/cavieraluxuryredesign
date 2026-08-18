@@ -113,13 +113,19 @@
    CONTRAST NOTE: same substitution as the footer's own link hover — Warm Bone -> Cinnabar would be
    two dark colours together on this section's Obsidian scheme (~2.2:1, below the 4.5:1 text
    minimum), so Brushed Rhodium is used instead, matching the established codebase precedent. */
-.caviera-newsletter-form__submit { transition: color 240ms var(--ease-caviera); }
+.caviera-newsletter-form__submit { position: relative; display: inline-flex; align-items: center; transition: color 240ms var(--ease-caviera); }
 @media (hover: hover) {
   .caviera-newsletter-form__submit:hover { color: var(--caviera-rhodium); }
 }
 .caviera-newsletter-form__submit:focus-visible { color: var(--caviera-rhodium); }
 @media (prefers-reduced-motion: reduce) {
   .caviera-newsletter-form__submit { transition: none; }
+}
+.caviera-newsletter-form__submit-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .form-status { font-size: 0.875rem; margin-top: 12px; }
@@ -224,6 +230,18 @@
 .caviera-search-overlay__group ul { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
 .caviera-search-overlay__group a { display: flex; align-items: center; gap: 14px; }
 .caviera-search-overlay__group img { width: 56px; height: 56px; object-fit: cover; flex-shrink: 0; }
+
+.caviera-search-overlay__results-wrap { position: relative; }
+/* Compact Oryx loader (see assets/caviera-loader.css, .caviera-loader-inline) — centred over the
+   results area, revealed only by assets/caviera-search.js while a predictive-search request is
+   genuinely still in flight past its own short flash-protection delay. */
+.caviera-search-overlay__loader {
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.caviera-search-overlay__loader.is-active { display: flex; }
 
 /* Full-screen on mobile, with safe-area support and room for the on-screen keyboard, rather than
    the capped dropdown-style panel used on larger screens. */
@@ -399,4 +417,159 @@
   width: 1px; height: 1px;
   margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ---- Editorial media & text (sections/caviera-editorial-media.liquid) ----
+   Relocated here from assets/caviera-home.css (2026-08-18, unchanged values) — this component is
+   used on more than the homepage (The House page's own seal-story/mascot-story/material-language
+   instances, templates/page.house.json) and this stylesheet, unlike caviera-home.css, loads on
+   every template. The homepage-only scroll_progression/oryx_crossing_motion opt-in motion systems
+   stay in caviera-home.css, which still loads after this file wherever it's present, so their
+   overrides continue to win exactly as before. */
+.caviera-editorial__grid { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 900px) {
+  .caviera-editorial__grid { grid-template-columns: 1fr 1fr; align-items: center; }
+  .caviera-editorial[data-reverse="right"] .caviera-editorial__media { order: 2; }
+}
+.caviera-editorial__media img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/5; }
+.caviera-editorial__text { padding: 48px var(--gutter-mobile); max-width: 44ch; }
+@media (min-width: 900px) { .caviera-editorial__text { padding: 48px var(--gutter-desktop); } }
+.caviera-editorial__text .body-text { margin: 20px 0 28px; }
+
+/* House Seal case only — a formal hallmark, not full-bleed photography. The default rule above
+   (object-fit: cover; aspect-ratio: 4/5) is meant for photographic media and was stretching the
+   small Seal emblem into a dominant graphic; contain it to a modest, deliberate size via the
+   wrapper's own max-width (the snippet's img keeps its own width:100%/height:auto inline styles
+   untouched — it simply fills whatever this wrapper allows). Scoped to [data-media-source="house_
+   seal"] only — the Oryx moment (data-media-source="oryx") is unaffected. */
+.caviera-editorial__media[data-media-source="house_seal"] {
+  max-width: clamp(110px, 30vw, 170px);
+  margin-inline: auto;
+}
+.caviera-editorial__media[data-media-source="house_seal"] img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+@media (min-width: 900px) {
+  .caviera-editorial__media[data-media-source="house_seal"] {
+    max-width: clamp(220px, 22vw, 340px);
+    margin-inline: 0;
+  }
+}
+
+/* Edition record — a small, restrained provenance block. Archival, not a certificate card: a
+   label, one line, a fine rule, a closing mark. No fabricated production count. */
+.caviera-editorial__provenance { margin-top: 28px; }
+.caviera-editorial__provenance-label { display: block; opacity: 0.7; }
+.caviera-editorial__provenance-line { margin: 8px 0 0; opacity: 0.95; }
+.caviera-editorial__provenance-rule { display: block; width: 64px; height: 1px; margin: 16px 0; background: currentColor; opacity: 0.35; }
+.caviera-editorial__provenance-mark { display: block; opacity: 0.7; }
+
+/* ---- "Architectural" image emphasis (The House page's own material-language instance) ----
+   A real, near-square architectural photograph deserves more presence than the default small
+   paired-image treatment (50% width, cropped to 4:5) and shouldn't be cropped as tightly. Opt-in
+   and scoped to [data-media-treatment="architectural"] only (set on the section root — see the
+   liquid) — every other instance of this shared component is completely unaffected. Sharp edges
+   throughout — no border-radius, no box-shadow, no card styling. Content-height (this page's
+   section is NOT full-viewport) — see the separate "dominant" treatment below for that case. */
+@media (min-width: 900px) {
+  .caviera-editorial[data-media-treatment="architectural"] .caviera-editorial__grid {
+    /* ~58% / 42% — within the requested 54–62% range, still leaving the copy column comfortably
+       readable rather than a full-bleed image with text as an afterthought. */
+    grid-template-columns: minmax(0, 58%) minmax(0, 1fr);
+    gap: clamp(40px, 5vw, 80px);
+  }
+}
+/* Square 1:1, matching the source photograph's own native proportions (1254x1254) exactly, so
+   object-fit: cover has no cropping left to do — the complete boutique interior stays in frame. */
+.caviera-editorial[data-media-treatment="architectural"] .caviera-editorial__media img {
+  aspect-ratio: 1 / 1;
+}
+
+/* ---- "Dominant" image emphasis (homepage "oryx-moment"/The House instance) ----
+   2026-08-19 BUG FIX: this treatment previously reused the "architectural" rule's aspect-ratio:
+   1/1 lock. That is correct for a photograph inside a normal, content-height page section (The
+   House page above) but is WRONG here, where the brief wants a true full-viewport, edge-to-edge
+   photograph filling its entire column height — locking the image to a 1:1 box instead forced it
+   to whatever height a 1:1 ratio produced at its own column WIDTH (a few hundred px), and because
+   this section had no min-height of its own and .caviera-editorial__grid's shared align-items:
+   center rule doesn't stretch grid rows to fill anything, the whole row then shrank to fit that
+   small square — the exact "small floating square + huge empty Cinnabar space" bug reported.
+   FIX: give the section (and the grid inside it) a real, explicit min-height, stretch the row
+   instead of centring it, and let the image fill that height directly via height: 100% + object-
+   fit: cover — no aspect-ratio lock at all, so the image's rendered box is simply "the column",
+   full stop, cropped only as much as object-fit: cover ever needs to. */
+@media (min-width: 900px) {
+  .caviera-editorial[data-media-treatment="dominant"] {
+    /* The base .caviera-section class supplies padding-block: var(--section-spacing) — appropriate
+       for a normal content-height section, but that padding is exactly what left visible Cinnabar
+       space above/below the (already too-short) content before this fix, and would still leave an
+       unwanted gap above/below a correctly full-height image after it. Removed here only. */
+    padding-block: 0;
+  }
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__grid {
+    /* ~65% / 35% — within the requested 64–69% range (36–40% left / 60–64% right also acceptable
+       per brief; 65/35 sits centrally in both ranges). */
+    grid-template-columns: minmax(0, 65%) minmax(0, 1fr);
+    /* No gap — per brief, "no red gap around the image": the Cinnabar text column and the
+       photograph must meet edge-to-edge with nothing showing between them. */
+    gap: 0;
+    /* Overrides the shared .caviera-editorial__grid rule's align-items: center (which only ever
+       sizes a row to its content's own height — the direct cause of the bug) so both columns
+       stretch to fill the row's real, explicit height below instead. */
+    align-items: stretch;
+    min-height: 95svh;
+  }
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media {
+    height: 100%;
+    overflow: hidden;
+  }
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media img {
+    /* No aspect-ratio — the box IS the column, not a ratio-derived shape. */
+    height: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
+    /* CORRECTED (measured, not guessed): at ~95svh this column is considerably TALLER than the
+       source photo's own square (1254x1254) shape at every one of the four required widths
+       (measured column aspect ratio 0.59–0.68 at 1366–1920px real browser heights) — for a source
+       narrower-than-square-relative-to-its-box, object-fit: cover crops HEIGHT not at all (the
+       full ceiling-to-floor height always shows) and crops WIDTH significantly instead — as much
+       as ~44% of the photo's total width at the tightest breakpoint (1440x900), not the "small,
+       purely vertical" crop an earlier pass here wrongly assumed before actually measuring it.
+       Y is therefore irrelevant (nothing is ever cropped vertically) and left at plain centre.
+       X was picked by locating the photo's own real content, not by trial and error: the CAVIERA
+       JEWELS wall sign sits at roughly 20–35% across the source's own width — brief marks not
+       cropping that sign as an ABSOLUTE rule, ranked above the sculptural Oryx wall relief further
+       right (~58–90%), which cannot both fit inside a ~56–68%-wide visible window regardless of
+       position. 34% keeps the sign fully in frame with a safety margin at the tightest breakpoint
+       while still carrying the Cinnabar accent strip, the small round Oryx wall emblem, and most
+       of the central jewellery display case into frame at every required width; the wider
+       breakpoints (which crop less) additionally keep a growing portion of the Oryx relief itself. */
+    object-position: 34% 50%;
+  }
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-inline: 5vw;
+  }
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text .body-text {
+    max-width: 320px;
+  }
+  /* Restrained entry reveal only, per brief — opacity 0.85 → 1 / scale 1.015 → 1, nothing that
+     changes the image's rendered SIZE (the earlier bug was a layout fault, not this animation, but
+     the exact numbers below are now scoped here explicitly rather than reusing the generic
+     "seal-resolve" style's own 0.45 starting opacity, per the brief's specific request). Same
+     [data-reveal] one-shot IntersectionObserver JS already shared sitewide — no new JS. */
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media[data-reveal] {
+    opacity: 0.85;
+    transform: scale(1.015);
+    transition: opacity 500ms var(--ease-caviera), transform 500ms var(--ease-caviera);
+  }
+  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media[data-reveal].is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

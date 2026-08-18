@@ -10,9 +10,25 @@
   var clearBtn = overlay.querySelector('[data-search-clear]');
   var resultsEl = overlay.querySelector('[data-search-results]');
   var closeEls = overlay.querySelectorAll('[data-search-close]');
+  var loaderEl = overlay.querySelector('[data-caviera-loader-inline]');
   var lastFocused = null;
   var debounceTimer = null;
   var currentController = null;
+
+  // FLASH PROTECTION: the debounce above (220ms) already throttles the fetch itself; this second,
+  // shorter timer specifically protects the compact Oryx VIDEO from flashing on a fetch that turns
+  // out to resolve almost immediately — the plain "Searching…" text state on keystroke stays
+  // instant and unaffected, only the video is delayed.
+  var LOADER_SHOW_DELAY_MS = 160;
+  var loaderShowTimer = null;
+  function showSearchLoading() {
+    if (!loaderEl) return;
+    loaderShowTimer = setTimeout(function () { loaderEl.classList.add('is-active'); }, LOADER_SHOW_DELAY_MS);
+  }
+  function hideSearchLoading() {
+    if (loaderShowTimer) { clearTimeout(loaderShowTimer); loaderShowTimer = null; }
+    if (loaderEl) loaderEl.classList.remove('is-active');
+  }
 
   function open() {
     lastFocused = document.activeElement;
@@ -83,6 +99,7 @@
     clearBtn.addEventListener('click', function () {
       input.value = '';
       resultsEl.innerHTML = '';
+      hideSearchLoading();
       clearBtn.hidden = true;
       input.focus();
     });
@@ -91,6 +108,8 @@
   function fetchResults(term) {
     if (currentController) currentController.abort();
     currentController = new AbortController();
+    hideSearchLoading(); // cancel any pending reveal from a just-superseded request
+    showSearchLoading();
     var url = (window.theme.routes.predictiveSearch || '/search/suggest') +
       '?q=' + encodeURIComponent(term) +
       '&resources[type]=product,collection,page,article' +
@@ -98,8 +117,8 @@
       '&section_id=predictive-search';
     fetch(url, { signal: currentController.signal })
       .then(function (res) { return res.json(); })
-      .then(function (data) { render(term, data.resources ? data.resources.results : null); })
-      .catch(function (err) { if (err.name !== 'AbortError') resultsEl.innerHTML = ''; });
+      .then(function (data) { hideSearchLoading(); render(term, data.resources ? data.resources.results : null); })
+      .catch(function (err) { hideSearchLoading(); if (err.name !== 'AbortError') resultsEl.innerHTML = ''; });
   }
 
   function render(term, results) {

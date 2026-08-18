@@ -239,6 +239,22 @@
           {%- render 'caviera-wordmark', mode: section.settings.text_mode, width: 200, loading: 'eager', fetchpriority: 'high' -%}
         </div>
       {%- endif -%}
+      {%- comment -%}
+        MOBILE ONLY house identifier — a small "CAVIERA JEWELS / THE HOUSE" eyebrow ahead of the
+        headline, per the mobile hero rebuild brief. Rendered unconditionally here (same pattern
+        as every other mobile-only element in this section — see .caviera-hero__architecture and
+        .caviera-hero__hinge above) but hidden by default and only revealed inside the mobile
+        query in assets/caviera-home.css, so desktop — which already carries the wordmark in the
+        header on every page — never sees a second, redundant identity mark and stays pixel-
+        identical. Two schema settings, not hardcoded text, matching every other piece of hero
+        copy in this section.
+      {%- endcomment -%}
+      {%- if section.settings.identifier_line1 != blank or section.settings.identifier_line2 != blank -%}
+        <p class="caviera-hero__identifier">
+          {%- if section.settings.identifier_line1 != blank -%}<span>{{ section.settings.identifier_line1 }}</span>{%- endif -%}
+          {%- if section.settings.identifier_line2 != blank -%}<span>{{ section.settings.identifier_line2 }}</span>{%- endif -%}
+        </p>
+      {%- endif -%}
       {%- if section.settings.heading != blank -%}
         <h1 class="heading-display caviera-hero__heading">{{ section.settings.heading }}</h1>
       {%- endif -%}
@@ -318,6 +334,11 @@
     },
     { "type": "checkbox", "id": "show_wordmark", "label": "Show official wordmark", "default": false, "info": "Off by default — the header above already carries the wordmark on every page, so repeating it here reads as cluttered. Turn on only if this section is ever used without the standard header (e.g. a standalone landing page)." },
     { "type": "header", "content": "Content" },
+    {
+      "type": "text", "id": "identifier_line1", "label": "Mobile house identifier — line 1", "default": "CAVIERA JEWELS",
+      "info": "Small, restrained identifier shown only on mobile, directly above the headline (desktop already carries the wordmark in the header). Leave both lines blank to hide it entirely."
+    },
+    { "type": "text", "id": "identifier_line2", "label": "Mobile house identifier — line 2", "default": "THE HOUSE" },
     { "type": "text", "id": "heading", "label": "Headline", "default": "Objects of rare composure." },
     { "type": "textarea", "id": "subheading", "label": "Supporting line", "default": "Jewellery shaped by light, precision and enduring form." },
     {

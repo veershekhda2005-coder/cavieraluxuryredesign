@@ -67,7 +67,9 @@
       "settings": {
         "eyebrow": "Visual language",
         "heading": "Material, light and form.",
-        "image_position": "left"
+        "image_position": "left",
+        "show_house_boutique": true,
+        "media_emphasis": "architectural"
       }
     },
     "signature": {

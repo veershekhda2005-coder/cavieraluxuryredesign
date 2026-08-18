@@ -33,7 +33,17 @@
         <button type="submit" class="visually-hidden">{{ 'general.search.submit' | t }}</button>
       </form>
     </div>
-    <div class="container caviera-search-overlay__results" data-search-results aria-live="polite"></div>
+    <div class="container caviera-search-overlay__results-wrap">
+      <div class="caviera-search-overlay__results" data-search-results aria-live="polite"></div>
+      {%- comment -%}
+        Compact Oryx loader — a sibling, not a child, of data-search-results: it must survive that
+        element's own innerHTML being replaced on every keystroke/response (see assets/caviera-
+        search.js). Shown only via its own short flash-protection delay while a predictive-search
+        fetch is genuinely still in flight — the instant "Searching…" text state on keystroke stays
+        text-only and immediate, unaffected.
+      {%- endcomment -%}
+      {%- render 'caviera-loader-inline', size: 40, class: 'caviera-search-overlay__loader' -%}
+    </div>
   </div>
 </div>
 <script src="{{ 'caviera-search.js' | asset_url }}" defer="defer"></script>

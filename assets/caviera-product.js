@@ -178,6 +178,13 @@
         var submit = form.querySelector('[data-add-to-cart]');
         var status = form.querySelector('[data-form-status]');
         if (submit) { submit.disabled = true; submit.setAttribute('aria-disabled', 'true'); }
+        // FLASH PROTECTION: /cart/add.js is usually fast — delay swapping the button label for the
+        // compact Oryx loader (see product-form.liquid / caviera-product.css) so it never flashes
+        // on/off for an ordinary, quick add. The disabled/aria-disabled state above is immediate
+        // and unaffected — only the visual loader is delayed.
+        var loaderShowTimer = setTimeout(function () {
+          if (submit) submit.classList.add('is-loading');
+        }, 160);
         fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -195,8 +202,13 @@
             if (status) { status.textContent = (err && err.description) || 'Something went wrong. Please try again.'; status.setAttribute('data-state', 'error'); }
           })
           .finally(function () {
+            clearTimeout(loaderShowTimer);
             form.dataset.submitting = 'false';
-            if (submit) { submit.disabled = false; submit.setAttribute('aria-disabled', 'false'); }
+            if (submit) {
+              submit.disabled = false;
+              submit.setAttribute('aria-disabled', 'false');
+              submit.classList.remove('is-loading');
+            }
           });
       });
     });

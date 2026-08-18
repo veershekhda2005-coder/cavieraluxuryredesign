@@ -19,8 +19,21 @@
    the header row's height nor the icon's visual position shifts. */
 .caviera-cart-drawer__close { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -13px; }
 .caviera-cart-drawer__close svg { width: 18px; height: 18px; }
-.caviera-cart-drawer__body { flex: 1; overflow-y: auto; padding: 0 24px; }
+.caviera-cart-drawer__body-wrap { position: relative; flex: 1; overflow-y: auto; }
+.caviera-cart-drawer__body { padding: 0 24px; }
 .caviera-cart-drawer__body.is-loading { opacity: 0.6; pointer-events: none; transition: opacity var(--motion-fast) var(--ease-caviera); }
+/* Compact Oryx loader (see assets/caviera-loader.css, .caviera-loader-inline) — a SIBLING of
+   data-cart-items (see cart-drawer.liquid for why), centred over the dimmed cart contents while a
+   request is in flight. Revealed via the plain sibling combinator off data-cart-items's own
+   .is-loading class — no extra JS class-toggle needed, the two always appear/disappear together. */
+.caviera-cart-drawer__loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+.caviera-cart-drawer__body.is-loading ~ .caviera-cart-drawer__loader { display: flex; }
 .caviera-cart-drawer__empty { padding: 48px 0; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
 .caviera-cart-drawer__list { display: flex; flex-direction: column; }
 .caviera-cart-drawer__item { display: grid; grid-template-columns: 80px 1fr auto; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--border-subtle); }

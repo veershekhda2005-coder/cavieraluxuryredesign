@@ -310,6 +310,10 @@
 @media (min-width: 900px) { .caviera-hero__field-inner { padding-inline: clamp(40px, 6vw, 96px); } }
 
 .caviera-hero__wordmark { max-width: 200px; margin-bottom: clamp(28px, 5vh, 52px); }
+/* Mobile-only house identifier ("CAVIERA JEWELS / THE HOUSE") — hidden here unconditionally so
+   desktop (which already carries the wordmark in the header) never renders it; the mobile query
+   further down is the only place this is ever shown. See sections/caviera-hero.liquid. */
+.caviera-hero__identifier { display: none; }
 /* Larger than the old split-column version (which was capped to fit a ~40%-wide panel) — the
    editorial field now has the full section width to work with, so the headline can use closer to
    the shared .heading-display scale for real cinematic presence. */
@@ -470,14 +474,30 @@
     max-width: none;
     padding-inline: clamp(20px, 5vw, 24px);
   }
+  /* Small House identifier, ahead of the headline — the "one focus" sequence's own opening beat.
+     Two spans (not a <br>) so each line can carry its own weight/tracking independently: the
+     house name quiet and wide-tracked, "THE HOUSE" a touch dimmer, underneath it. */
+  .caviera-hero__identifier {
+    display: block;
+    margin-bottom: clamp(14px, 4vw, 18px);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    line-height: 1.6;
+  }
+  .caviera-hero__identifier span { display: block; }
+  .caviera-hero__identifier span:last-child {
+    color: color-mix(in srgb, var(--caviera-bone) 70%, var(--caviera-rhodium) 30%);
+  }
   .caviera-hero__heading {
-    /* Mobile-specific editorial scale per the brief — clamp(48px, 12.5vw, 52px): a flat 48px floor
-       guarantees every one of the five mandated test widths (360-430px) lands inside the requested
-       48-52px (at 360px, 12.5vw alone would resolve to ~45px, under the floor without it; at 430px,
-       12.5vw = ~53.75px, capped at the 52px ceiling). Tight, refined line-height (1.02, within the
-       requested 0.98-1.05), independent of the shared .heading-display-derived clamp()/line-height
-       used above, which was tuned for the desktop composition, not this one. */
-    font-size: clamp(48px, 12.5vw, 52px);
+    /* Mobile-specific editorial scale per the brief — approximately 48-58px: a flat 48px floor
+       guarantees every one of the mandated test widths (375-430px) never drops below the
+       requested minimum (at 375px, 13.5vw alone would resolve to ~50.6px, already above the floor;
+       the floor exists for any narrower device still in this query), while 13.5vw reaches the
+       requested ceiling right at 430px (13.5vw = 58.05px, capped at 58px) rather than plateauing
+       well short of it the way a smaller multiplier would. Tight, refined line-height (1.02),
+       independent of the shared .heading-display-derived clamp()/line-height used above, which was
+       tuned for the desktop composition, not this one. */
+    font-size: clamp(48px, 13.5vw, 58px);
     line-height: 1.02;
   }
   .caviera-hero__subheading {
@@ -521,12 +541,20 @@
     font-size: 0.75rem;
     letter-spacing: 0.14em;
     border-bottom: 1px solid color-mix(in srgb, var(--caviera-bone) 45%, transparent);
+    transition: opacity 150ms var(--ease-caviera), border-color 150ms var(--ease-caviera);
   }
   .caviera-hero__actions .btn--primary::after {
     /* Decorative only (aria-hidden not needed — the visible text itself is unchanged and already
        fully describes the destination; this glyph adds no meaning a screen reader would need to
        announce separately, same treatment as an icon-only decoration elsewhere in this project). */
     content: "→";
+  }
+  /* Subtle touch feedback — no hover-dependent effect (:hover doesn't fire on touch, and the
+     shared .btn:hover rule further up this file isn't guarded to `hover: hover`), just a quiet
+     fade + brightened underline for the moment of contact, restrained rather than a bounce/scale. */
+  .caviera-hero__actions .btn--primary:active {
+    opacity: 0.6;
+    border-bottom-color: var(--caviera-bone);
   }
   .caviera-hero__scroll-cue {
     /* A "scroll to explore" cue belonging to the desktop full-viewport pin experience — mobile is
@@ -1215,6 +1243,42 @@
   .caviera-edition-teaser__media { opacity: 1; transform: none; transition: none; }
 }
 
+/* ---- MOBILE VISIBILITY FIX (2026-08-17) ----
+   BUG: on mobile (<900px), Edition I could read as genuinely missing rather than "still animating
+   in". Two separate JS-dependent reveal mechanisms stack on this section: 1) the sitewide
+   [data-reveal] IntersectionObserver fade/clip (caviera-motion.css + assets/caviera-global.js) —
+   .caviera-edition-teaser__copy starts at opacity: 0, .media-primary/.media-secondary start
+   opacity: 0 / fully clip-path-clipped, all only resolving once an IntersectionObserver adds
+   .is-visible; 2) the "MOBILE MOTION FIX" immediately above this rule, which additionally ties
+   __meta/__heading/__media's own opacity to a LIVE scroll-position calculation
+   (assets/caviera-scroll-progress.js), only reaching full opacity once the visitor has scrolled a
+   specific extra distance PAST the point the section enters view. Both are fragile in exactly the
+   ways the brief asked to check for: a Theme Editor preview iframe's scroll behaviour, any QA tool
+   that jumps straight to the section instead of scrolling gradually, or JS simply not having run
+   yet, all leave real content sitting at opacity: 0 (or fully clipped) with no way to know it's
+   "arriving soon" rather than absent.
+
+   FIX (temporary, explicitly NOT a redesign per brief): unconditionally force every [data-reveal]
+   element inside this section, plus the three scroll-tied elements above, to their fully-resolved,
+   motion-free end state at every mobile width — no opacity fade, no clip-path reveal, no scroll
+   dependency, nothing left to fail silently. Layout, typography, spacing and colour are completely
+   unchanged; only the "can render invisible" failure mode is removed. !important is deliberate and
+   scoped to this one section at this one breakpoint only (the same technique #edition-i's own
+   scroll-margin-top rule already uses above) — needed to reliably beat three different mechanisms
+   (opacity, transform, clip-path) across two separate stylesheets in one unconditional rule, rather
+   than chasing every individual selector/specificity combination that could otherwise still win. */
+@media (max-width: 899px) {
+  .caviera-edition-teaser [data-reveal],
+  .caviera-edition-teaser__meta,
+  .caviera-edition-teaser__heading,
+  .caviera-edition-teaser__media {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+}
+
 /* Single-image fallback crops (see img2_derived/img3_derived in sections/caviera-edition-teaser.
    liquid): when media 02/03 have no dedicated asset of their own, they reuse media 01's own photo
    — these object-position/scale values give each reused instance a visibly distinct, strongly
@@ -1271,6 +1335,492 @@
    z-index: 2 with no ambiguous tie. */
 .caviera-edition-teaser__media .caviera-drag-token { z-index: 3; }
 .caviera-edition-teaser__media .caviera-drag-token.is-dragging { z-index: 4; }
+
+/* ---- EDITION I — THE FIRST MARK: 900px+ desktop composition (2026-08-17) ----
+   DESKTOP ONLY, by construction, not by convention: the two rules immediately below are the entire
+   switch-over mechanism between the mobile scroll-choreography section above and this new one — no
+   other rule in either section needs to change for that to hold. `display: none` on a
+   [data-caviera-pin] element is a confirmed-safe no-op for assets/caviera-scroll-progress.js (its
+   `total > 0` guard already falls back to progress 0 for a zero-size element), so the old section
+   sits inert rather than broken once desktop switches away from it. */
+@media (min-width: 900px) {
+  .caviera-edition-teaser { display: none; }
+}
+.caviera-edition-mark { display: none; }
+@media (min-width: 900px) {
+  .caviera-edition-mark { display: block; }
+
+  /* Approximate 43% / 57% desktop balance per brief (42–45% / 55–58%) — the visual side carries
+     slightly more presence. Both columns stretch to the row's own height (grid default) so the
+     Cinnabar info panel always reads as one solid block exactly as tall as the visual side, rather
+     than an odd-height card floating beside it — the "optically balanced against the right visual"
+     requirement from a plain flex/grid property, no fixed heights to keep in sync by hand. The gap
+     between them stays this section's own Obsidian (the outer .caviera-edition-mark background),
+     a deliberate quiet corridor rather than the two colour fields touching. */
+  .caviera-edition-mark__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 43%) minmax(0, 57%);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: stretch;
+  }
+
+  /* Archival House notice, not a marketing card: solid Cinnabar field (data-scheme="cinnabar" on
+     this div, not the section — see [data-scheme] in caviera-base.css for the shared background/
+     text-colour/border-token mechanism this reuses untouched), generous internal padding, content
+     vertically centred within whatever height the row (i.e. the visual column) actually needs. */
+  .caviera-edition-mark__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(56px, 6vw, 88px) clamp(44px, 5vw, 72px);
+  }
+  .caviera-edition-mark__meta { margin-bottom: 28px; }
+  .caviera-edition-mark__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    font-size: calc(clamp(2.5rem, 1.7rem + 3.4vw, 4.5rem) * var(--heading-scale));
+  }
+  .caviera-edition-mark__year {
+    margin-top: 10px;
+    font-family: var(--font-body);
+    text-transform: none;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+  }
+  .caviera-edition-mark__intro { margin-top: 28px; }
+
+  /* Fine dividers, never a card — .caviera-edition-mark__divider (an explicit, animated element —
+     see the LUXURY MOTION PASS block below) now carries the line that used to be a static
+     border-top here; each fact row keeps its own plain bottom rule, unanimated (the brief only
+     asked for THE divider, singular, to draw in). --border-subtle already resolves to the
+     dark-on-Cinnabar token here (see the [data-scheme="cinnabar"] rule this panel's own
+     data-scheme attribute activates), so no separate colour override is needed. */
+  .caviera-edition-mark__facts {
+    margin-top: 0;
+    border-top: none;
+  }
+  .caviera-edition-mark__fact {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding-block: 14px;
+    border-bottom: var(--border-width) solid var(--border-subtle);
+  }
+  .caviera-edition-mark__fact dt { color: color-mix(in srgb, var(--caviera-bone) 68%, transparent); }
+  .caviera-edition-mark__fact dd { text-align: right; }
+
+  /* Signup — a real Shopify customer form (see the markup), styled as a private release notice,
+     never a generic Shopify email box: no input border/background of its own, just one fine
+     underline shared by the field and the icon-only submit, so the whole row reads as a single
+     quiet instrument rather than a boxed form control. */
+  .caviera-edition-mark__signup { margin-top: 44px; }
+  .caviera-edition-mark__signup-label { display: block; margin-bottom: 14px; color: color-mix(in srgb, var(--caviera-bone) 80%, transparent); }
+  .caviera-edition-mark__form-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    max-width: 360px;
+    padding-bottom: 10px;
+    position: relative;
+    /* Kept as a real (transparent) border, not removed outright, purely so the row's own box
+       height/padding-bottom math is identical to before — the VISIBLE line is now the ::after
+       below instead, so it can draw in via scaleX (see the LUXURY MOTION PASS block). */
+    border-bottom: var(--border-width) solid transparent;
+  }
+  .caviera-edition-mark__form-row::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--border-width);
+    background: var(--border-subtle);
+    transition: background-color var(--motion-fast) var(--ease-caviera);
+  }
+  .caviera-edition-mark__form-row:focus-within::after { background: var(--caviera-bone); }
+  .caviera-edition-mark__form-row input[type="email"] {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    padding: 6px 0;
+    color: inherit;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+  }
+  .caviera-edition-mark__form-row input[type="email"]::placeholder { color: color-mix(in srgb, var(--caviera-bone) 55%, transparent); }
+  .caviera-edition-mark__form-row input[type="email"]:focus-visible { outline: 1px solid var(--caviera-bone); outline-offset: 4px; }
+  .caviera-edition-mark__form-submit {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity var(--motion-fast) var(--ease-caviera);
+  }
+  .caviera-edition-mark__form-submit svg { width: 16px; height: 16px; }
+  @media (hover: hover) {
+    .caviera-edition-mark__form-submit:hover { opacity: 0.6; }
+  }
+  .caviera-edition-mark__form-submit-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .caviera-edition-mark__signup-note { margin-top: 14px; max-width: 34ch; font-size: 0.8125rem; }
+  .caviera-edition-mark .form-status[data-state="success"] { margin-top: 12px; font-size: 0.8125rem; }
+
+  /* Visual collage — one composed editorial artwork, not three equal cards. The main image sits in
+     normal flow (its own aspect-ratio box sets the whole composition's real height); the two detail
+     images are absolutely positioned against THIS wrapper (not the main image), so they can extend
+     past the main image's own edges rather than being clipped by it — no overflow: hidden here.
+     Centred vertically within the wrapper in case the info column ever needs more height than the
+     image does (long merchant copy), so the visual never gets pinned to the top and stranded. */
+  .caviera-edition-mark__visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .caviera-edition-mark__visual-main {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+  .caviera-edition-mark__visual-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+  /* Sharp architectural edges (no border-radius) per brief — separation from the main image comes
+     from a considered drop shadow only, never a border or card background. Left/right sized and
+     offset differently on purpose (intentional asymmetry, not a mirrored pair): left is slightly
+     larger and drops further below the main image's own bottom edge; right sits higher and pulls
+     in from the edge rather than extending past it. */
+  .caviera-edition-mark__visual-detail {
+    position: absolute;
+    z-index: 2;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    box-shadow: 0 20px 48px rgba(17, 16, 18, 0.4);
+  }
+  .caviera-edition-mark__visual-detail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+  .caviera-edition-mark__visual-detail--left {
+    width: 30%;
+    left: -6%;
+    bottom: -8%;
+  }
+  .caviera-edition-mark__visual-detail--right {
+    width: 25%;
+    right: 6%;
+    bottom: -15%;
+  }
+}
+
+/* ---- EDITION I — LUXURY MOTION PASS (2026-08-17) ----
+   "One focus, one action, one reveal at a time" — a short, controlled, ceremonial pin sequence,
+   not a redesign: every colour, font-size, spacing and image crop declared just above is untouched;
+   this block only ever adds opacity/transform/clip-path motion driven by scroll progress, plus the
+   pin geometry that makes a "sequence" possible in the first place.
+
+   ENGINE: reuses assets/caviera-scroll-progress.js — the EXACT SAME shared engine as the Hero and
+   the mobile section above, added by giving .caviera-edition-mark its own data-caviera-pin
+   attribute (see sections/caviera-edition-teaser.liquid). That script loops over every
+   [data-caviera-pin] element with a plain, independent forEach — no shared mutable state, no
+   if/else-if between sections — so this can never affect, race with, or be affected by Material
+   Truth's (assets/caviera-material-truth.js) or Maker's Mark's (assets/caviera-makers-mark.js) own,
+   completely separate rAF loops. No new JS file was written for this pass.
+
+   PIN GEOMETRY: gated behind `prefers-reduced-motion: no-preference`, NOT applied unconditionally —
+   this project's own newer sections (see .caviera-craftsmanship__stage, "Material Truth", further
+   down this file) already established that exact pattern specifically so a reduced-motion visitor
+   gets the plain, non-pinned, auto-height section with zero dead scroll space, rather than a tall
+   pin wrapper that no longer has anything left to animate inside it. Under reduced motion (or if
+   the pin geometry is unsupported), .caviera-edition-mark/-inner simply keep the plain `display:
+   block` / `display: grid` rules above — normal flow, no sticky, no extra scroll distance.
+
+   PROGRESS FALLBACK: var(--caviera-progress, 1) — defaulting to the FULLY RESOLVED state (1), not
+   0 — is used by every single derived channel below, so reduced motion, no-JS, and JS-not-yet-run
+   all render the complete, final composition immediately, per brief. The shared engine also calls
+   measure() once synchronously on load/section-load (see its own file), so a page reload landing
+   already scrolled to Edition I gets the correct live progress on first paint, not just after the
+   next scroll event.
+
+   FOUR BEATS, one raw value: --mark-progress (0 at pin start, 1 at pin end) is sliced into named,
+   non-overlapping-within-their-own-element channels — each is its own clamp(0, (progress − start)
+   / width, 1), the same "phase-local progress that saturates and holds" technique already proven
+   by --edition-*-progress on the mobile section above. Beats are allowed to overlap EACH OTHER
+   (e.g. the objects beat starts at 0.35, before the information beat's last fact has finished at
+   ~0.43) deliberately — a hard, mechanical hand-off between beats would read as more "generic
+   fade-up-on-scroll" than "one continuous unveiling". */
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  /* OUTER PIN: ~142svh total — 100svh for the pinned room, ~42svh of real extra scroll runway for
+     the four-beat sequence to play across. Within the brief's own 135–150svh guidance; short and
+     controlled, not a long scroll-jack (compare Hero/mobile-Edition's own similar clamp() bounds
+     just above/below this block). */
+  .caviera-edition-mark {
+    height: clamp(780px, 142svh, 1160px);
+    overflow: hidden;
+    padding-block: 0;
+  }
+  .caviera-edition-mark__inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+
+    /* Section-scoped easing token — deliberately its own value, NOT this theme's sitewide
+       --ease-caviera (cubic-bezier(0.22, 0.61, 0.15, 1)) — the brief asks specifically for a
+       premium-editorial "ease-out-quint"-like curve for reveal transitions here; scoping it to
+       this section only (rather than overriding the global token) means nothing else on the site
+       is affected. A short, non-zero duration is used (not the 60ms-linear "just smooth out
+       inter-frame jitter" technique the crop/enter states above use) — these are discrete beats
+       that hold their target value for most of the pin's length, not a continuously-updating
+       scrub, so a real eased "catch-up" reads as intentional rather than laggy. */
+    --mark-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* 2026-08-18 — BLANK-STATE FIX: assets/caviera-scroll-progress.js defines --caviera-progress
+       as exactly 0 at the precise instant this section's sticky inner panel BEGINS pinning (rect.
+       top hits 0) — a real 0, not a rounding artefact, since progress only starts advancing once
+       the section has scrolled PAST that point. Every beat below used to read that 0 directly, so
+       the very first frame the visitor actually sees Edition I as "the" section — before they've
+       scrolled a single further pixel — showed every channel at its own opening (usually fully
+       hidden) state: meta and the masked heading invisible, the main image at opacity: 0. That is
+       the reported bug exactly — a plain Cinnabar panel and a plain Obsidian field (the section's
+       own background colour showing through zero-opacity content), not a broken render.
+
+       FIX: --mark-progress is no longer --caviera-progress verbatim — it's floored and rescaled so
+       raw 0 (pin start) maps to 0.12 (within the brief's requested 0.10–0.15 minimum entry
+       floor), and raw 1 (pin end) still maps to 1.0 exactly, so the section still fully resolves
+       and releases at precisely the same scroll position as before — only the STARTING point
+       moved, not the total pin distance or release timing. This is a purely local remap of this
+       section's own derived value; --caviera-progress itself, and every other consumer of it
+       (Hero, the mobile Edition-teaser fallback above), are completely untouched. */
+    --mark-progress: calc(0.12 + (var(--caviera-progress, 1) * 0.88));
+
+    /* ---- ENTRY COMPOSITION (must already read as "this is Edition I" the instant the section is
+       reached, per brief) — meta, heading and year all fully resolve by mark-progress 0.06–0.12,
+       i.e. AT OR BEFORE the 0.12 entry floor above, so they are already fully visible on the very
+       first rendered frame, not just "soon after a little more scrolling". The main image gets its
+       own two channels (see BEAT 03 below) so its opacity resolves just as fast while its settle
+       motion is allowed to keep playing a little further, per brief ("preserve luxury motion
+       without creating an empty screen"). */
+    --mark-meta: clamp(0, calc((var(--mark-progress) - 0.00) / 0.06), 1);
+    --mark-heading: clamp(0, calc((var(--mark-progress) - 0.00) / 0.10), 1);
+    --mark-year: clamp(0, calc((var(--mark-progress) - 0.02) / 0.10), 1);
+
+    /* BEAT 1 — description completes: already partially legible at entry (per brief, "at least the
+       first part of the description") since it starts ramping from 0 immediately, reaching ~43%
+       revealed right at the 0.12 floor, then finishes at 0.28 as the visitor keeps scrolling. */
+    --mark-intro: clamp(0, calc((var(--mark-progress) - 0.00) / 0.28), 1);
+    /* BEAT 2 — divider draws. */
+    --mark-divider: clamp(0, calc((var(--mark-progress) - 0.24) / 0.08), 1);
+    /* BEAT 3 — FORMAT / MARK / STATUS resolve one after another (not at once). */
+    --mark-fact-1: clamp(0, calc((var(--mark-progress) - 0.30) / 0.06), 1);
+    --mark-fact-2: clamp(0, calc((var(--mark-progress) - 0.34) / 0.06), 1);
+    --mark-fact-3: clamp(0, calc((var(--mark-progress) - 0.38) / 0.06), 1);
+
+    /* BEAT 03 — the objects appear: the main image's OPACITY resolves essentially immediately
+       (0.00–0.05, comfortably inside the 0.12 entry floor — never an empty black panel), while its
+       own scale/translateY settle is allowed to continue slightly further (0.00–0.18) so a little
+       genuine "settling into place" motion is still visible just after entry, exactly per brief.
+       BEAT 4 — the House Seal ring (lower left) appears after the main image and the information
+       panel have resolved. BEAT 5 — the red cluster (lower right) appears last of the three — an
+       assembled composition, main image first, never three simultaneous card fades. --mark-light
+       spans the same overall arrival window, driving the very subtle brightness settle described
+       further down. */
+    --mark-main-opacity: clamp(0, calc((var(--mark-progress) - 0.00) / 0.05), 1);
+    --mark-main-settle: clamp(0, calc((var(--mark-progress) - 0.00) / 0.18), 1);
+    --mark-left: clamp(0, calc((var(--mark-progress) - 0.42) / 0.20), 1);
+    --mark-right: clamp(0, calc((var(--mark-progress) - 0.55) / 0.20), 1);
+    --mark-light: clamp(0, calc((var(--mark-progress) - 0.00) / 0.75), 1);
+
+    /* BEAT 6 — provenance / final state: the signup label, then the email row (its underline
+       drawing in alongside it), then the supporting note — BEAT 7, fully composed by ~0.95, so
+       BEAT 8 (the section releasing) follows almost immediately after, no dead hold. */
+    --mark-signup-label: clamp(0, calc((var(--mark-progress) - 0.74) / 0.08), 1);
+    --mark-signup-field: clamp(0, calc((var(--mark-progress) - 0.80) / 0.10), 1);
+    --mark-signup-note: clamp(0, calc((var(--mark-progress) - 0.86) / 0.09), 1);
+  }
+
+  /* ---- BEAT 01: House arrival ---- */
+  .caviera-edition-mark__meta {
+    opacity: var(--mark-meta);
+    transform: translateY(calc(12px * (1 - var(--mark-meta))));
+    transition: opacity 150ms var(--mark-ease), transform 150ms var(--mark-ease);
+  }
+  /* Clip/mask reveal, not a fade, per brief — overflow: hidden window plus a translateY(105% → 0)
+     on the heading itself underneath it, so it reads as typography being uncovered rather than
+     appearing in place. 105%, not 100%, leaves a hair of margin so sub-pixel rounding can never
+     let a sliver of the settled glyphs' descenders peek through one frame early. */
+  .caviera-edition-mark__heading-mask { overflow: hidden; }
+  .caviera-edition-mark__heading {
+    transform: translateY(calc(105% * (1 - var(--mark-heading))));
+    transition: transform 200ms var(--mark-ease);
+  }
+
+  /* ---- BEAT 02: the Edition is identified ---- */
+  .caviera-edition-mark__year {
+    /* Resting opacity here was a plain 0.68 before this pass (see the unconditional rule above,
+       now with that opacity removed) — reproduced exactly at full progress by multiplying rather
+       than animating 0 → 1, so the fully-resolved state is pixel/value-identical to before. */
+    opacity: calc(0.68 * var(--mark-year));
+    transform: translateY(calc(8px * (1 - var(--mark-year))));
+    transition: opacity 150ms var(--mark-ease), transform 150ms var(--mark-ease);
+  }
+  .caviera-edition-mark__intro {
+    opacity: calc(0.9 * var(--mark-intro));
+    transform: translateY(calc(10px * (1 - var(--mark-intro))));
+    transition: opacity 150ms var(--mark-ease), transform 150ms var(--mark-ease);
+  }
+  /* The animated line itself — replaces the old static border-top on .caviera-edition-mark__facts
+     (see the unconditional rule above). transform-origin: left plus scaleX(0 → 1) is the literal
+     "architectural and precise" technique asked for, not a width/max-width animation (which would
+     be layout-triggering — see the NO LAYOUT SHIFT brief). */
+  .caviera-edition-mark__divider {
+    display: block;
+    height: var(--border-width);
+    margin-top: 36px;
+    background: var(--border-subtle);
+    transform: scaleX(var(--mark-divider));
+    transform-origin: left;
+    transition: transform 220ms var(--mark-ease);
+  }
+  /* FORMAT / MARK / STATUS resolve one after another — nth-child assumes the common case (all
+     three configured, in that fixed order, exactly as shipped); if a merchant leaves one of the
+     three Theme Editor fields blank the remaining rows simply inherit whichever stagger slot their
+     new position lands on, which still reads as "staggered", just not guaranteed FORMAT-first. */
+  .caviera-edition-mark__fact {
+    transition: opacity 150ms var(--mark-ease), transform 150ms var(--mark-ease);
+  }
+  .caviera-edition-mark__fact:nth-child(1) { opacity: var(--mark-fact-1); transform: translateY(calc(8px * (1 - var(--mark-fact-1)))); }
+  .caviera-edition-mark__fact:nth-child(2) { opacity: var(--mark-fact-2); transform: translateY(calc(8px * (1 - var(--mark-fact-2)))); }
+  .caviera-edition-mark__fact:nth-child(3) { opacity: var(--mark-fact-3); transform: translateY(calc(8px * (1 - var(--mark-fact-3)))); }
+
+  /* ---- BEAT 03: the objects appear ----
+     Each image's own wrapper (not its <img>) carries the reveal — position: relative + overflow:
+     hidden already on .visual-main, and position: absolute already on each .visual-detail, so
+     animating opacity/transform here moves the whole framed photograph as one piece, exactly the
+     "settling into the composition" brief, never just a crop shifting inside a static frame.
+
+     SUBTLE DEPTH (independent of the reveal-in — see "SUBTLE IMAGE DEPTH" in the brief): a second,
+     continuous term added into the SAME transform, driven directly by --mark-progress (0 → 1
+     across the WHOLE pin, not the local per-image beat window) rather than the image's own local
+     progress — main 0 → -8px, left 4 → -8px, right 8 → -12px. Additive with the reveal's own
+     settle-in translateY, both expressed in one calc() per axis; barely perceptible by design, and
+     because it's driven by the same --mark-progress the reveal channels already use (not a second,
+     independent scroll listener), it can never drift out of sync with the rest of the sequence. */
+  .caviera-edition-mark__visual-main {
+    /* Opacity and transform now read separate channels (see --mark-main-opacity/-settle above) —
+       opacity resolves almost immediately (never an empty panel at entry, per brief), while the
+       scale/translateY settle is allowed to keep playing a little further for genuine felt motion.
+       Amplitudes are the brief's own recommended entry values (translateY ~8–14px, scale ~1.02),
+       not the earlier, larger 24px/1.035 — the visible settle is now subtler by design. */
+    opacity: var(--mark-main-opacity);
+    transform:
+      translateY(calc((12px * (1 - var(--mark-main-settle))) + (-8px * var(--mark-progress))))
+      scale(calc(1.02 - (0.02 * var(--mark-main-settle))));
+    transition: opacity 200ms var(--mark-ease), transform 200ms var(--mark-ease);
+  }
+  .caviera-edition-mark__visual-detail--left {
+    opacity: var(--mark-left);
+    transform:
+      translateY(calc((30px * (1 - var(--mark-left))) + (4px - (12px * var(--mark-progress)))))
+      translateX(calc(-12px * (1 - var(--mark-left))))
+      scale(calc(0.97 + (0.03 * var(--mark-left))));
+    transition: opacity 220ms var(--mark-ease), transform 220ms var(--mark-ease);
+  }
+  .caviera-edition-mark__visual-detail--right {
+    opacity: var(--mark-right);
+    transform:
+      translateY(calc((34px * (1 - var(--mark-right))) + (8px - (20px * var(--mark-progress)))))
+      translateX(calc(14px * (1 - var(--mark-right))))
+      scale(calc(0.97 + (0.03 * var(--mark-right))));
+    transition: opacity 220ms var(--mark-ease), transform 220ms var(--mark-ease);
+  }
+  /* OPTIONAL CINNABAR/LIGHT DETAIL, kept deliberately minimal per brief ("no gradients, no glow, no
+     lens flares, no particles, no sparkles") — a plain brightness filter on the whole visual
+     column, 0.95 → 1.0 across the same span the objects arrive in, reading as the light settling
+     once the collage completes rather than any visible effect of its own. filter is a compositor-
+     only property, same "no layout shift" guarantee as opacity/transform. */
+  .caviera-edition-mark__visual {
+    filter: brightness(calc(0.95 + (0.05 * var(--mark-light))));
+    transition: filter 200ms var(--mark-ease);
+  }
+
+  /* ---- BEAT 04: provenance / final state ---- */
+  .caviera-edition-mark__signup-label {
+    opacity: var(--mark-signup-label);
+    transform: translateY(calc(10px * (1 - var(--mark-signup-label))));
+    transition: opacity 150ms var(--mark-ease), transform 150ms var(--mark-ease);
+  }
+  .caviera-edition-mark__form-row {
+    opacity: var(--mark-signup-field);
+    transition: opacity 150ms var(--mark-ease);
+  }
+  /* The underline "draws" left → right alongside the field's own fade-in, rather than simply
+     appearing at full width — transform-origin: left + scaleX, the same architectural technique as
+     the main divider above, not a width animation. */
+  .caviera-edition-mark__form-row::after {
+    transform: scaleX(var(--mark-signup-field));
+    transform-origin: left;
+    transition: transform 220ms var(--mark-ease), background-color var(--motion-fast) var(--ease-caviera);
+  }
+  .caviera-edition-mark__signup-note {
+    /* Resting opacity was a plain 0.72 before this pass — reproduced exactly at full progress,
+       same technique as .caviera-edition-mark__year above. */
+    opacity: calc(0.72 * var(--mark-signup-note));
+    transform: translateY(calc(8px * (1 - var(--mark-signup-note))));
+    transition: opacity 150ms var(--mark-ease), transform 150ms var(--mark-ease);
+  }
+}
+/* Static resting values for every element the block above only ever ANIMATES — restored here,
+   unconditionally, at 900px+ regardless of motion preference, so a reduced-motion visitor (who
+   never gets the --mark-* custom properties above at all, since that whole block is gated behind
+   prefers-reduced-motion: no-preference) still sees the exact correct final look immediately,
+   rather than these two properties' plain browser/inherited defaults. */
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  .caviera-edition-mark__year { opacity: 0.68; }
+  .caviera-edition-mark__intro { opacity: 0.9; }
+  .caviera-edition-mark__divider {
+    display: block;
+    height: var(--border-width);
+    margin-top: 36px;
+    background: var(--border-subtle);
+  }
+  .caviera-edition-mark__form-row::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--border-width);
+    background: var(--border-subtle);
+  }
+  .caviera-edition-mark__signup-note { opacity: 0.72; }
+}
 
 /* ---- Category reveal: display-case panels, not a generic four-card grid ---- */
 /* Spacing-only correction: this section otherwise inherits the generic .caviera-section
@@ -1533,6 +2083,18 @@
 .caviera-object-focus__media-state[data-state-index="4"][data-derived="true"] img { object-position: 68% 40%; transform: scale(1.45); }
 .caviera-object-focus__media-state[data-state-index="5"][data-derived="true"] img { object-position: 50% 20%; transform: scale(1.6); }
 
+/* Real dedicated per-chapter photography (2026-08-18) — Stone/Design/Gold, [data-derived="false"]
+   since these are three genuinely different approved photographs, not one shared image reused
+   with an artificial crop (no transform: scale() here — full native resolution, no forced zoom).
+   Design (1080x1350) and Gold (1122x1402) both already match this container's own fixed 4:5
+   aspect-ratio almost exactly, so the plain object-fit: cover default (object-
+   position: 50% 50%, no override needed) already shows each in full with no meaningful crop.
+   Stone (736x1308, ~0.56) is considerably taller/narrower than the 4:5 frame — cover crops its top
+   and bottom only, never its sides, so every diamond arranged across the tray's own width stays
+   fully in frame; a slight upward bias keeps the tray's own brightest cluster centred rather than
+   the plain fabric drape at the very bottom edge. */
+.caviera-object-focus__media-state[data-state-index="0"][data-derived="false"] img { object-position: 50% 44%; }
+
 /* Controlled CAVIERA material field (data-mode="composition") — never a simulated photo. A
    Cinnabar panel filling the column with a Warm Bone inset offset toward one corner, matching the
    same "outer protection / inner reveal" language as Packaging ritual's own material composition,
@@ -1677,47 +2239,18 @@
 .caviera-object-focus__cta:focus-visible .caviera-object-focus__cta-arrow { transform: translateX(4px); }
 @media (prefers-reduced-motion: reduce) { .caviera-object-focus__cta-arrow { transition: none; } }
 
-/* ---- Editorial media & text ---- */
-.caviera-editorial__grid { display: grid; grid-template-columns: 1fr; }
-@media (min-width: 900px) {
-  .caviera-editorial__grid { grid-template-columns: 1fr 1fr; align-items: center; }
-  .caviera-editorial[data-reverse="right"] .caviera-editorial__media { order: 2; }
-}
-.caviera-editorial__media img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/5; }
-.caviera-editorial__text { padding: 48px var(--gutter-mobile); max-width: 44ch; }
-@media (min-width: 900px) { .caviera-editorial__text { padding: 48px var(--gutter-desktop); } }
-.caviera-editorial__text .body-text { margin: 20px 0 28px; }
-
-/* House Seal case only — a formal hallmark, not full-bleed photography. The default rule above
-   (object-fit: cover; aspect-ratio: 4/5) is meant for photographic media and was stretching the
-   small Seal emblem into a dominant graphic; contain it to a modest, deliberate size via the
-   wrapper's own max-width (the snippet's img keeps its own width:100%/height:auto inline styles
-   untouched — it simply fills whatever this wrapper allows). Scoped to [data-media-source="house_
-   seal"] only — the Oryx moment (data-media-source="oryx") is unaffected. */
-.caviera-editorial__media[data-media-source="house_seal"] {
-  max-width: clamp(110px, 30vw, 170px);
-  margin-inline: auto;
-}
-.caviera-editorial__media[data-media-source="house_seal"] img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: auto;
-  object-fit: contain;
-}
-@media (min-width: 900px) {
-  .caviera-editorial__media[data-media-source="house_seal"] {
-    max-width: clamp(220px, 22vw, 340px);
-    margin-inline: 0;
-  }
-}
-
-/* Edition record — a small, restrained provenance block. Archival, not a certificate card: a
-   label, one line, a fine rule, a closing mark. No fabricated production count. */
-.caviera-editorial__provenance { margin-top: 28px; }
-.caviera-editorial__provenance-label { display: block; opacity: 0.7; }
-.caviera-editorial__provenance-line { margin: 8px 0 0; opacity: 0.95; }
-.caviera-editorial__provenance-rule { display: block; width: 64px; height: 1px; margin: 16px 0; background: currentColor; opacity: 0.35; }
-.caviera-editorial__provenance-mark { display: block; opacity: 0.7; }
+/* ---- Editorial media & text ----
+   2026-08-18: the base structural rules for this component (grid, image sizing, text padding,
+   House Seal contained-sizing, provenance styling) moved to assets/caviera-components.css, which
+   loads on every template — this component is used well beyond the homepage (The House page's
+   own seal-story/mascot-story/material-language instances, templates/page.house.json), and
+   caviera-home.css only ever loads on template.name == 'index'. A pure relocation, not a rewrite —
+   every value is byte-for-byte unchanged, and load order still guarantees the homepage-only
+   opt-in motion rules below (which target the SAME selectors) win here exactly as before, since
+   caviera-components.css is always linked in <head> ahead of this file. Only what's genuinely
+   homepage-exclusive (the scroll_progression / oryx_crossing_motion opt-in systems immediately
+   below, which only the homepage's Maker's Mark and Oryx-moment instances ever turn on) stays in
+   this file. */
 
 /* ---- Editorial media & text: continuous scroll-linked reveal (opt-in, scroll_progression) ----
    Scoped entirely to [data-caviera-editorial-progress] — the Oryx moment and any other instance

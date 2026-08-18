@@ -40,19 +40,29 @@
 
   IMAGE FALLBACKS — per brief: if a Theme Editor image is set for a code, it renders exactly as
   uploaded (a merchant's own choice always wins). If not, each code now falls back to its own
-  final, dedicated 2026 campaign photograph (assets/caviera-principle-rarity-2026.png / -precision-
+  final, dedicated 2026 campaign photograph (assets/caviera-principle-rarity-2026.jpg / -precision-
   2026.png / -ritual-2026.png / -longevity-2026.png) — no longer the single shared placeholder
   photo reused four ways with artificial crops/zoom that this section previously used while real
   per-Principle photography didn't exist yet. Each is real, distinct photography, so the derived
   object-position rules in assets/caviera-house-codes.css are tuned per image, not per an old
   shared-photo compromise.
+
+  2026-08-17 REFRESH — Rarity and Longevity only: both swapped to newly approved campaign
+  photography (ring/ribbon/CAVIERA box on Rarity; archival red car among dust-sheeted companions on
+  Longevity). Both new photos are portrait-oriented (unlike the previous pair, which were the same
+  1672x941 landscape crop as Precision/Ritual still are) — width/height attributes below are updated
+  to match so the browser reserves the correct box and nothing shifts on load; the derived
+  object-position values in assets/caviera-house-codes.css are retuned for these two only (see the
+  comments there) to keep each photo's real subject inside this section's full-bleed cover crop.
+  Precision and Ritual are untouched. Superseded originals kept outside the theme, not deleted, at
+  ../caviera-local-reference-assets/house-principles-2026-08-17-superseded/.
 {%- endcomment -%}
 {%- liquid
   assign rarity_img = section.settings.rarity_image
   assign precision_img = section.settings.precision_image
   assign ritual_img = section.settings.ritual_image
   assign longevity_img = section.settings.longevity_image
-  assign rarity_bundled_file = 'caviera-principle-rarity-2026.png'
+  assign rarity_bundled_file = 'caviera-principle-rarity-2026.jpg'
   assign precision_bundled_file = 'caviera-principle-precision-2026.png'
   assign ritual_bundled_file = 'caviera-principle-ritual-2026.png'
   assign longevity_bundled_file = 'caviera-principle-longevity-2026.png'
@@ -90,7 +100,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <img src="{{ rarity_bundled_file | asset_url }}" width="1672" height="941" alt="Rarity" loading="lazy">
+          <img src="{{ rarity_bundled_file | asset_url }}" width="1121" height="1240" alt="Rarity" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>
@@ -162,7 +172,7 @@
             loading="lazy"
           >
         {%- else -%}
-          <img src="{{ longevity_bundled_file | asset_url }}" width="1672" height="941" alt="Longevity" loading="lazy">
+          <img src="{{ longevity_bundled_file | asset_url }}" width="1122" height="1402" alt="Longevity" loading="lazy">
         {%- endif -%}
       </div>
       <div class="caviera-house-codes__scrim" aria-hidden="true"></div>

@@ -155,12 +155,12 @@
           { "value": "slow", "label": "Ceremonial (700ms)" }
         ]
       },
-      { "type": "header", "content": "Ceremonial loader" },
+      { "type": "header", "content": "Global loader" },
       {
         "type": "paragraph",
-        "content": "The approved 2026 walking-Oryx loader video (assets/caviera-loader-oryx-2026.mp4) plays once per browser session on the homepage, over an Obsidian field, then fades directly into the hero. Background colour, duration and reduced-motion behaviour are fixed as approved and are no longer separately configurable here."
+        "content": "The approved 2026 walking-Oryx video (assets/caviera-loader-oryx-2026.mp4) is the one loading language used site-wide for genuine internal page-to-page navigation (e.g. the full-screen menu to The House, Journal, Craftsmanship, and similar) — never for scrolling, menus, accordions, or quick actions. It appears only while a navigation is genuinely still loading and is dismissed the moment the destination is ready, never held open to let the video finish. Background colour, timing and reduced-motion behaviour are fixed as approved and are no longer separately configurable here."
       },
-      { "type": "checkbox", "id": "enable_loader", "label": "Enable loader", "default": true, "info": "Turn off to skip the loader entirely and go straight to the homepage." }
+      { "type": "checkbox", "id": "enable_loader", "label": "Enable loader", "default": true, "info": "Turn off to skip the loader entirely — internal navigation then behaves as plain, un-intercepted browser links." }
     ]
   }
 ]

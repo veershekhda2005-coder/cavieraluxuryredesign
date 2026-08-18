@@ -55,8 +55,8 @@
     "object-focus": {
       "type": "caviera-object-focus",
       "blocks": {
-        "ch-1": { "type": "chapter", "settings": { "title": "Stone", "body": "<p>Cut for clarity, set to catch the light without excess.</p>" } },
-        "ch-2": { "type": "chapter", "settings": { "title": "Setting", "body": "<p>A quiet setting, so the stone remains the focus.</p>" } },
+        "ch-1": { "type": "chapter", "settings": { "title": "Stone", "body": "<p>A study in clarity, proportion, and light.</p>" } },
+        "ch-2": { "type": "chapter", "settings": { "title": "Design", "body": "<p>Precision begins long before the final form.</p>" } },
         "ch-3": { "type": "chapter", "settings": { "title": "Gold", "body": "<p>A considered finish, true to the House's material language.</p>" } }
       },
       "block_order": ["ch-1", "ch-2", "ch-3"],
@@ -129,12 +129,15 @@
     "oryx-moment": {
       "type": "caviera-editorial-media",
       "settings": {
-        "media_source": "oryx",
+        "media_source": "custom_image",
+        "show_house_boutique": true,
+        "media_emphasis": "dominant",
+        "media_motion": true,
         "color_scheme": "cinnabar",
         "image_position": "right",
         "eyebrow": "The House",
         "heading": "The Oryx walks first. The House follows.",
-        "oryx_crossing_motion": true,
+        "oryx_crossing_motion": false,
         "body": "<p>A quiet emblem of arrival and discovery — the House's own way of marking a threshold.</p>"
       }
     },

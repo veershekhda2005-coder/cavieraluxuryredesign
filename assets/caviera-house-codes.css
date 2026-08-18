@@ -53,8 +53,18 @@
    only to disguise that mismatch and are removed; each value below is tuned to the actual
    composition of its own image, no artificial enlargement. */
 .caviera-house-codes__panel[data-house-code-index="0"][data-derived="true"] .caviera-house-codes__media img {
-  /* Rarity: a single marquise diamond, upper-right of frame against a dark textile ground. */
-  object-position: 62% 40%;
+  /* 2026-08-17 REFRESH: new portrait campaign photo (ring on ribbon-tied CAVIERA box, 1121x1240) —
+     replaces the old landscape marquise-diamond shot this rule was previously tuned for. Portrait
+     source in this section's very wide, short full-bleed panel means object-fit: cover is
+     width-bound (the full width always shows), so essentially all of the crop lands vertically —
+     roughly the top-to-bottom half of the source is trimmed, split per the Y value below. Centred
+     horizontally (ring and box sit on the frame's own centre column); Y at 48% keeps the ring, the
+     ribbon crossing over it and the box's top edge inside frame, biased just enough above dead-
+     centre to also carry the ribbon's bow through the visible band — the fully-legible "CAVIERA
+     JEWELS" box text near the very bottom of the source doesn't survive this crop at any Y value
+     that also keeps the ring in frame (the ring is the priority per brief), but the box itself
+     stays clearly visible under it. */
+  object-position: 50% 48%;
 }
 .caviera-house-codes__panel[data-house-code-index="1"][data-derived="true"] .caviera-house-codes__media img {
   /* Precision: tweezers setting a stone at a jeweller's bench, right-of-centre, slightly low. */
@@ -66,9 +76,15 @@
   object-position: 48% 45%;
 }
 .caviera-house-codes__panel[data-house-code-index="3"][data-derived="true"] .caviera-house-codes__media img {
-  /* Longevity: sunset/sea on the left, the House Seal panel on the architecture to the right —
-     biased right so the House mark stays clearly in frame while the sunset remains visible. */
-  object-position: 62% 45%;
+  /* 2026-08-17 REFRESH: new portrait campaign photo (archival red car among dust-sheeted companion
+     cars in an old coachhouse, 1122x1402) — replaces the old landscape sunset/Oryx-plaque shot this
+     rule was previously tuned for. Same width-bound cover crop as Rarity above (portrait source in
+     a very wide, short panel — the full width always shows, the crop is almost entirely vertical).
+     Centred horizontally — the car sits on the frame's own centre column. Y at 60% keeps the car
+     itself fully in frame plus a clear band of the surrounding dust-sheeted cars above and below it
+     (the "enduring collection" context the brief asks the composition to keep), rather than cropping
+     tight to just the car and losing that context. */
+  object-position: 50% 60%;
 }
 
 /* Minimum-necessary readability scrim — a light, restrained tonal overlay, never a heavy curtain.

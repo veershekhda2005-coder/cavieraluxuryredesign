@@ -39,13 +39,15 @@
   {{ 'caviera-layout.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-components.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-motion.css' | asset_url | stylesheet_tag }}
-  {{ 'caviera-page-transition.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-header.css' | asset_url | stylesheet_tag }}
   {{ 'caviera-footer.css' | asset_url | stylesheet_tag }}
   {%- comment -%}
-    Ceremonial loader — loaded globally now, not homepage-only: it's triggered by the full-screen
-    menu's THE HOUSE link (see sections/caviera-header.liquid / assets/caviera-header.js), which is
-    reachable from any page, not the homepage load itself any more.
+    2026-08-18 — GLOBAL LIVING ORYX LOADER: this is now the ONE loading language for every genuine
+    internal page navigation (previously two separate systems existed here — a one-off "THE HOUSE"
+    ceremonial video trigger, and a separate Cinnabar/House-Seal "Curtain" page-transition overlay
+    used for every other link; both are retired in favour of this single implementation, see
+    assets/caviera-loader.js). Loaded globally on every page, since qualifying navigation can start
+    from anywhere, not just the homepage.
   {%- endcomment -%}
   {{ 'caviera-loader.css' | asset_url | stylesheet_tag }}
 
@@ -102,24 +104,24 @@
   </style>
 
   {%- comment -%}
-    CAVIERA Curtain — arrival state, set synchronously before first paint so a page reached via a
-    "covered" internal navigation (see assets/caviera-page-transition.js) never flashes visible
-    before the curtain is ready to resolve it. Reads then immediately clears its own sessionStorage
-    flag, and carries its own hard safety-net timeout completely independent of
-    caviera-page-transition.js — if that file is ever blocked or fails to load, this line alone
-    guarantees the curtain still clears itself and never hides content permanently.
+    CAVIERA global loader — arrival state, set synchronously before first paint so a page reached
+    via a "covered" internal navigation (see assets/caviera-loader.js) never flashes the raw new
+    page before the loader is ready to resolve it. Reads then immediately clears its own
+    sessionStorage flag, and carries its own hard safety-net timeout completely independent of
+    caviera-loader.js — if that file is ever blocked or fails to load, this line alone guarantees
+    the loader still clears itself and never hides content permanently.
   {%- endcomment -%}
   <script>
     (function () {
       try {
-        if (sessionStorage.getItem('caviera_transition_pending') === '1') {
-          sessionStorage.removeItem('caviera_transition_pending');
-          document.documentElement.classList.add('caviera-transition-pending');
+        if (sessionStorage.getItem('caviera_loader_pending') === '1') {
+          sessionStorage.removeItem('caviera_loader_pending');
+          document.documentElement.classList.add('caviera-loader-pending');
           setTimeout(function () {
-            document.documentElement.classList.remove('caviera-transition-pending');
+            document.documentElement.classList.remove('caviera-loader-pending');
           }, 1500);
         }
-      } catch (e) { /* storage unavailable — fail open, no curtain, normal page load */ }
+      } catch (e) { /* storage unavailable — fail open, no loader, normal page load */ }
     })();
   </script>
 
@@ -158,8 +160,9 @@
   <a class="skip-link" href="#main-content">{{ 'general.accessibility.skip_to_content' | t }}</a>
 
   {%- comment -%}
-    Rendered globally now, not homepage-only — see the matching CSS comment above. It stays fully
-    inert on every page unless the full-screen menu's THE HOUSE link is actually clicked.
+    Rendered globally, once, on every page — see the matching CSS comment above. Stays fully inert
+    (no paint, no hit-testing) unless assets/caviera-loader.js's navigation interception, or a
+    manual window.CaviearaLoader.show() call, actually reveals it.
   {%- endcomment -%}
   {%- render 'caviera-loader' -%}
 
@@ -173,11 +176,14 @@
 
   {%- render 'cart-drawer' -%}
   {%- render 'search-overlay' -%}
-  {%- render 'caviera-page-transition' -%}
 
+  {%- comment -%}
+    caviera-loader.js is loaded by snippets/caviera-loader.liquid itself, right where the loader's
+    own markup is rendered near the top of <body> — not listed again here, to avoid loading (and
+    executing — duplicate click listeners, duplicate window.CaviearaLoader assignment) it twice.
+  {%- endcomment -%}
   <script src="{{ 'caviera-global.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'caviera-cart.js' | asset_url }}" defer="defer"></script>
-  <script src="{{ 'caviera-page-transition.js' | asset_url }}" defer="defer"></script>
   {%- if template.name == 'index' -%}
     <script src="{{ 'caviera-scroll-progress.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'caviera-drag-token.js' | asset_url }}" defer="defer"></script>

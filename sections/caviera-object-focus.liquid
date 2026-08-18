@@ -70,6 +70,30 @@
     endif
   endfor
 -%}
+{%- comment -%}
+  2026-08-18 — APPROVED CHAPTER PHOTOGRAPHY: Stone / Design / Gold now each have their own real,
+  dedicated campaign photograph (assets/caviera-object-focus-stone-2026.jpg / -design-2026.jpg /
+  -gold-2026.png) — bundled theme assets, per brief ("do not place in subfolders, main assets
+  folder only"), not Shopify Files, so they can't be pre-selected through the Chapter block's own
+  image_picker setting (that field only ever points at a merchant-uploaded File). Matched by
+  chapter POSITION (1st/2nd/3rd chapter block), the same technique already used for this section's
+  own bundled-default fallback and for the mobile nav's bundled preview images in sections/
+  caviera-header.liquid — never by matching the chapter's title text, so it keeps working even if a
+  merchant renames a chapter. A chapter block's own dedicated image (if a merchant sets one) always
+  still wins outright; this is only the fallback for the common case where none is set — exactly
+  like every other bundled-default in this theme.
+{%- endcomment -%}
+{%- liquid
+  assign chapter_bundled_1 = 'caviera-object-focus-stone-2026.jpg'
+  assign chapter_bundled_1_w = 736
+  assign chapter_bundled_1_h = 1308
+  assign chapter_bundled_2 = 'caviera-object-focus-design-2026.jpg'
+  assign chapter_bundled_2_w = 1080
+  assign chapter_bundled_2_h = 1350
+  assign chapter_bundled_3 = 'caviera-object-focus-gold-2026.png'
+  assign chapter_bundled_3_w = 1122
+  assign chapter_bundled_3_h = 1402
+-%}
 <section class="caviera-section caviera-object-focus" data-scheme="{{ section.settings.color_scheme | default: 'bone' }}" data-spacing="{{ section.settings.spacing | default: 'standard' }}" data-mode="{% if has_media %}media{% else %}composition{% endif %}">
   <div class="container container--narrow caviera-object-focus__head">
     {%- if section.settings.eyebrow != blank -%}<span class="eyebrow">{{ section.settings.eyebrow }}</span>{%- endif -%}
@@ -86,7 +110,22 @@
               {%- liquid
                 assign chapter_img = block.settings.image
                 assign chapter_derived = false
-                if chapter_img == blank
+                assign chapter_own_bundled = blank
+                case forloop.index
+                  when 1
+                    assign chapter_own_bundled = chapter_bundled_1
+                    assign chapter_own_bundled_w = chapter_bundled_1_w
+                    assign chapter_own_bundled_h = chapter_bundled_1_h
+                  when 2
+                    assign chapter_own_bundled = chapter_bundled_2
+                    assign chapter_own_bundled_w = chapter_bundled_2_w
+                    assign chapter_own_bundled_h = chapter_bundled_2_h
+                  when 3
+                    assign chapter_own_bundled = chapter_bundled_3
+                    assign chapter_own_bundled_w = chapter_bundled_3_w
+                    assign chapter_own_bundled_h = chapter_bundled_3_h
+                endcase
+                if chapter_img == blank and chapter_own_bundled == blank
                   assign chapter_img = base_img
                   assign chapter_derived = true
                 endif
@@ -99,6 +138,13 @@
                     sizes="(min-width: 1024px) 58vw, 100vw"
                     width="{{ chapter_img.width }}" height="{{ chapter_img.height }}"
                     alt="{{ chapter_img.alt | default: block.settings.title | default: '' | escape }}"
+                    loading="lazy"
+                  >
+                {%- elsif chapter_own_bundled != blank -%}
+                  <img
+                    src="{{ chapter_own_bundled | asset_url }}"
+                    width="{{ chapter_own_bundled_w }}" height="{{ chapter_own_bundled_h }}"
+                    alt="{{ block.settings.title | escape }}"
                     loading="lazy"
                   >
                 {%- elsif use_bundled_base -%}
@@ -230,8 +276,8 @@
     {
       "name": "Object in focus",
       "blocks": [
-        { "type": "chapter", "settings": { "title": "Stone", "body": "<p>Cut for clarity, set to catch the light without excess.</p>" } },
-        { "type": "chapter", "settings": { "title": "Setting", "body": "<p>A quiet setting, so the stone remains the focus.</p>" } },
+        { "type": "chapter", "settings": { "title": "Stone", "body": "<p>A study in clarity, proportion, and light.</p>" } },
+        { "type": "chapter", "settings": { "title": "Design", "body": "<p>Precision begins long before the final form.</p>" } },
         { "type": "chapter", "settings": { "title": "Gold", "body": "<p>A considered finish, true to the House's material language.</p>" } }
       ]
     }

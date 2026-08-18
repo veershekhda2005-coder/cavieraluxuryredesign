@@ -152,10 +152,24 @@
   // network response) from racing each other and leaving the drawer showing a stale quantity.
   var changeInFlight = false;
 
+  // FLASH PROTECTION: most /cart/change.js requests resolve in well under 150ms — revealing the
+  // dim + compact Oryx loader (see cart-drawer.liquid) immediately would mean it flashes on/off
+  // for nearly every ordinary quantity click. Delay showing it; if the request has already
+  // finished by then, the timer is simply cancelled and nothing ever became visible.
+  var LOADER_SHOW_DELAY_MS = 160;
+  var loaderShowTimer = null;
+  function showLoading() {
+    loaderShowTimer = setTimeout(function () { itemsEl.classList.add('is-loading'); }, LOADER_SHOW_DELAY_MS);
+  }
+  function hideLoading() {
+    if (loaderShowTimer) { clearTimeout(loaderShowTimer); loaderShowTimer = null; }
+    itemsEl.classList.remove('is-loading');
+  }
+
   function changeLine(line, quantity) {
     if (changeInFlight) return;
     changeInFlight = true;
-    itemsEl.classList.add('is-loading');
+    showLoading();
     statusEl.textContent = '';
     fetch('/cart/change.js', {
       method: 'POST',
@@ -165,7 +179,7 @@
       .then(function (r) { return r.json(); })
       .then(function (cart) { render(cart); statusEl.textContent = window.theme.strings.cartUpdated || 'Cart updated'; })
       .catch(function () { statusEl.textContent = window.theme.strings.cartError || 'Something did not update. Please try again.'; })
-      .finally(function () { changeInFlight = false; itemsEl.classList.remove('is-loading'); });
+      .finally(function () { changeInFlight = false; hideLoading(); });
   }
 
   itemsEl.addEventListener('click', function (e) {

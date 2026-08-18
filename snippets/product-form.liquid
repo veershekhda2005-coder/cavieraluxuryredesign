@@ -38,6 +38,14 @@
             {{ 'products.product.add_to_bag' | t }}
           {%- endif -%}
         </span>
+        {%- comment -%}
+          Compact Oryx loader, shown in place of the label text (see .caviera-product-form__submit
+          CSS + assets/caviera-product.js's own short flash-protection delay) while /cart/add.js is
+          genuinely still in flight — the button's disabled/aria-disabled state (unchanged) already
+          prevents a second submit either way; this only replaces the plain text-only wait with the
+          branded loading language.
+        {%- endcomment -%}
+        {%- render 'caviera-loader-inline', size: 22, class: 'caviera-product-form__submit-loader' -%}
       </button>
     </div>
 

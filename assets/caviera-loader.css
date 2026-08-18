@@ -1,29 +1,32 @@
 /*
-  CAVIERA Grand Theme 2026 — Ceremonial loader (MENU → THE HOUSE revision)
+  CAVIERA Grand Theme 2026 — Global Living Oryx loader (2026-08-18 unification)
   Slow, lucid, controlled. No bounce, no elastic easing, no scroll-jacking.
 
-  IMPORTANT CHANGE: no longer plays automatically on page load/refresh/once-per-session — this
-  file's own rules are unchanged in spirit (invisible by default, JS-driven reveal, plain opacity
-  exit fade), but the loader is now activated on demand only, via window.CaviearaLoader.show() —
-  called exclusively from the full-screen menu's THE HOUSE click handler (see assets/caviera-
-  header.js). Loaded globally now (every page, via layout/theme.liquid), not homepage-only, since
-  THE HOUSE can be opened from any page.
+  This file replaces two previously separate stylesheets: the old ceremonial-loader CSS (Obsidian
+  background, single-use "THE HOUSE" trigger) and caviera-page-transition.css (the Cinnabar/House-
+  Seal "Curtain" used for every other link). One visual system now covers every genuine internal
+  navigation wait — see assets/caviera-loader.js for the reveal/conceal + navigation-interception
+  engine this drives.
 
-  The root element itself always renders (see snippets/caviera-loader.liquid, when
-  settings.enable_loader is on) — this file is what keeps it invisible and inert until
-  assets/caviera-loader.js's show() explicitly adds `.is-active`: nothing below that rule ever
-  paints or takes hit-testing space, on any page, unless THE HOUSE is actually clicked.
+  --loader-ease is scoped to this file only — deliberately NOT this theme's sitewide --ease-caviera
+  (cubic-bezier(0.22, 0.61, 0.15, 1)); the brief asks specifically for a premium-editorial
+  "ease-out-quint"-like curve for the loader's own fades, kept local so nothing else on the site is
+  affected by introducing it.
 */
+:root {
+  --loader-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
 .caviera-loader {
-  /* Safety default: invisible, out of flow, non-interactive until .show() runs. If caviera-
-     loader.js never loads at all, this never appears on any page — the header's click handler
-     checks for window.CaviearaLoader and fails open straight to native navigation. */
+  /* Safety default: invisible, out of flow, non-interactive until JS explicitly reveals it (or the
+     pre-paint arrival state below applies). If caviera-loader.js never loads at all, this never
+     appears on any page. */
   display: none;
   pointer-events: none;
 }
 
-.caviera-loader.is-active {
+.caviera-loader.is-active,
+.caviera-loader.is-leaving {
   display: flex;
   position: fixed;
   inset: 0;
@@ -34,45 +37,133 @@
   justify-content: center;
   overflow: hidden;
   z-index: var(--z-loader);
-  background: #111012; /* CAVIERA Obsidian — fixed per the approved brief, not settings-driven */
+  /* Exact approved Cinnabar, matching the video's own background so the visible edge of the frame
+     disappears into the room — the visitor should read "solid Cinnabar room + walking Oryx", never
+     a rectangular video boundary. Hardcoded per brief, not settings-driven (same convention already
+     used by this file's own predecessor for its fixed Obsidian background). */
+  background: #8F261F;
+  pointer-events: auto;
+}
+
+/* Entrance — opacity 0 → 1, ~180-250ms, per brief. .is-active alone (no .is-entering companion
+   class) starts at opacity: 0 and transitions to 1 the instant the class is added, since nothing
+   else ever needs to reference a separate "entering" state. */
+.caviera-loader.is-active {
+  opacity: 0;
+  animation: caviera-loader-in 220ms var(--loader-ease) forwards;
+}
+@keyframes caviera-loader-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Exit — opacity 1 → 0, ~250-350ms, per brief. Plain opacity fade only — no transform/sweep, no
+   hard cut, no flash, no layout jump. */
+.caviera-loader.is-leaving {
+  opacity: 0;
+  transition: opacity 300ms var(--loader-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caviera-loader.is-active { animation: none; opacity: 1; }
+  .caviera-loader.is-leaving { transition: none; }
+}
+
+/* Terminal state — reached once the exit fade finishes (see assets/caviera-loader.js conceal()).
+   After this: pointer-events: none and effectively invisible (display: none, inherited from the
+   base rule above once both .is-active/.is-leaving are removed) — never abruptly removed from the
+   DOM, only hidden, ready to be reused by a later reveal on the same page view. */
+.caviera-loader.is-dismissed {
+  display: none;
+  pointer-events: none;
+}
+
+/* ---- Arrival pre-paint state ----
+   Set synchronously before first paint by the inline script in layout/theme.liquid, reading a
+   sessionStorage flag set the moment a qualifying navigation's delayed reveal fired on the
+   PREVIOUS page (see caviera-loader.js). Renders the loader instantly, fully opaque, with no
+   entrance animation — the visitor already saw it become visible on the page they departed; this
+   is the same continuous moment, not a second reveal, so it must never re-fade-in or flash the raw
+   new page first. assets/caviera-loader.js upgrades this into the normal .is-active state (so a
+   later conceal() can use the normal fade-out) once it runs. */
+html.caviera-loader-pending .caviera-loader {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: var(--z-loader);
+  background: #8F261F;
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Exit: a plain opacity fade (1 → 0) only — no transform/sweep, no hard cut, no white flash, no
-   layout jump. 600ms, within the requested ~500-650ms range. */
-.caviera-loader.is-leaving {
-  opacity: 0;
-  transition: opacity 600ms var(--ease-caviera);
-}
-@media (prefers-reduced-motion: reduce) {
-  .caviera-loader.is-leaving { transition: none; }
-}
-
-/* Terminal state — reached once the fade finishes (see assets/caviera-loader.js finish()), fully
-   inert from here on. The root element itself is never removed from the DOM, only hidden — ready
-   to be reused by a later .show() call on the same page (e.g. reopening the menu and clicking THE
-   HOUSE again before navigation actually completes). */
-.caviera-loader.is-dismissed {
-  display: none;
-}
-
 .caviera-loader__video {
   display: block;
-  width: clamp(280px, 24vw, 380px);
+  width: clamp(260px, 28vw, 430px);
   max-width: 90vw;
   height: auto;
   object-fit: contain;
-  background: transparent; /* merges cleanly with the Obsidian field behind it, per the brief */
+  background: transparent; /* merges cleanly with the Cinnabar field behind it, per the brief */
 }
 @media (max-width: 749px) {
-  .caviera-loader__video { width: clamp(180px, 48vw, 250px); }
+  .caviera-loader__video { width: clamp(190px, 48vw, 250px); }
 }
 
 /* Scroll lock while the loader is visibly active — applied to <html>/<body> per caviera-loader.js,
-   always removed once finished (never left behind). */
+   always removed once concealed (never left behind; also always reset on pageshow, see the JS). */
 html.caviera-loader-active,
 body.caviera-loader-active {
   overflow: hidden;
   height: 100%;
+}
+
+/* ---- Compact inline loader (2026-08-18) ----
+   The same Living Oryx language, small and restrained, for component-level async waits — never a
+   generic spinner. No background field, no card, no border, no shadow: it simply shows the video
+   directly against whatever it's embedded in (cart drawer, search results, a button), per brief.
+   Base state is hidden; each call site reveals it with its own small, scoped rule (typically an
+   ancestor `.is-loading` class) — see cart-drawer.liquid, search-overlay.liquid, product-form.liquid
+   and their own CSS for the exact selectors. */
+.caviera-loader-inline {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--loader-inline-size, 56px);
+  height: auto;
+  line-height: 0;
+}
+.caviera-loader-inline__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: transparent;
+}
+
+/* Generic "swap this control's label for the compact loader while submitting" pattern — used by
+   any plain native-submit form (newsletter/signup forms; see assets/caviera-global.js) where a
+   dedicated per-component stylesheet doesn't already define its own .is-loading rule. Text hides
+   via visibility (not display), so the control's own size never changes — no layout shift. */
+.caviera-loader-on-submit.is-loading [data-submit-text] { visibility: hidden; }
+.caviera-loader-on-submit .caviera-loader-inline { display: none; }
+.caviera-loader-on-submit.is-loading .caviera-loader-inline { display: flex; }
+
+/* ---- Departing-page recede (kept from the retired Curtain system) ----
+   Applied only to #main-content, never <body> — a `transform` on <body> would create a new
+   containing block for every position: fixed child (this loader, cart drawer, search overlay, the
+   full-screen menu), breaking their "fixed to the viewport" positioning. Only ever added once a
+   navigation has actually earned a visible loader (see the delayed reveal in caviera-loader.js) —
+   an instant/cached navigation never triggers this either. */
+#main-content.caviera-loader-departing {
+  transition: opacity var(--motion-base) var(--ease-caviera), transform var(--motion-base) var(--ease-caviera);
+  opacity: 0.92;
+  transform: scale(0.995);
+}
+@media (prefers-reduced-motion: reduce) {
+  #main-content.caviera-loader-departing { transition: none; opacity: 1; transform: none; }
 }

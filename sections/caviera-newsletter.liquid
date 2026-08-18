@@ -21,7 +21,16 @@
       <div class="caviera-newsletter__form-wrap">
         <div class="caviera-newsletter-form__row">
           <input type="email" id="HomeNewsletterEmail" name="contact[email]" required placeholder="{{ 'general.newsletter.email_placeholder' | t }}" autocomplete="email">
-          <button type="submit" class="caviera-newsletter-form__submit link-underline">{{ 'general.newsletter.submit' | t }}</button>
+          <button type="submit" class="caviera-newsletter-form__submit link-underline caviera-loader-on-submit">
+            <span data-submit-text>{{ 'general.newsletter.submit' | t }}</span>
+            {%- comment -%}
+              Compact Oryx loader — shown immediately (no flash-protection delay needed here; see
+              assets/caviera-global.js) the instant this native form submit fires, as a brief
+              departing acknowledgment before the resulting full-page load takes over. Never
+              prevents or delays the actual submission.
+            {%- endcomment -%}
+            {%- render 'caviera-loader-inline', size: 18, class: 'caviera-newsletter-form__submit-loader' -%}
+          </button>
         </div>
         <p class="caviera-footer__consent">{{ 'general.newsletter.consent' | t }}</p>
         {%- if form.posted_successfully? -%}

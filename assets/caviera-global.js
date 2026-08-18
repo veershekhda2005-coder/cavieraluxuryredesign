@@ -137,3 +137,18 @@ document.addEventListener('shopify:section:load', function (e) {
   initQuickAdd(e.target);
   initScrollReveal(e.target);
 });
+
+/* Compact Oryx loader — generic native-form-submit acknowledgment (2026-08-18). Any plain,
+   un-intercepted native form submit (newsletter/signup forms today — see sections/caviera-
+   newsletter.liquid and the Edition I signup) whose submit control carries
+   .caviera-loader-on-submit gets its label swapped for the same small Living Oryx video used
+   everywhere else in the theme, the instant the browser's own submit event fires. Deliberately
+   NOT delayed by a flash-protection timer the way the full-screen loader and other async
+   components are — the button is about to be replaced by a full page load almost immediately
+   either way, so there's no "fast case" worth protecting against here, only a brief, honest
+   acknowledgment that the click registered. Never calls preventDefault(); the native submission
+   (and Shopify's own validation/redirect handling) proceeds completely untouched. */
+document.addEventListener('submit', function (e) {
+  var submit = e.target.querySelector && e.target.querySelector('.caviera-loader-on-submit');
+  if (submit) submit.classList.add('is-loading');
+});

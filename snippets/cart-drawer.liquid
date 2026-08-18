@@ -13,7 +13,8 @@
       </button>
     </div>
 
-    <div class="caviera-cart-drawer__body" data-cart-items aria-live="polite">
+    <div class="caviera-cart-drawer__body-wrap">
+      <div class="caviera-cart-drawer__body" data-cart-items aria-live="polite">
       {%- if cart.item_count == 0 -%}
         <div class="caviera-cart-drawer__empty">
           <p class="body-text">{{ 'general.cart.empty' | t }}</p>
@@ -57,6 +58,15 @@
           {%- endfor -%}
         </ul>
       {%- endif -%}
+      </div>
+      {%- comment -%}
+        Compact Oryx loader — a SIBLING after data-cart-items, not a child: render(cart) in
+        assets/caviera-cart.js fully replaces data-cart-items's own innerHTML on every update,
+        which would destroy this element if it lived inside that container. Revealed via the plain
+        CSS sibling combinator off data-cart-items's own .is-loading class (see assets/caviera-
+        cart.css) — no extra JS needed to toggle a second class.
+      {%- endcomment -%}
+      {%- render 'caviera-loader-inline', size: 48, class: 'caviera-cart-drawer__loader' -%}
     </div>
 
     {%- if cart.item_count > 0 -%}

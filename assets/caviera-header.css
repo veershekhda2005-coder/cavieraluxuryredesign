@@ -167,6 +167,57 @@
   .caviera-header__actions { grid-column: 3; justify-self: end; margin-left: 0; min-width: 0; }
 }
 
+/* ---- MOBILE HEADER — EDITORIAL REBUILD (max-width: 749px only) ----
+   Rebuilt from zero per brief: the shared MENU-left/wordmark-centre/actions-right composition
+   above (untouched, still governs 750px and up) reads as a conventional Shopify nav bar at phone
+   widths. Mobile now gets its own deliberate architecture — wordmark anchored left, a single
+   minimal trigger area anchored right — using nothing but `order` on the existing flex children
+   (this project's own canonical mobile breakpoint, matching every other mobile query in this
+   theme; see assets/caviera-home.css's own hero query for the same 749px choice and rationale).
+   No markup, desktop CSS, or menu behaviour changes — .caviera-header__bar is still a plain flex
+   row below 900px (the grid rule above only ever applies at 900px+), so `order` here cannot leak
+   into desktop by construction.
+
+   Height: target ~58–64px (was 64px under 599px, but a pre-existing 88px in the untouched
+   600–749px band — this override folds that whole mobile range to one deliberate 60px/56px-
+   compact pair, never touching the shared --header-height / --header-height-compact custom
+   properties themselves, so nothing else that reads those tokens — the product sticky panel,
+   Object in Focus, Ritual — shifts as a side effect). */
+@media (max-width: 749px) {
+  .caviera-header__bar { height: 60px; gap: 16px; }
+  .caviera-header.is-compact .caviera-header__bar { height: 56px; }
+
+  /* LEFT: the official wordmark artwork (never the House Seal icon, never retyped) — this is a
+     deliberate departure from the shared <900px rule above, which swaps to the compact Seal
+     purely for space; the brief calls specifically for the full wordmark here, and at this
+     capped width it fits the 60px bar with room to spare. Brand rule (see snippets/caviera-
+     wordmark.liquid) is never below ~180px — honoured by constraining the img's rendered width,
+     not the wordmark's own max-width setting, so a merchant's Desktop wordmark width setting is
+     never read or altered by this override. !important only overrides the img's own inline
+     `style="max-width:{{ width }}px"` (set by the snippet for the desktop call), which plain
+     CSS specificity cannot win against. */
+  .caviera-header__logo-full { display: block; }
+  .caviera-header__logo-compact { display: none; }
+  .caviera-header__logo { order: 1; margin-inline: 0; margin-right: auto; }
+  .caviera-header__logo-full .caviera-wordmark { max-width: 180px !important; }
+
+  /* RIGHT: Cart stays (checkout access is business-critical) directly beside the menu trigger;
+     Search and Account are dropped from the bar itself per brief ("no unnecessary icons") — both
+     remain one tap away inside the full-screen menu's own utility row, nothing is actually lost.
+     Selector targets "any action that isn't Cart" rather than naming Search/Account directly, so
+     it keeps working regardless of which of the two is enabled/rendered in a given configuration. */
+  .caviera-header__actions { order: 2; gap: 14px; margin-left: 0; }
+  .caviera-header__actions > .caviera-header__action:not(.caviera-header__cart) { display: none; }
+
+  /* Menu trigger sits last — the rightmost element, per brief. Kept as the existing restrained
+     text trigger (no hamburger icon introduced) — already "not large or generic" by construction,
+     and a new icon would be a redesign of an already-approved, working control outside this
+     task's scope. Slightly tightened type only, so it reads as quieter than the bar's Cart icon,
+     not competing with it for attention. */
+  .caviera-header__menu-toggle { order: 3; min-height: 44px; }
+  .caviera-header__menu-label { font-size: 0.6875rem; letter-spacing: 0.16em; }
+}
+
 .caviera-header__action { position: relative; display: inline-flex; min-height: 44px; min-width: 24px; align-items: center; }
 .caviera-header__action svg { width: 20px; height: 20px; }
 .caviera-header__cart-count {

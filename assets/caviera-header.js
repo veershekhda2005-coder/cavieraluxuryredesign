@@ -151,22 +151,15 @@
           // permanent tab stop for mouse/normal reading-order users.
           if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
           target.focus({ preventScroll: true });
-        } else if (link.hasAttribute('data-caviera-house-link') && window.CaviearaLoader && typeof window.CaviearaLoader.show === 'function') {
-          // MENU → THE HOUSE: the one deliberate ceremonial-loader trigger in the theme (see
-          // assets/caviera-loader.js). Every other cross-page link (Journal, etc.) falls through to
-          // the plain else-branch below completely unaffected. Destination is read from the link's
-          // own href at click time — never a second, hardcoded copy of the URL — so this keeps
-          // working correctly even if THE HOUSE's destination is later changed in the Theme Editor.
-          e.preventDefault();
-          var houseHref = link.href;
-          closeMenu();
-          window.CaviearaLoader.show(function () {
-            window.location.href = houseHref;
-          });
         } else {
-          // Cross-page destination, or an in-page hash with no matching element (fail open): just
-          // close the menu — native navigation (or the page-transition ceremony) proceeds exactly
-          // as it would for any other link, unlocking scroll naturally via the full page load.
+          // Cross-page destination (THE HOUSE, JOURNAL, etc.), or an in-page hash with no matching
+          // element (fail open): just close the menu — native navigation proceeds exactly as it
+          // would for any other link. The global CAVIERA loader (assets/caviera-loader.js) has its
+          // own document-level click listener that decides independently whether this qualifies for
+          // the full-screen Oryx loader — every cross-page link is treated identically here now
+          // (2026-08-18: THE HOUSE previously had its own bespoke always-play-the-full-video
+          // trigger; retired in favour of the one unified, load-time-based system so no link gets a
+          // slower or different experience than any other).
           closeMenu();
         }
       });

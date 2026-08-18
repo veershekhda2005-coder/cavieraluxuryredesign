@@ -1,0 +1,33 @@
+{%- comment -%}
+  CAVIERA compact loader — the same Living Oryx video, small and restrained, for component-level
+  async waits (cart drawer updates, predictive search, add to bag, form submission) — never a
+  generic spinner, per brief ("the universal CAVIERA loading language").
+
+  Purely decorative (aria-hidden) — the host component keeps its own existing aria-live/aria-busy/
+  status semantics for the actual accessible announcement; this only adds the visual.
+
+  Caller controls visibility with its own CSS (typically an ancestor `.is-loading` class revealing
+  this via a plain descendant selector — see assets/caviera-loader.css, .caviera-loader-inline, and
+  each call site's own small CSS rule) — this snippet only renders the inert markup.
+
+  Params:
+    size:  optional pixel width (default 56px, see --loader-inline-size below)
+    class: optional extra class(es) on the root <span>, for a call-site-specific CSS hook
+{%- endcomment -%}
+<span
+  class="caviera-loader-inline{% if class %} {{ class }}{% endif %}"
+  data-caviera-loader-inline
+  aria-hidden="true"
+  {%- if size %} style="--loader-inline-size: {{ size }}px;"{% endif %}
+>
+  <video
+    class="caviera-loader-inline__video"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="none"
+  >
+    <source src="{{ 'caviera-loader-oryx-2026.mp4' | asset_url }}" type="video/mp4">
+  </video>
+</span>

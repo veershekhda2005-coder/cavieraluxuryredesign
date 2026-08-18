@@ -65,7 +65,17 @@
     assign use_oryx_crossing = true
   endif
 -%}
-<section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}">
+{%- comment -%}
+  2026-08-18 — THE HOUSE boutique interior photograph: this shared section is reused across many
+  pages/instances (Maker's Mark, the Oryx moment, other Custom-image instances a merchant may add
+  elsewhere) — a hardcoded bundled default here would leak into every one of them. show_house_
+  boutique and media_emphasis below are both opt-in (default off / "none"), so they only ever
+  affect an instance that explicitly turns them on — currently The House page's own "material-
+  language" instance (templates/page.house.json, "architectural") and the homepage's "oryx-moment"
+  instance (templates/index.json, "dominant", replacing its previous full-body Oryx graphic).
+  Everything else about this section, and every other instance of it, is completely unchanged.
+{%- endcomment -%}
+<section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}"{% if section.settings.media_emphasis != blank and section.settings.media_emphasis != 'none' %} data-media-treatment="{{ section.settings.media_emphasis }}"{% endif %}>
   {%- comment -%}
     Stage/stage-inner only exists when scroll_progression or oryx_crossing_motion is on (same
     wrapper pattern used by Material Truth: an in-flow ancestor with an explicit height, a sticky
@@ -101,6 +111,21 @@
               sizes="(min-width: 900px) 50vw, 100vw"
               width="{{ section.settings.image.width }}" height="{{ section.settings.image.height }}"
               alt="{{ section.settings.image.alt | default: '' | escape }}"
+              loading="lazy"
+            >
+          {%- elsif section.settings.show_house_boutique -%}
+            {%- comment -%}
+              Approved 2026 boutique interior photograph — a real theme asset (assets/caviera-
+              house-boutique-interior-2026.png), not a merchant-uploaded File, so it can't be
+              pre-selected through the Image picker above; shown only when this checkbox is
+              explicitly on for this instance. Native 1254x1254 (square) — width/height set exactly
+              to that so the browser reserves the correct box with no layout shift; decorative
+              (alt="") since the adjoining copy already describes it.
+            {%- endcomment -%}
+            <img
+              src="{{ 'caviera-house-boutique-interior-2026.png' | asset_url }}"
+              width="1254" height="1254"
+              alt=""
               loading="lazy"
             >
           {%- elsif request.design_mode -%}
@@ -169,6 +194,19 @@
       ]
     },
     { "type": "image_picker", "id": "image", "label": "Image", "info": "Used only when media source is Custom image." },
+    {
+      "type": "checkbox", "id": "show_house_boutique", "label": "Show CAVIERA House boutique interior (bundled)", "default": false,
+      "info": "Only used when Media source above is Custom image and no Image is set above — shows the approved 2026 boutique interior photograph (assets/caviera-house-boutique-interior-2026.png). Used by The House page's own \"Material, light and form\" instance; off everywhere else by default."
+    },
+    {
+      "type": "select", "id": "media_emphasis", "label": "Image emphasis", "default": "none",
+      "options": [
+        { "value": "none", "label": "Standard (50/50, 4:5 crop)" },
+        { "value": "architectural", "label": "Architectural (~58% width, 1:1 frame)" },
+        { "value": "dominant", "label": "Dominant (~65% width, 1:1 frame)" }
+      ],
+      "info": "Gives the image more width and a square 1:1 frame instead of the usual 4:5 crop — for a large, cinematic architectural photograph rather than a small paired image. \"None\" by default; only affects the instance it's set on."
+    },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Material & craft" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Precision, by hand." },
     { "type": "checkbox", "id": "heading_motion", "label": "Oversized heading entrance", "default": false, "info": "A restrained Drkst-style typographic moment for this heading. Ignored when scroll progression (below) is on. Off by default — this section is reused for the calmer, ceremonial Oryx moment." },

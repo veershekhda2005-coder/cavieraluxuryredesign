@@ -1,24 +1,25 @@
 {%- comment -%}
-  CAVIERA ceremonial loader — MENU → THE HOUSE revision.
+  CAVIERA global loader — the Living Oryx (2026-08-18 unification).
 
-  IMPORTANT CHANGE from the previous revision: this no longer plays automatically when the
-  website first loads, on refresh, or once-per-session — none of that logic exists any more. It
-  is now tied to one deliberate action only: clicking THE HOUSE inside the full-screen menu (see
-  the data-caviera-house-link attribute in sections/caviera-header.liquid and the click handler in
-  assets/caviera-header.js). Since THE HOUSE can be opened from any page, this snippet is now
-  rendered globally (every page, via layout/theme.liquid — no longer inside a
-  template.name == 'index' gate) rather than homepage-only.
+  This is now the ONE loading language for the whole theme: a full-screen, silent, looping Oryx
+  video on a solid Cinnabar (#8F261F) field, shown for genuine internal full-page navigation waits
+  (e.g. homepage → The House / Journal / Craftsmanship / Our Diamonds / Bespoke / Client Care), and
+  nothing else. It replaces two previously separate systems: a one-off "THE HOUSE" ceremonial
+  trigger that always played the full video to completion regardless of how long the real
+  navigation actually took, and a separate Cinnabar/House-Seal "Curtain" overlay used for every
+  other internal link. Both are retired — see assets/caviera-loader.js for the single navigation-
+  interception + reveal/conceal engine that replaces them, and assets/caviera-loader.css for the
+  visual states.
 
-  The video is the same approved asset (assets/caviera-loader-oryx-2026.mp4) as the retired
-  homepage-load revision — only the trigger changed, not the artwork or the visual treatment.
+  Rendered globally (every page, not homepage-only) since qualifying navigation can begin from
+  anywhere. The root element always renders unconditionally when settings.enable_loader is on; the
+  script decides at runtime whether/when to actually reveal it — a blocked/failed script, or a
+  navigation that never needs it, never overlays or blocks any page.
 
-  assets/caviera-loader.js exposes window.CaviearaLoader.show(onComplete) — a small, reusable,
-  idempotent public API. The root element always renders unconditionally (when settings.
-  enable_loader is on); the script decides at runtime whether a call to .show() actually plays the
-  video (respecting prefers-reduced-motion — navigates immediately instead of forcing the walk —
-  and every failure/safety fallback), so a blocked/failed script, or nobody ever calling .show(),
-  never overlays or blocks any page. No decorative graphics, no House Seal, no Master Signature —
-  the walking Oryx video is the only visual event, exactly as approved.
+  Video: autoplay + loop natively (the walk repeats for as long as a wait is genuinely still in
+  progress — never tied to the video's own runtime), muted (audio is never enabled), playsinline
+  (never opens a native fullscreen player on iOS), preload="auto" (the loader is meant to be able to
+  reveal instantly the moment it's needed). No controls, no poster frame, no text, no percentage.
 {%- endcomment -%}
 {%- if settings.enable_loader -%}
   <div class="caviera-loader" data-caviera-loader aria-hidden="true">
@@ -26,9 +27,11 @@
       class="caviera-loader__video"
       data-loader-video
       src="{{ 'caviera-loader-oryx-2026.mp4' | asset_url }}"
+      autoplay
       muted
+      loop
       playsinline
-      preload="metadata"
+      preload="auto"
     ></video>
   </div>
   <script src="{{ 'caviera-loader.js' | asset_url }}" defer="defer"></script>

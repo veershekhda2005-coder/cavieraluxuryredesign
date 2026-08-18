@@ -1,4 +1,16 @@
 {%- comment -%}
+  2026-08-17 — DESKTOP REDESIGN ("Edition I — The First Mark"): everything from here down through
+  the matching `</section>` a little further down is the ORIGINAL section, UNCHANGED, and is now
+  exclusively the <900px (mobile/tablet) experience — see assets/caviera-home.css, `@media
+  (min-width: 900px) { .caviera-edition-teaser { display: none; } }`. A second, new `<section
+  class="caviera-edition-mark">` further below is the 900px+ replacement (information panel left /
+  visual collage right, per brief — the reverse of a text-left mistake in an earlier instruction),
+  hidden by default and shown only at that same breakpoint (`.caviera-edition-mark { display:
+  none; } @media (min-width: 900px) { display: grid; }`). The two can therefore never both be
+  visible/interactive at once, and nothing below 900px changes in any way — same markup, same CSS,
+  same JS (assets/caviera-scroll-progress.js's own `total > 0` guard already makes a display:none
+  [data-caviera-pin] element a safe, inert no-op, confirmed against that file directly).
+
   Edition I — the homepage's signature "entering an Edition" moment, not a text-left/image-right
   teaser. One pinned cinematic composition, four scroll states, released directly into Object in
   focus. CAVIERA is Edition-based, not a permanent catalogue — no product grid, no prices, no Add
@@ -67,7 +79,19 @@
     assign img3_render = img1
   endif
 -%}
-<section id="edition-i" class="caviera-section caviera-edition-teaser" data-scheme="{{ section.settings.color_scheme | default: 'obsidian' }}" data-caviera-pin>
+{%- comment -%}
+  2026-08-17 — ANCHOR FIX (found while adding the motion pass below, kept in this same file since
+  it's still entirely inside Edition I's own markup): the header's "EDITION I" nav item and the
+  default edition_nav_item block both link to `/#edition-i`. That id used to live on the mobile
+  section below directly — harmless while only one Edition I section existed, but since the
+  desktop redesign made that same section `display: none` at 900px+ (see .caviera-edition-mark
+  below), a desktop visitor clicking that link would jump to a hidden, zero-height target instead
+  of the visible composition. Moving id="edition-i" onto this plain, always-in-flow wrapper (never
+  itself hidden — only its two children swap which one is display:none per breakpoint) fixes that
+  at every width without touching the nav markup or either section's own styling.
+{%- endcomment -%}
+<div id="edition-i">
+<section class="caviera-section caviera-edition-teaser" data-scheme="{{ section.settings.color_scheme | default: 'obsidian' }}" data-caviera-pin>
   <div class="container caviera-edition-teaser__inner">
     <div class="caviera-edition-teaser__copy" data-reveal>
       {%- if has_meta -%}
@@ -193,9 +217,173 @@
   </div>
 </section>
 
+{%- comment -%}
+  ---- EDITION I — THE FIRST MARK: 900px+ desktop composition ----
+  LEFT: an archival House release notice (number/status, heading, closed-series statement, a
+  FORMAT/MARK/STATUS fact row, a real Shopify customer-form email capture — kept as its own
+  contact[tags] value, separate from the Private Notice/newsletter section's list, so the two can
+  be reported on independently). RIGHT: one composed editorial visual — a dominant main photograph
+  with two smaller, deliberately asymmetric detail frames overlapping its lower corners — not three
+  equal cards. Number/status/heading/year/intro reuse the SAME settings as the mobile section above
+  (edition_number/edition_status/heading/year_label) so the two experiences never drift out of sync
+  with each other; only the desktop-specific copy (closed-series statement, format/mark, signup
+  copy) and the three collage images are new settings, added in the schema below.
+
+  2026-08-17 — LUXURY MOTION PASS: this section now also carries data-caviera-pin, reusing the
+  EXACT SAME shared engine as the mobile section above and the Hero (assets/caviera-scroll-
+  progress.js) rather than introducing a second scroll controller — that file already loops over
+  every [data-caviera-pin] element independently via plain forEach (no shared mutable state, no
+  else-if chain between sections), so adding this section to that loop cannot affect Material
+  Truth's or Maker's Mark's own, entirely separate rAF loops (assets/caviera-material-truth.js,
+  assets/caviera-makers-mark.js) in any way. All of the actual reveal choreography (four beats —
+  House arrival, the Edition identified, the objects appear, provenance/final state) lives in CSS
+  only, in assets/caviera-home.css, as named --mark-b*-* channels derived from the one
+  --caviera-progress value, the same technique already proven by --edition-*-progress just above
+  for the mobile section. See that CSS block for the full beat-by-beat breakdown.
+{%- endcomment -%}
+{%- liquid
+  assign mark_main_img = section.settings.mark_main_image
+  assign mark_left_img = section.settings.mark_detail_left_image
+  assign mark_right_img = section.settings.mark_detail_right_image
+  assign mark_main_bundled = 'edition1-flower-rings.png'
+  assign mark_left_bundled = 'edition1-house-seal-ring.png'
+  assign mark_right_bundled = 'edition1-ring-cluster-red.png'
+  assign mark_success = section.settings.mark_signup_success
+  if mark_success == blank
+    assign mark_success = 'general.newsletter.success' | t
+  endif
+-%}
+<section class="caviera-section caviera-edition-mark" data-scheme="obsidian" data-caviera-pin>
+  <div class="container caviera-edition-mark__inner">
+    <div class="caviera-edition-mark__info" data-scheme="cinnabar">
+      <span class="eyebrow caviera-edition-mark__meta">
+        {{- section.settings.edition_number -}}
+        {%- if section.settings.edition_number != blank and section.settings.edition_status != blank %} / {% endif -%}
+        {{- section.settings.edition_status | upcase -}}
+      </span>
+      {%- if section.settings.heading != blank -%}
+        {%- comment -%}
+          Clip/mask reveal, not a fade — see assets/caviera-home.css. The mask div is the
+          overflow: hidden window; the heading itself is what actually translates from
+          translateY(105%) to translateY(0) underneath it, reading as typography being uncovered
+          rather than appearing in place.
+        {%- endcomment -%}
+        <div class="caviera-edition-mark__heading-mask">
+          <h2 class="caviera-edition-mark__heading">{{ section.settings.heading }}</h2>
+        </div>
+      {%- endif -%}
+      {%- if section.settings.year_label != blank -%}
+        <p class="caviera-edition-mark__year">{{ section.settings.year_label }}</p>
+      {%- endif -%}
+      {%- if section.settings.mark_intro != blank -%}
+        <p class="body-text caviera-edition-mark__intro">{{ section.settings.mark_intro }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.mark_format != blank or section.settings.mark_seal != blank or section.settings.edition_status != blank -%}
+        <span class="caviera-edition-mark__divider" aria-hidden="true"></span>
+        <dl class="caviera-edition-mark__facts">
+          {%- if section.settings.mark_format != blank -%}
+            <div class="caviera-edition-mark__fact">
+              <dt class="label">Format</dt>
+              <dd>{{ section.settings.mark_format }}</dd>
+            </div>
+          {%- endif -%}
+          {%- if section.settings.mark_seal != blank -%}
+            <div class="caviera-edition-mark__fact">
+              <dt class="label">Mark</dt>
+              <dd>{{ section.settings.mark_seal }}</dd>
+            </div>
+          {%- endif -%}
+          {%- if section.settings.edition_status != blank -%}
+            <div class="caviera-edition-mark__fact">
+              <dt class="label">Status</dt>
+              <dd>{{ section.settings.edition_status }}</dd>
+            </div>
+          {%- endif -%}
+        </dl>
+      {%- endif -%}
+
+      <div class="caviera-edition-mark__signup">
+        {%- if section.settings.mark_signup_label != blank -%}
+          <span class="label caviera-edition-mark__signup-label">{{ section.settings.mark_signup_label }}</span>
+        {%- endif -%}
+        {%- form 'customer', class: 'caviera-edition-mark__form' -%}
+          <input type="hidden" name="contact[tags]" value="edition-i-notice">
+          <label class="visually-hidden" for="EditionMarkEmail">{{ 'general.newsletter.email_placeholder' | t }}</label>
+          <div class="caviera-edition-mark__form-row">
+            <input type="email" id="EditionMarkEmail" name="contact[email]" required placeholder="{{ 'general.newsletter.email_placeholder' | t }}" autocomplete="email">
+            <button type="submit" class="caviera-edition-mark__form-submit caviera-loader-on-submit" aria-label="{{ 'general.newsletter.submit' | t }}">
+              <span data-submit-text>{%- render 'icon', name: 'arrow-right' -%}</span>
+              {%- comment -%}
+                Compact Oryx loader — shown immediately on native form submit (see assets/caviera-
+                global.js), a brief departing acknowledgment before the resulting full-page load;
+                never prevents or delays the actual submission. Same shared .caviera-loader-on-
+                submit pattern as the Private Notice newsletter form (assets/caviera-loader.css).
+              {%- endcomment -%}
+              {%- render 'caviera-loader-inline', size: 16, class: 'caviera-edition-mark__form-submit-loader' -%}
+            </button>
+          </div>
+          {%- if form.posted_successfully? -%}
+            <p class="form-status" data-state="success">{{ mark_success }}</p>
+          {%- endif -%}
+        {%- endform -%}
+        {%- if section.settings.mark_signup_note != blank -%}
+          <p class="caviera-edition-mark__signup-note">{{ section.settings.mark_signup_note }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="caviera-edition-mark__visual">
+      <div class="caviera-edition-mark__visual-main">
+        {%- if mark_main_img != blank -%}
+          <img
+            src="{{ mark_main_img | image_url: width: 1400 }}"
+            srcset="{{ mark_main_img | image_url: width: 800 }} 800w, {{ mark_main_img | image_url: width: 1200 }} 1200w, {{ mark_main_img | image_url: width: 1600 }} 1600w"
+            sizes="52vw"
+            width="{{ mark_main_img.width }}" height="{{ mark_main_img.height }}"
+            alt="{{ mark_main_img.alt | default: 'Edition I' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <img src="{{ mark_main_bundled | asset_url }}" width="1122" height="1402" alt="Edition I" loading="lazy">
+        {%- endif -%}
+      </div>
+      <div class="caviera-edition-mark__visual-detail caviera-edition-mark__visual-detail--left">
+        {%- if mark_left_img != blank -%}
+          <img
+            src="{{ mark_left_img | image_url: width: 700 }}"
+            srcset="{{ mark_left_img | image_url: width: 400 }} 400w, {{ mark_left_img | image_url: width: 700 }} 700w"
+            sizes="16vw"
+            width="{{ mark_left_img.width }}" height="{{ mark_left_img.height }}"
+            alt="{{ mark_left_img.alt | default: 'House Seal signet ring' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <img src="{{ mark_left_bundled | asset_url }}" width="1086" height="1449" alt="House Seal signet ring" loading="lazy">
+        {%- endif -%}
+      </div>
+      <div class="caviera-edition-mark__visual-detail caviera-edition-mark__visual-detail--right">
+        {%- if mark_right_img != blank -%}
+          <img
+            src="{{ mark_right_img | image_url: width: 700 }}"
+            srcset="{{ mark_right_img | image_url: width: 400 }} 400w, {{ mark_right_img | image_url: width: 700 }} 700w"
+            sizes="16vw"
+            width="{{ mark_right_img.width }}" height="{{ mark_right_img.height }}"
+            alt="{{ mark_right_img.alt | default: 'Ring cluster' | escape }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <img src="{{ mark_right_bundled | asset_url }}" width="1122" height="1402" alt="Ring cluster" loading="lazy">
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
 {% schema %}
 {
-  "name": "Edition I teaser",
+  "name": "Edition I — First Mark",
   "settings": [
     {
       "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
@@ -221,9 +409,22 @@
     { "type": "image_picker", "id": "edition_image_2", "label": "Edition media 02 (optional)", "info": "The second state the composition recomposes around. Falls back to a strongly differentiated crop of media 01 when left blank." },
     { "type": "image_picker", "id": "edition_image_3", "label": "Edition media 03 (optional)", "info": "A small detail inset only, arriving last. Falls back to a third, differently cropped treatment of media 01 when left blank." },
     { "type": "header", "content": "Interaction" },
-    { "type": "checkbox", "id": "show_token", "label": "Show draggable Edition plaque token", "default": true, "info": "A single small, bounded, draggable Edition-number token floating over the composition — desktop pointer input only. Stays static and fully visible on touch, keyboard-only, and reduced-motion visits." }
+    { "type": "checkbox", "id": "show_token", "label": "Show draggable Edition plaque token", "default": true, "info": "A single small, bounded, draggable Edition-number token floating over the composition — desktop pointer input only. Stays static and fully visible on touch, keyboard-only, and reduced-motion visits." },
+    { "type": "header", "content": "Desktop panel — 900px+ only" },
+    { "type": "paragraph", "content": "This information-panel-left / visual-collage-right composition replaces the scroll choreography above at 900px and wider. Below 900px, everything above this point in the settings is still what renders, completely unchanged — Number, Status, Heading and Year above are shared by both so they never drift out of sync." },
+    { "type": "textarea", "id": "mark_intro", "label": "Closed-series statement", "default": "A closed series of numbered pieces. Released once, recorded in the House ledger, never repeated." },
+    { "type": "text", "id": "mark_format", "label": "Format", "default": "CAVIERA No. ___ / 100" },
+    { "type": "text", "id": "mark_seal", "label": "Mark", "default": "House Seal, engraved" },
+    { "type": "text", "id": "mark_signup_label", "label": "Signup label", "default": "Receive word" },
+    { "type": "text", "id": "mark_signup_note", "label": "Signup note", "default": "One notice when Edition I opens. Nothing else." },
+    { "type": "text", "id": "mark_signup_success", "label": "Signup success message (optional)", "info": "Leave blank to use the site's standard newsletter success message." },
+    { "type": "header", "content": "Desktop visual collage" },
+    { "type": "paragraph", "content": "One composed editorial visual, not three equal cards — a dominant main image with two smaller images overlapping its lower corners. Any left blank fall back to the bundled 2026 Edition I campaign photography." },
+    { "type": "image_picker", "id": "mark_main_image", "label": "Main image (dominant)", "info": "Falls back to assets/edition1-flower-rings.png when left blank." },
+    { "type": "image_picker", "id": "mark_detail_left_image", "label": "Small image — lower left", "info": "Falls back to assets/edition1-house-seal-ring.png when left blank." },
+    { "type": "image_picker", "id": "mark_detail_right_image", "label": "Small image — lower right", "info": "Falls back to assets/edition1-ring-cluster-red.png when left blank." }
   ],
-  "presets": [{ "name": "Edition I teaser" }],
+  "presets": [{ "name": "Edition I — First Mark" }],
   "enabled_on": {
     "templates": ["index"]
   }
