@@ -53,6 +53,7 @@
 
   {%- if template.name == 'index' -%}
     {{ 'caviera-home.css' | asset_url | stylesheet_tag }}
+    {{ 'caviera-mobile.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
   {%- if template contains 'product' -%}
     {{ 'caviera-product.css' | asset_url | stylesheet_tag }}
@@ -184,9 +185,13 @@
   {%- endcomment -%}
   <script src="{{ 'caviera-global.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'caviera-cart.js' | asset_url }}" defer="defer"></script>
+  {%- unless request.design_mode -%}
+    <script src="{{ 'caviera-site-protection.js' | asset_url }}" defer="defer"></script>
+  {%- endunless -%}
   {%- if template.name == 'index' -%}
     <script src="{{ 'caviera-scroll-progress.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'caviera-drag-token.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'caviera-mobile-motion.js' | asset_url }}" defer="defer"></script>
   {%- endif -%}
   <script>document.documentElement.classList.remove('no-js');</script>
 </body>

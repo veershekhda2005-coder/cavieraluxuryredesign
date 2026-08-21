@@ -489,84 +489,124 @@
 }
 
 /* ---- "Dominant" image emphasis (homepage "oryx-moment"/The House instance) ----
-   2026-08-19 BUG FIX: this treatment previously reused the "architectural" rule's aspect-ratio:
-   1/1 lock. That is correct for a photograph inside a normal, content-height page section (The
-   House page above) but is WRONG here, where the brief wants a true full-viewport, edge-to-edge
-   photograph filling its entire column height — locking the image to a 1:1 box instead forced it
-   to whatever height a 1:1 ratio produced at its own column WIDTH (a few hundred px), and because
-   this section had no min-height of its own and .caviera-editorial__grid's shared align-items:
-   center rule doesn't stretch grid rows to fill anything, the whole row then shrank to fit that
-   small square — the exact "small floating square + huge empty Cinnabar space" bug reported.
-   FIX: give the section (and the grid inside it) a real, explicit min-height, stretch the row
-   instead of centring it, and let the image fill that height directly via height: 100% + object-
-   fit: cover — no aspect-ratio lock at all, so the image's rendered box is simply "the column",
-   full stop, cropped only as much as object-fit: cover ever needs to. */
+   2026-08-19: first pass fixed a real layout bug (a stray aspect-ratio:1/1 was collapsing the
+   whole row to a tiny square) by going full-bleed — 65/35 columns, zero gap, image edge-to-edge to
+   every side of its column. That pass was structurally correct but read as unfinished once seen in
+   full: a very tall, very sparse Cinnabar column with a short 3-line text block rattling around in
+   the middle, and a photograph forced flush to the literal edges with no visual "frame" around it.
+   2026-08-20 LUXURY PASS (this revision): keeps every structural fix from the first pass (real
+   min-height, align-items: stretch, no aspect-ratio lock on the image) but rebuilds the composition
+   as a considered editorial frame instead of a full-bleed split:
+   - a generous, uniform inner padding around the whole section turns the Cinnabar field into a
+     deliberate canvas with a visible edge, not an endless flat wall;
+   - a real (if modest) gap between the columns + a subtle shadow under the photograph gives the
+     image presence as an object in the composition, rather than a slab glued to the text block;
+   - the left column is widened (~44% vs. the previous ~35%) and given a proper max-width + a thin
+     accent rule above the eyebrow, so the text reads as an intentional, weighted column rather than
+     a few short lines lost in a tall red rectangle;
+   - the headline is scaled up specifically for this treatment (the shared .heading-h2 size, tuned
+     for a 50/50 4:5-crop layout elsewhere, was too small to feel "powerful" against a 56%-wide
+     photograph beside it).
+   Net effect: same real photograph, same real min-height, but the empty-space complaint is solved
+   by giving the space itself a structure (frame, rule, gap, shadow, larger type) instead of by
+   shrinking the canvas. */
+.caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text {
+  position: relative;
+}
+/* Thin accent rule above the eyebrow — CSS-only (no markup change), so every instance of this
+   shared section keeps its exact existing copy untouched. A quiet nod to the copy's own "marking a
+   threshold" line, and the "internal alignment system" the brief asked for: a fixed point the eye
+   lands on before the eyebrow/heading/body sequence, instead of type simply starting mid-air. */
+.caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text::before {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+  margin-bottom: 24px;
+}
+.caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text .eyebrow {
+  margin-bottom: 20px;
+}
+.caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text .heading-h2 {
+  /* Scaled up from the shared --step-h2 (tuned for the standard 50/50 layout) specifically for
+     this wide, image-dominant composition — large enough to hold its own as a brand statement
+     next to a 56%-wide photograph, not merely a caption beside it. */
+  font-size: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+  margin-bottom: 28px;
+}
+.caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text .body-text {
+  max-width: 380px;
+}
+/* Mobile (below the desktop grid below): a taller, clearer crop than the sitewide 4:5 default, and
+   an object-position that protects the CAVIERA wall sign in the photo exactly as it's protected on
+   desktop — see the desktop rule's own comment for how that 34% X value was located. Section
+   padding stays the theme's normal --section-spacing (the base .caviera-section rule, untouched)
+   so mobile never inherits the desktop canvas's larger frame padding. */
+.caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media img {
+  object-position: 34% 42%;
+}
 @media (min-width: 900px) {
   .caviera-editorial[data-media-treatment="dominant"] {
-    /* The base .caviera-section class supplies padding-block: var(--section-spacing) — appropriate
-       for a normal content-height section, but that padding is exactly what left visible Cinnabar
-       space above/below the (already too-short) content before this fix, and would still leave an
-       unwanted gap above/below a correctly full-height image after it. Removed here only. */
-    padding-block: 0;
+    /* The section itself is now the "frame": a generous, uniform inner padding on all sides
+       (replacing the previous pass's padding-block: 0 full-bleed approach) plus a fixed overall
+       height, with the grid below stretched to fill exactly the space the padding leaves. */
+    padding: clamp(28px, 3.4vw, 56px);
+    /* 88–100vh per brief; clamped so a shorter laptop screen (e.g. a 768px-tall display) collapses
+       gracefully to a sensible fixed floor instead of forcing the full 92svh and overflowing. */
+    min-height: clamp(680px, 92svh, 960px);
+    display: flex;
+    flex-direction: column;
   }
   .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__grid {
-    /* ~65% / 35% — within the requested 64–69% range (36–40% left / 60–64% right also acceptable
-       per brief; 65/35 sits centrally in both ranges). */
-    grid-template-columns: minmax(0, 65%) minmax(0, 1fr);
-    /* No gap — per brief, "no red gap around the image": the Cinnabar text column and the
-       photograph must meet edge-to-edge with nothing showing between them. */
-    gap: 0;
-    /* Overrides the shared .caviera-editorial__grid rule's align-items: center (which only ever
-       sizes a row to its content's own height — the direct cause of the bug) so both columns
-       stretch to fill the row's real, explicit height below instead. */
+    /* ~44% / 56% — within the requested 42–46% / 54–58% range. Wider than the previous pass's 35%
+       specifically so the text column reads as a real, weighted half of the composition instead of
+       a narrow strip beside a dominant photograph. */
+    grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+    /* A real, intentional gap (was 0 in the full-bleed pass) — the two columns are now clearly
+       separate, considered elements of one composition rather than a single edge-to-edge slab. */
+    gap: clamp(40px, 5vw, 72px);
     align-items: stretch;
-    min-height: 95svh;
+    /* Fills exactly the height the section's own padding leaves — see display:flex above. */
+    flex: 1;
+    min-height: 0;
   }
   .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media {
     height: 100%;
     overflow: hidden;
+    /* Restrained depth cue — the brief's "subtle shadow or depth if needed" — separating the
+       photograph from the Cinnabar field behind it without any border, radius or card styling. */
+    box-shadow: 0 32px 64px -28px rgba(20, 6, 4, 0.4);
   }
   .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media img {
     /* No aspect-ratio — the box IS the column, not a ratio-derived shape. */
     height: 100%;
     aspect-ratio: auto;
     object-fit: cover;
-    /* CORRECTED (measured, not guessed): at ~95svh this column is considerably TALLER than the
-       source photo's own square (1254x1254) shape at every one of the four required widths
-       (measured column aspect ratio 0.59–0.68 at 1366–1920px real browser heights) — for a source
-       narrower-than-square-relative-to-its-box, object-fit: cover crops HEIGHT not at all (the
-       full ceiling-to-floor height always shows) and crops WIDTH significantly instead — as much
-       as ~44% of the photo's total width at the tightest breakpoint (1440x900), not the "small,
-       purely vertical" crop an earlier pass here wrongly assumed before actually measuring it.
-       Y is therefore irrelevant (nothing is ever cropped vertically) and left at plain centre.
-       X was picked by locating the photo's own real content, not by trial and error: the CAVIERA
-       JEWELS wall sign sits at roughly 20–35% across the source's own width — brief marks not
-       cropping that sign as an ABSOLUTE rule, ranked above the sculptural Oryx wall relief further
-       right (~58–90%), which cannot both fit inside a ~56–68%-wide visible window regardless of
-       position. 34% keeps the sign fully in frame with a safety margin at the tightest breakpoint
-       while still carrying the Cinnabar accent strip, the small round Oryx wall emblem, and most
-       of the central jewellery display case into frame at every required width; the wider
-       breakpoints (which crop less) additionally keep a growing portion of the Oryx relief itself. */
-    object-position: 34% 50%;
+    /* Re-measured for this pass's new column proportions (44/56 + frame padding + gap changes the
+       column's own aspect ratio from the previous full-bleed pass) — see the verification script
+       run alongside this change. X stays anchored to the CAVIERA wall sign (~20–35% across the
+       source's own width) exactly as before; this is not a guess carried over from the old value. */
+    object-position: 34% 46%;
   }
   .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-inline: 5vw;
+    padding-inline: clamp(16px, 1.6vw, 32px);
+    /* Controlled inner column width per brief (420–520px) — independent of the grid column's own
+       (wider) width, so line length stays comfortable to read regardless of viewport. */
+    max-width: 500px;
   }
-  .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__text .body-text {
-    max-width: 320px;
-  }
-  /* Restrained entry reveal only, per brief — opacity 0.85 → 1 / scale 1.015 → 1, nothing that
-     changes the image's rendered SIZE (the earlier bug was a layout fault, not this animation, but
-     the exact numbers below are now scoped here explicitly rather than reusing the generic
-     "seal-resolve" style's own 0.45 starting opacity, per the brief's specific request). Same
-     [data-reveal] one-shot IntersectionObserver JS already shared sitewide — no new JS. */
+  /* Restrained entry reveal, per brief: "slow, quiet, premium, editorial". Scale bumped from the
+     previous pass's 1.015 to the brief's own suggested 1.03 — still subtle, but a touch more
+     perceptible given the image is now a distinctly framed object rather than a full-bleed slab.
+     Same [data-reveal] one-shot IntersectionObserver already shared sitewide — no new JS. */
   .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media[data-reveal] {
     opacity: 0.85;
-    transform: scale(1.015);
-    transition: opacity 500ms var(--ease-caviera), transform 500ms var(--ease-caviera);
+    transform: scale(1.03);
+    transition: opacity 700ms var(--ease-caviera), transform 700ms var(--ease-caviera);
   }
   .caviera-editorial[data-media-treatment="dominant"] .caviera-editorial__media[data-reveal].is-visible {
     opacity: 1;

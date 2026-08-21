@@ -60,6 +60,10 @@
     assign seal_mode = 'dark'
   endunless
   assign use_progress = section.settings.scroll_progression
+  assign use_makers_detail = false
+  if use_progress and media_source == 'house_seal'
+    assign use_makers_detail = true
+  endif
   assign use_oryx_crossing = false
   if section.settings.oryx_crossing_motion and media_source == 'oryx'
     assign use_oryx_crossing = true
@@ -75,7 +79,7 @@
   instance (templates/index.json, "dominant", replacing its previous full-body Oryx graphic).
   Everything else about this section, and every other instance of it, is completely unchanged.
 {%- endcomment -%}
-<section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}"{% if section.settings.media_emphasis != blank and section.settings.media_emphasis != 'none' %} data-media-treatment="{{ section.settings.media_emphasis }}"{% endif %}>
+<section class="caviera-section caviera-editorial" data-scheme="{{ section.settings.color_scheme }}" data-reverse="{{ section.settings.image_position }}"{% if use_makers_detail %} data-makers-mark{% endif %}{% if section.settings.media_emphasis != blank and section.settings.media_emphasis != 'none' %} data-media-treatment="{{ section.settings.media_emphasis }}"{% endif %}>
   {%- comment -%}
     Stage/stage-inner only exists when scroll_progression or oryx_crossing_motion is on (same
     wrapper pattern used by Material Truth: an in-flow ancestor with an explicit height, a sticky
@@ -87,7 +91,7 @@
   <div class="caviera-editorial__stage-inner">{%- endif -%}
   <div class="container--full caviera-editorial__grid">
     <div class="caviera-editorial__media" data-media-source="{{ media_source }}"{% if section.settings.media_motion and use_progress == false and use_oryx_crossing == false %} data-reveal data-reveal-style="seal-resolve"{% endif %}>
-      {%- if use_progress and media_source == 'house_seal' -%}
+      {%- if use_progress and media_source == 'house_seal' and use_makers_detail == false -%}
         {%- comment -%}
           Optional Bureau Nine depth cue: one faint, always-static-opacity impression of the same
           approved Seal sitting behind the real one — never a second visible mark, never sharp.
@@ -100,7 +104,19 @@
       {%- endif -%}
       {%- case media_source -%}
         {%- when 'house_seal' -%}
-          {%- render 'caviera-house-seal', mode: seal_mode, width: 280, alt: '' -%}
+          {%- if use_makers_detail -%}
+            <figure class="caviera-editorial__maker-detail">
+              <img
+                src="{{ 'caviera-makers-mark-seal-2026.jpeg' | asset_url }}"
+                width="723" height="1086"
+                alt="A gloved hand applies the CAVIERA House Seal in Cinnabar wax."
+                loading="lazy"
+                decoding="async"
+              >
+            </figure>
+          {%- else -%}
+            {%- render 'caviera-house-seal', mode: seal_mode, width: 280, alt: '' -%}
+          {%- endif -%}
         {%- when 'oryx' -%}
           {%- render 'caviera-oryx', variant: 'static', mode: seal_mode, width: 320, alt: '' -%}
         {%- else -%}

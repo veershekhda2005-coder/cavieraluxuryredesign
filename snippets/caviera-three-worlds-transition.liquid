@@ -1,0 +1,23 @@
+{%- comment -%}
+  CAVIERA — THREE WORLDS (Phase 1) — world-to-world transition foundation.
+
+  Rendered once between each pair of adjacent worlds (Threshold→Constant, Constant→Editions,
+  Editions→Commissions) — see sections/caviera-three-worlds.liquid. Purely a DOM/CSS foundation for
+  a LATER phase's real transition (per brief Step 6): no wipe, no mask animation, no 3D morph exists
+  yet. In Phase 1 this renders as a zero-height, non-visual hook only (see .caviera-world-transition
+  in assets/caviera-three-worlds.css) — it cannot be seen and does not affect any world's layout or
+  spacing; it exists purely so a later phase has an already-wired DOM location to build a real
+  transition into without restructuring the section again.
+
+  Params: from / to — the two data-world values either side of this transition, exposed as data
+  attributes only (no logic reads them yet).
+{%- endcomment -%}
+<div
+  class="caviera-world-transition"
+  data-transition-from="{{ from }}"
+  data-transition-to="{{ to }}"
+  aria-hidden="true"
+>
+  <div class="caviera-world-transition__mask"></div>
+  <div class="caviera-world-transition__surface"></div>
+</div>

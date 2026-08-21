@@ -1,0 +1,686 @@
+{%- comment -%}
+  CAVIERA — THREE WORLDS — complete four-part scroll experience
+
+  STATUS: all four worlds (00 Threshold, 01 The Constant, 02 The Editions, 03 Private Commissions)
+  are built with final approved imagery, copy, and motion and wired into the homepage.
+
+  This section owns and loads its OWN stylesheet and script directly (see the two tags at the
+  bottom) rather than relying on layout/theme.liquid's global asset list — the same
+  self-contained pattern already used elsewhere in this theme (e.g. sections/caviera-hero.liquid's
+  own script tag).
+
+  FOUR WORLDS, each a real element the isolated JS can independently address via its own
+  data-world value: "threshold", "constant", "editions", "commissions". Deliberately NOT four
+  ordinary stacked Shopify sections — this is one section containing four full-viewport world
+  wrappers, so world-to-world transitions can be handled by one shared, pinned scroll architecture
+  without restructuring the page into separate sections.
+{%- endcomment -%}
+{{ 'caviera-three-worlds.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Threshold uses the approved static master image and the shared production scroll engine.
+{%- endcomment -%}
+<div
+  class="caviera-three-worlds"
+  data-caviera-three-worlds
+  data-c3w-threshold-mode="static"
+>
+
+  {%- comment -%} ================= 00 — THE THRESHOLD ================= {%- endcomment -%}
+  {%- comment -%}
+    STAGE/STICKY-INNER (Phase 2b) — added because the scroll-driven reveal sequence below needs
+    real scroll DISTANCE to scrub across; the plain .c3w-world base rule Threshold otherwise shares
+    with every other world is exactly one viewport tall, which made entryExitProgress() (assets/
+    caviera-three-worlds.js) degenerate to a binary 0-or-1 snap instead of a continuous 0–1 value —
+    confirmed by direct measurement before this fix (min-height: 100vh means rect.height - vh = 0).
+    This is the SAME "in-flow tall ancestor + sticky pinned inner" pattern already established
+    elsewhere in this theme for exactly this reason — see sections/caviera-editorial-media.liquid's
+    own .caviera-editorial__stage/-inner for its scroll_progression feature. data-world="threshold"
+    stays on the OUTER (tall) element, since that's what the JS actually measures; the sticky inner
+    is purely visual and carries no data attributes of its own.
+    230vh keeps Threshold the shortest world while adding a modest amount of entrance breathing
+    room; the existing progress mapping prevents an overlong text-free corridor beat.
+  {%- endcomment -%}
+  <section
+    class="c3w-world c3w-world--threshold"
+    data-world="threshold"
+    data-world-index="0"
+    aria-label="The Threshold"
+  >
+    <div class="c3w-threshold__stage">
+      {%- comment -%}
+        THRESHOLD MEDIA — FINAL, per Phase 2c: the approved master still (assets/caviera-three-
+        worlds-threshold-2026.png, 1672x941 native, 16:9) remains the permanent static Threshold
+        environment and the video prototype's loading/failure fallback. Untouched by any CSS
+        transform, shown via
+        plain object-fit: cover so its own centred corridor axis stays centred regardless of
+        viewport aspect ratio. The image itself never moves/animates beyond the approved one-time
+        entry settle (scale 1.015→1, see --threshold-environment-scale) — the "living" feeling below
+        comes entirely from the two light layers composited on top of it, never from the image.
+      {%- endcomment -%}
+      <div class="c3w-threshold__media" data-threshold-media>
+        <img
+          class="c3w-threshold__media-el"
+          src="{{ 'caviera-three-worlds-threshold-2026.png' | asset_url }}"
+          width="1672" height="941"
+          alt=""
+          loading="eager"
+          fetchpriority="high"
+        >
+        {%- comment -%}
+          Living-light layers (Phase 2c) — two lightweight, opacity-only radial gradients, both
+          entirely CSS (assets/caviera-three-worlds.css), driven by --threshold-light-primary-
+          opacity / --threshold-light-secondary-opacity (assets/caviera-three-worlds.js). Sit above
+          the image, below the typography (.c3w-world__inner's z-index: 1 still wins); pointer-
+          events: none so they can never intercept the ENTER THE HOUSE click. Contained entirely
+          inside .c3w-threshold__media — cannot affect Constant/Editions/Commissions.
+        {%- endcomment -%}
+        <div class="c3w-threshold__light" aria-hidden="true"></div>
+        <div class="c3w-threshold__light-secondary" aria-hidden="true"></div>
+      </div>
+
+      <div class="c3w-world__inner c3w-threshold__inner">
+        <div class="c3w-threshold__mark">
+          {%- comment -%}
+            Official CAVIERA wordmark asset — never retyped. mode: 'dark' renders the Bone-coloured
+            version, correct against this world's Obsidian field (same convention as the header's
+            own transparent-over-dark-hero case).
+          {%- endcomment -%}
+          {%- render 'caviera-wordmark', mode: 'dark', width: 220, loading: 'eager', fetchpriority: 'high' -%}
+        </div>
+        <p class="c3w-threshold__eyebrow">CAVIERA JEWELS</p>
+        {%- comment -%}
+          Two lines, each individually masked (overflow: hidden on the outer span, the inner span
+          itself carrying the actual translateY reveal) rather than a generic fade-up — per brief,
+          "preferred treatment: masked/clipped vertical reveal". Live HTML text throughout, nothing
+          baked into the image.
+        {%- endcomment -%}
+        <h1 class="c3w-threshold__heading">
+          <span class="c3w-threshold__heading-line"><span>THE HOUSE EXISTS</span></span>
+          <span class="c3w-threshold__heading-line"><span>IN THREE FORMS.</span></span>
+        </h1>
+        <button type="button" class="c3w-threshold__cta" data-world-enter aria-label="Enter the House — scroll to The Constant">
+          <span>ENTER THE HOUSE</span>
+        </button>
+      </div>
+
+      {%- comment -%}
+        Foreground layer — empty hook only (Step 3's conceptual media/environment/content/foreground
+        stack). No visual effect in Phase 1 (no vignette, grain, or particles exist yet); a later
+        phase can add real content here without touching this world's markup structure again.
+      {%- endcomment -%}
+      <div class="c3w-world__foreground" data-layer="foreground" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {%- render 'caviera-three-worlds-transition', from: 'threshold', to: 'constant' -%}
+
+  {%- comment -%} ================= 01 — THE CONSTANT ================= {%- endcomment -%}
+  {%- comment -%}
+    STAGE/STICKY-INNER (Phase 3a) — same "in-flow tall ancestor + sticky pinned inner" pattern as
+    the Threshold (see that section's own comment above for the measured bug this avoids: a plain
+    one-viewport-tall world can only ever produce a binary 0-or-1 entryExitProgress, never a
+    continuous 0–1 value to scrub a reveal sequence across). The 440vh outer canvas gives the three
+    approved detail photographs true observation holds and preserves a composed Permanence state.
+    data-world="constant" stays on the OUTER (tall)
+    element — exactly what entryExitProgress() and the orientation indicator's own geometry read.
+  {%- endcomment -%}
+  <section
+    class="c3w-world c3w-world--constant"
+    data-world="constant"
+    data-world-index="1"
+    aria-label="01 — The Constant"
+  >
+    <div class="c3w-constant__stage">
+      {%- comment -%}
+        MASTER CONSTANT ENVIRONMENT (Phase 3b, FINAL) — approved asset, untouched/unfiltered.
+        object-position: center center — verified visually at 1366/1440/1600/1920 that this keeps
+        the central Warm Bone archive monolith, the paired vertical ribs and the distant Cinnabar
+        recess all in frame (the source is 1672x941, 16:9, close enough to every required viewport
+        aspect that cropping is minor and symmetric, exactly like the Threshold's own still).
+      {%- endcomment -%}
+      <div class="c3w-constant__media" data-constant-media>
+        <img
+          class="c3w-constant__media-el"
+          src="{{ 'caviera-three-worlds-constant-2026.png' | asset_url }}"
+          width="1672" height="941"
+          alt=""
+          loading="eager"
+          fetchpriority="high"
+        >
+      </div>
+      {%- comment -%}
+        Living light (Phase 3b) — positioned over the master image's own existing warm-lit stone
+        wall behind the monolith (~60% across, ~45% down), not a new light source. Two additional
+        code-specific emphasis layers sit alongside it: MATERIAL brightens the stone/brass wall
+        further, RITUAL brightens the monolith itself — both driven by that code's own "distance
+        from its window's midpoint" (assets/caviera-three-worlds.js), so they rise and recede as a
+        continuous part of the same scroll, never a hard toggle.
+      {%- endcomment -%}
+      <div class="c3w-constant__environment" aria-hidden="true"></div>
+      <div class="c3w-constant__material-emphasis" data-constant-code="material" aria-hidden="true"></div>
+      <div class="c3w-constant__ritual-emphasis" data-constant-code="ritual" aria-hidden="true"></div>
+
+      {%- comment -%}
+        CODE 01 — HOUSE SEAL: the official mark, positioned over the small circular brass inset
+        already visible on the monolith's own surface in the master image (~50% across, ~61% down —
+        located by inspection, not guessed) — authentication built into the architecture itself,
+        never a redrawn/generated mark. Sized modestly (56px) per brief ("should feel like
+        authentication, not decoration").
+      {%- endcomment -%}
+      <div class="c3w-constant__seal-mark" data-constant-code="seal" aria-hidden="true">
+        {%- render 'caviera-house-seal', mode: 'dark', width: 56 -%}
+      </div>
+
+      {%- comment -%}
+        CODE 02 — ORYX: the official Living Oryx mark (never a new drawing), placed beside the
+        master image's own paired tall vertical ribs (~63% across) so the reveal reads as
+        recognition — "this is why the architecture has this geometry" — rather than a mascot
+        dropped into the room. Modest scale (110px).
+      {%- endcomment -%}
+      <div class="c3w-constant__oryx-mark" data-constant-code="oryx" aria-hidden="true">
+        {%- render 'caviera-oryx', variant: 'static', mode: 'dark', width: 110 -%}
+      </div>
+
+      {%- comment -%}
+        CODE 03 — PROVENANCE: the approved detail image as a large controlled vertical frame
+        (52–68vh tall, native 4:5 ratio preserved via aspect-ratio, not stretched), offset toward
+        the stage's own right-of-centre — deliberately not a centred ecommerce card. The image's own
+        blank recessed oval sits at approximately 71%/43% of its own frame (located by inspection);
+        rather than stretching the tall, narrow official House Seal artwork to fill that wide,
+        shallow oval (which would distort it — the two shapes don't match), a small, modestly-sized
+        seal is centred INSIDE the recess at its native proportions via object-fit: contain, exactly
+        the brief's own sanctioned approach when a full-bleed fill isn't accurate. Centre-point
+        alignment only (not edge-to-edge fitting) stays precise across every viewport width because
+        the frame's own aspect-ratio is fixed (never independently cropped per axis like a cover
+        image would be) — verified visually after implementation, not assumed.
+      {%- endcomment -%}
+      <div class="c3w-constant__provenance" data-constant-code="provenance" data-detail="provenance" aria-hidden="true">
+        <div class="c3w-constant__provenance-frame">
+          <img
+            class="c3w-constant__provenance-el"
+            src="{{ 'caviera-three-worlds-constant-provenance-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+          <div class="c3w-constant__provenance-seal">
+            {%- render 'caviera-house-seal', mode: 'dark', width: 34 -%}
+          </div>
+        </div>
+        <p class="c3w-constant__provenance-caption">Recorded by the House.</p>
+      </div>
+
+      {%- comment -%}
+        WebGL Provenance authentication mark — the same official snippet and native proportions as
+        the static detail above, independently positioned because the static frame is suppressed
+        only after Constant WebGL has proved its own first frame. Never a redraw or canvas copy.
+      {%- endcomment -%}
+      <div class="c3w-constant__webgl-provenance-seal" data-constant-code="provenance" aria-hidden="true">
+        {%- render 'caviera-house-seal', mode: 'dark', width: 34 -%}
+      </div>
+
+      {%- comment -%}
+        CODE 04 — MATERIAL (Phase 3c, FINAL — approved detail asset, untouched/unfiltered). Shares
+        the same .c3w-constant__detail architecture as Ritual below (per brief, "extend cleanly,
+        avoid three separate fragile systems") — Provenance's own already-locked markup/classes
+        above are deliberately left untouched rather than merged into this, so nothing about its
+        approved implementation can regress. Positioned left-of-centre, bottom-anchored — clear of
+        the text column (which ends well before this frame's own left edge at every required
+        width) and deliberately NOT the same slot Provenance occupies, per brief ("a different
+        spatial position... does not feel like the same image slot changing content").
+        CONSTANT_MATERIAL_DETAIL_SLOT is now filled — this comment name is kept only so a future
+        pass searching for it still finds this exact spot.
+      {%- endcomment -%}
+      <div class="c3w-constant__detail" data-constant-code="material" data-detail="material" aria-hidden="true">
+        <div class="c3w-constant__detail-frame">
+          <img
+            class="c3w-constant__detail-el"
+            src="{{ 'caviera-three-worlds-constant-material-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-constant__detail-caption">Stone. Metal. Form.</p>
+      </div>
+
+      {%- comment -%}
+        CODE 05 — RITUAL (Phase 3c, FINAL — approved detail asset, untouched/unfiltered). Same
+        shared .c3w-constant__detail architecture as Material above. Right-of-centre like
+        Provenance (same architectural "edge" of the room) but bottom-anchored rather than
+        vertically centred, so the two never read as the same picture-frame slot cycling content —
+        per brief, "slightly lower or opposite side... choose based on actual visual balance".
+        CONSTANT_RITUAL_DETAIL_SLOT is now filled — comment name kept for the same reason as above.
+      {%- endcomment -%}
+      <div class="c3w-constant__detail" data-constant-code="ritual" data-detail="ritual" aria-hidden="true">
+        <div class="c3w-constant__detail-frame">
+          <img
+            class="c3w-constant__detail-el"
+            src="{{ 'caviera-three-worlds-constant-ritual-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-constant__detail-caption">Every object enters the House the same way.</p>
+      </div>
+
+      <div class="c3w-world__inner c3w-constant__content">
+        {%- comment -%}
+          Intro group (index/title/statement/supporting) — positioned upper-left via
+          .c3w-constant__content's own CSS (not centred like the Threshold) specifically to leave
+          the central monolith and the distant Cinnabar recess both clearly visible below/right of
+          the type. Recedes to a quieter, still-legible state once the code narrative begins (see
+          --c3w-constant-intro-opacity/-scale) — per brief, "does not need to remain giant
+          throughout... the world identity must remain understandable."
+        {%- endcomment -%}
+        <div class="c3w-constant__intro">
+          <span class="c3w-constant__index">01</span>
+          <h2 class="c3w-constant__title">
+            <span class="c3w-constant__title-line"><span>THE CONSTANT</span></span>
+          </h2>
+          <p class="c3w-constant__statement">WHAT REMAINS.</p>
+          <p class="c3w-constant__supporting">The permanent codes of the House.</p>
+        </div>
+
+        {%- comment -%}
+          Six permanent-code narrative markers (Phase 3b, FINAL treatment) — NOT a menu of six
+          always-visible labels. Each code now carries TWO elements sharing the same data-constant-
+          code hook (assets/caviera-three-worlds.js already sets data-code-state on every matching
+          element, so no JS change was needed for this): a small persistent index tick (part of a
+          quiet six-number ladder — the ONLY thing always visible, dimmed per the existing active/
+          past/future opacities) and a full label+line pair that only reads clearly while its own
+          code is active (grid-stacked in the same cell as every other code's copy, so the visitor
+          never sees more than one at a time and nothing ever jumps in height as they scroll).
+        {%- endcomment -%}
+        <div class="c3w-constant__code-ladder" aria-hidden="true">
+          <span class="c3w-constant__code-tick" data-constant-code="seal">01</span>
+          <span class="c3w-constant__code-tick" data-constant-code="oryx">02</span>
+          <span class="c3w-constant__code-tick" data-constant-code="provenance">03</span>
+          <span class="c3w-constant__code-tick" data-constant-code="material">04</span>
+          <span class="c3w-constant__code-tick" data-constant-code="ritual">05</span>
+          <span class="c3w-constant__code-tick" data-constant-code="permanence">06</span>
+        </div>
+        <div class="c3w-constant__code-copy-stack" aria-hidden="true">
+          <div class="c3w-constant__code-copy" data-constant-code="seal">
+            <p class="c3w-constant__code-label">House Seal</p>
+            <p class="c3w-constant__code-line">The mark of the House.</p>
+          </div>
+          <div class="c3w-constant__code-copy" data-constant-code="oryx">
+            <p class="c3w-constant__code-label">Oryx</p>
+            <p class="c3w-constant__code-line">The geometry that guides the House.</p>
+          </div>
+          <div class="c3w-constant__code-copy" data-constant-code="provenance">
+            <p class="c3w-constant__code-label">Provenance</p>
+            <p class="c3w-constant__code-line">Recorded by the House.</p>
+          </div>
+          <div class="c3w-constant__code-copy" data-constant-code="material">
+            <p class="c3w-constant__code-label">Material</p>
+            <p class="c3w-constant__code-line">Stone. Metal. Form.</p>
+          </div>
+          <div class="c3w-constant__code-copy" data-constant-code="ritual">
+            <p class="c3w-constant__code-label">Ritual</p>
+            <p class="c3w-constant__code-line">Every object enters the House the same way.</p>
+          </div>
+          <div class="c3w-constant__code-copy" data-constant-code="permanence">
+            <p class="c3w-constant__code-label">Permanence</p>
+            <p class="c3w-constant__code-line">What is recorded, remains.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="c3w-world__foreground" data-layer="foreground" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {%- render 'caviera-three-worlds-transition', from: 'constant', to: 'editions' -%}
+
+  {%- comment -%} ================= 02 — THE EDITIONS ================= {%- endcomment -%}
+  {%- comment -%}
+    STAGE/STICKY-INNER (Phase 4) — same proven "tall in-flow ancestor + sticky pinned inner"
+    architecture as Threshold/Constant, per brief's own instruction to reuse it rather than invent a
+    new one. The 360vh outer canvas provides full holds for Light Study and Reveal Stage, plus a
+    final composed First Light state. data-world="editions"
+    stays on the OUTER (tall) element — what entryExitProgress() and the orientation indicator's own
+    geometry both read.
+  {%- endcomment -%}
+  <section
+    class="c3w-world c3w-world--editions"
+    data-world="editions"
+    data-world-index="2"
+    aria-label="02 — The Editions"
+  >
+    <div class="c3w-editions__stage">
+      {%- comment -%}
+        MASTER ENVIRONMENT (Phase 4, FINAL — approved asset, untouched/unfiltered).
+        assets/caviera-three-worlds-editions-first-light-2026.png, 1672x941 native (16:9, same
+        proportions as the Threshold's and Constant's own master stills). object-position: center
+        centre — verified visually at 1366/1440/1600/1920 that the diagonal First Light beam, the
+        Warm Bone plane, the Cinnabar architecture, the dark platform and the reflective floor all
+        stay in frame; the source's near-16:9 aspect keeps cropping minor and symmetric at every
+        required width, exactly like the other two worlds' own stills.
+      {%- endcomment -%}
+      <div class="c3w-editions__media" data-editions-media>
+        <img
+          class="c3w-editions__media-el"
+          src="{{ 'caviera-three-worlds-editions-first-light-2026.png' | asset_url }}"
+          width="1672" height="941"
+          alt=""
+          loading="lazy"
+        >
+      </div>
+      {%- comment -%}
+        First Light emphasis (Phase 4) — the approved still ALREADY contains the diagonal beam; this
+        is a single restrained CSS gradient at roughly the same angle, subtly rising then receding
+        with scroll (assets/caviera-three-worlds.js), never a second obvious beam, never neon, never
+        an automatic keyframe loop.
+      {%- endcomment -%}
+      <div class="c3w-editions__first-light" aria-hidden="true"></div>
+      {%- comment -%}
+        Exit scrim (Phase 4) — per brief, "scene darkens subtly... Cinnabar becomes quieter" as
+        Editions prepares to release into Private Commissions. Simply dropping the media's own
+        opacity was tried first and rejected: this world's own background is Cinnabar (unchanged
+        from Phase 1), so fading the image without this scrim exposed MORE red underneath it, the
+        opposite of "quieter" — confirmed via screenshot, not assumed. A plain Obsidian scrim rising
+        in opacity only during the final 0.90–1.00 window mutes everything beneath it uniformly.
+      {%- endcomment -%}
+      <div class="c3w-editions__exit-scrim" aria-hidden="true"></div>
+
+      <div class="c3w-world__inner c3w-editions__content">
+        {%- comment -%}
+          World identity (02 / THE EDITIONS / WHAT CHANGES.) then the current Edition's own identity
+          (EDITION I / THE FIRST LIGHT) — live HTML throughout, integrated into the architecture via
+          .c3w-editions__content's own upper-left position (see CSS), never a centred poster. "THE
+          EDITIONS" reuses the same masked-vertical-line TECHNIQUE as Threshold/Constant's own
+          headings (an independent progress window, not copied timing); the Edition identity below
+          it is deliberately smaller/precise ("campaign-style"), not a second giant headline.
+        {%- endcomment -%}
+        <span class="c3w-editions__index">02</span>
+        <h2 class="c3w-editions__title">
+          <span class="c3w-editions__title-line"><span>THE EDITIONS</span></span>
+        </h2>
+        <p class="c3w-editions__statement">WHAT CHANGES.</p>
+        <div class="c3w-editions__edition">
+          <p class="c3w-editions__edition-number">Edition I</p>
+          <p class="c3w-editions__edition-name">The First Light</p>
+        </div>
+      </div>
+
+      {%- comment -%}
+        DETAIL 01 — LIGHT STUDY (Phase 4, FINAL). Shares the same shared-architecture PRINCIPLE as
+        Constant's own .c3w-constant__detail (per brief, reuse the proven pattern) but is its own
+        separate class, .c3w-editions__detail, so nothing about the already-locked Constant
+        implementation is touched. Positioned right-of-centre, TOP-anchored — deliberately not the
+        same spot used by any of Constant's three details (right/centre, left/bottom, right/bottom),
+        and not the same spot Reveal Stage below uses either.
+      {%- endcomment -%}
+      <div class="c3w-editions__detail" data-editions-detail="light-study" aria-hidden="true">
+        <div class="c3w-editions__detail-frame">
+          <img
+            class="c3w-editions__detail-el"
+            src="{{ 'caviera-three-worlds-editions-light-study-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-editions__detail-label">The First Light</p>
+        <p class="c3w-editions__detail-caption">Light becomes form.</p>
+      </div>
+
+      {%- comment -%}
+        DETAIL 02 — REVEAL STAGE (Phase 4, FINAL). The empty architectural platform is intentional —
+        per brief, absolutely no jewellery/product imagery yet. Left-of-centre, bottom-anchored — a
+        different position from Light Study above, and larger (see CSS) so it reads as more dominant.
+        Edition I naming remains locked to the approved title "The First Light".
+      {%- endcomment -%}
+      <div class="c3w-editions__detail c3w-editions__detail--reveal-stage" data-editions-detail="reveal-stage" aria-hidden="true">
+        <div class="c3w-editions__detail-frame">
+          <img
+            class="c3w-editions__detail-el"
+            src="{{ 'caviera-three-worlds-editions-reveal-stage-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-editions__detail-label">The First Light</p>
+      </div>
+
+      <div class="c3w-world__foreground" data-layer="foreground" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {%- render 'caviera-three-worlds-transition', from: 'editions', to: 'commissions' -%}
+
+  {%- comment -%} ================= 03 — PRIVATE COMMISSIONS ================= {%- endcomment -%}
+  {%- comment -%}
+    STAGE/STICKY-INNER (Phase 5) — same proven architecture as Threshold/Constant/Editions. The
+    500vh outer canvas gives all five photographs observation time and preserves the final CTA hold.
+    data-world="commissions"
+    stays on the OUTER (tall) element, unchanged from Phase 1.
+  {%- endcomment -%}
+  <section
+    class="c3w-world c3w-world--commissions"
+    data-world="commissions"
+    data-world-index="3"
+    aria-label="03 — Private Commissions"
+  >
+    <div class="c3w-private__stage">
+      {%- comment -%}
+        MASTER ENVIRONMENT (Phase 5, FINAL — approved source asset untouched; desktop exposure is
+        controlled non-destructively in CSS).
+        assets/caviera-three-worlds-private-commissions-2026.png, 1672x941 native (16:9, same
+        proportions as every other world's own master still). object-position: center centre —
+        verified visually at 1366/1440/1600/1920 that the illuminated Warm Bone work surface, the
+        Obsidian chamber, the gold structural lines and the narrow Cinnabar recess all stay in frame.
+      {%- endcomment -%}
+      <div class="c3w-private__media" data-private-media>
+        <img
+          class="c3w-private__media-el"
+          src="{{ 'caviera-three-worlds-private-commissions-2026.png' | asset_url }}"
+          width="1672" height="941"
+          alt=""
+          loading="lazy"
+        >
+      </div>
+      {%- comment -%}
+        Entry scrim (Phase 5) — the Editions→Private transition per brief ("Allow the Editions
+        Cinnabar/light to disappear into darkness. Then reveal the more intimate Private work
+        surface... controlled darkness, subtle light emergence"), implemented entirely from THIS
+        side per brief's own instruction not to alter Editions: a plain Obsidian scrim starting
+        present and receding as this world's own environment establishes — the visitor arrives in
+        near-darkness and the private chamber emerges, rather than simply cross-fading in at a flat
+        rate like the other three worlds' own entries.
+      {%- endcomment -%}
+      <div class="c3w-private__entry-scrim" aria-hidden="true"></div>
+      {%- comment -%}
+        Private light (Phase 5) — the approved still already contains one intimate pool of warm
+        light over the work surface; this is a single restrained radial gradient over that same
+        area, rising and receding gently with scroll, never a new spotlight.
+      {%- endcomment -%}
+      <div class="c3w-private__light" aria-hidden="true"></div>
+
+      <div class="c3w-world__inner c3w-private__content">
+        {%- comment -%}
+          World identity — live HTML throughout, upper-left per this world's own dark negative
+          space (same positioning principle as Constant/Editions, chosen from the actual master
+          image rather than a fixed centred poster). "PRIVATE COMMISSIONS" reuses the masked
+          vertical-line TECHNIQUE already used by every other world's own title (independent
+          progress window, not copied timing).
+        {%- endcomment -%}
+        <span class="c3w-private__index">03</span>
+        <h2 class="c3w-private__title">
+          <span class="c3w-private__title-line"><span>PRIVATE COMMISSIONS</span></span>
+        </h2>
+        <p class="c3w-private__statement">WHAT BECOMES YOURS.</p>
+        <p class="c3w-private__supporting">Created once.<br>For one client.</p>
+
+        {%- comment -%}
+          Final state (Phase 5) — per brief, "return to a clean composed view... show a quiet final
+          statement... then a restrained CTA". Shares the same content column, revealed only in the
+          final 0.92–1.00 window, well after every detail has receded. CTA wording audited from the
+          existing homepage Bespoke section (sections/caviera-bespoke-banner.liquid) rather than
+          invented: that section's own heading already reads "Some objects begin with a
+          conversation" — "Begin a private conversation" extends that exact established verb
+          ("begin"), rather than introducing "request" from that section's own separate CTA text
+          ("Request an appointment"), which would read as a second, slightly different access model
+          alongside this one. Purely informational — no scheduling/configurator/price form, per
+          brief; reuses the existing site's own /pages/bespoke destination and editorial link style
+          (.link-underline, already used sitewide) rather than a filled button.
+        {%- endcomment -%}
+        <div class="c3w-private__final">
+          <p class="c3w-private__final-statement">What becomes yours.</p>
+          <a href="{{ pages.bespoke.url | default: '/pages/bespoke' }}" class="c3w-private__cta link-underline">Begin a private conversation</a>
+        </div>
+      </div>
+
+      {%- comment -%}
+        Five narrative details (Phase 5, FINAL). Per brief's own explicit rule ("Do NOT add 01–05
+        progress bars... the process is experienced through the space"), these use the SAME
+        continuous-opacity mechanism as Editions' own two details (data-attribute + matching JS var,
+        no shared ladder/State indicator) — NOT Constant's six-code active/past/future ladder, which
+        would read exactly like the progress bar brief prohibits here. Deliberately five distinct
+        spatial positions (see CSS) so attention keeps moving around the chamber rather than
+        returning to one fixed frame.
+      {%- endcomment -%}
+
+      {%- comment -%}
+        DETAIL 01 — STONE SELECTION: three curated loose stones already inside the architectural
+        surface — approved, untouched. Right/upper.
+      {%- endcomment -%}
+      <div class="c3w-private__detail" data-private-detail="stone" aria-hidden="true">
+        <div class="c3w-private__detail-frame">
+          <img
+            class="c3w-private__detail-el"
+            src="{{ 'caviera-three-worlds-private-stone-selection-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-private__detail-label">Stone Selection</p>
+        <p class="c3w-private__detail-caption">It begins with a choice.</p>
+      </div>
+
+      {%- comment -%}
+        DETAIL 02 — DESIGN / CONCEPTION: the sketch, the loose stone, the drafting tools — approved,
+        untouched. Left/lower — a distinctly different position from Stone Selection above.
+      {%- endcomment -%}
+      <div class="c3w-private__detail" data-private-detail="design" aria-hidden="true">
+        <div class="c3w-private__detail-frame">
+          <img
+            class="c3w-private__detail-el"
+            src="{{ 'caviera-three-worlds-private-design-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-private__detail-label">Design</p>
+        <p class="c3w-private__detail-caption">The choice becomes a form.</p>
+      </div>
+
+      {%- comment -%}
+        DETAIL 03 — MAKING: the unfinished ring, its marquise setting deliberately EMPTY in the
+        approved photograph — no diamond added, no finished jewellery, nothing generated. Centre-
+        right/lower, slightly larger than Stone/Design per brief ("slightly larger or more visually
+        focused").
+      {%- endcomment -%}
+      <div class="c3w-private__detail c3w-private__detail--making" data-private-detail="making" aria-hidden="true">
+        <div class="c3w-private__detail-frame">
+          <img
+            class="c3w-private__detail-el"
+            src="{{ 'caviera-three-worlds-private-making-2026.png' | asset_url }}"
+            width="1121" height="1403"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-private__detail-label">Making</p>
+        <p class="c3w-private__detail-caption">The form becomes real.</p>
+      </div>
+
+      {%- comment -%}
+        DETAIL 04 — AUTHENTICATION: the ceremonial provenance moment. The approved image contains a
+        deliberately blank oval House Seal recess (~38%/64% of its own frame, located by inspection)
+        and a blank inscription field — same "do not stretch a tall mark into a wide shallow oval,
+        centre-point only" approach already proven in Constant's own Provenance detail, using the
+        SAME official snippet (snippets/caviera-house-seal.liquid), never regenerated/redrawn. "ONE
+        OF ONE" is live text, not baked into the image; no serial-number format is invented (brief:
+        "Do NOT add PC · 2027 · 014 or any other code unless it already exists as explicitly
+        approved current brand data" — no such data exists in this theme, so none is added). Right,
+        vertically centred — more intimate/contained than the other four.
+      {%- endcomment -%}
+      <div class="c3w-private__detail c3w-private__detail--authentication" data-private-detail="authentication" aria-hidden="true">
+        <div class="c3w-private__detail-frame">
+          <img
+            class="c3w-private__detail-el"
+            src="{{ 'caviera-three-worlds-private-authentication-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+          <div class="c3w-private__detail-seal">
+            {%- render 'caviera-house-seal', mode: 'dark', width: 30 -%}
+          </div>
+        </div>
+        <p class="c3w-private__detail-label">One of One</p>
+        <p class="c3w-private__detail-caption">Authenticated by the House.</p>
+      </div>
+
+      {%- comment -%}
+        DETAIL 05 — PRESENTATION: the presentation recess, deliberately EMPTY in the approved
+        photograph — per brief, absolutely no ring/jewellery/diamond/generated product added. Large,
+        centred, lower-middle — the largest and most dominant of the five, per brief.
+      {%- endcomment -%}
+      <div class="c3w-private__detail c3w-private__detail--presentation" data-private-detail="presentation" aria-hidden="true">
+        <div class="c3w-private__detail-frame">
+          <img
+            class="c3w-private__detail-el"
+            src="{{ 'caviera-three-worlds-private-presentation-2026.png' | asset_url }}"
+            width="1122" height="1402"
+            alt=""
+            loading="lazy"
+          >
+        </div>
+        <p class="c3w-private__detail-label">Presentation</p>
+        <p class="c3w-private__detail-caption">What became yours is revealed.</p>
+      </div>
+
+      <div class="c3w-world__foreground" data-layer="foreground" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  {%- comment -%}
+    World orientation indicator (Step 4) — restrained, numbers only, deliberately not styled like a
+    conventional site nav (no background bar, no labels-as-links row, no active underline animation
+    yet). Fixed so it stays on-screen as a plain architecture-testing aid; clicking jumps to that
+    world using the exact same native scrollIntoView already used by the Threshold's own entry cue
+    (assets/caviera-three-worlds.js) — no new interaction pattern introduced. Active-state highlight
+    is set by that same script, reading whichever world is currently closest to centre.
+  {%- endcomment -%}
+  <nav class="c3w-orientation" aria-label="Three Worlds orientation" data-world-orientation>
+    <button type="button" class="c3w-orientation__item" data-orientation-target="threshold" aria-label="Go to 00 — The Threshold">00</button>
+    <button type="button" class="c3w-orientation__item" data-orientation-target="constant" aria-label="Go to 01 — The Constant">01</button>
+    <button type="button" class="c3w-orientation__item" data-orientation-target="editions" aria-label="Go to 02 — The Editions">02</button>
+    <button type="button" class="c3w-orientation__item" data-orientation-target="commissions" aria-label="Go to 03 — Private Commissions">03</button>
+  </nav>
+
+</div>
+
+<script src="{{ 'caviera-three-worlds.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Three Worlds",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Three Worlds — the four-part CAVIERA scroll experience (Threshold, Constant, Editions, Private Commissions)."
+    }
+  ],
+  "presets": [{ "name": "Three Worlds" }]
+}
+{% endschema %}

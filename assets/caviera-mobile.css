@@ -1,0 +1,419 @@
+/* CAVIERA homepage mobile system — one scoped layer after the approved desktop architecture. */
+@media (max-width: 899px) {
+  :root {
+    --caviera-mobile-gutter: clamp(20px, 5.6vw, 24px);
+    --caviera-mobile-space-lg: clamp(64px, 18vw, 92px);
+    --caviera-mobile-space-md: clamp(32px, 10vw, 48px);
+    --caviera-mobile-space-sm: clamp(16px, 5vw, 24px);
+    --caviera-mobile-heading: clamp(2.125rem, 9vw, 3.625rem);
+    --caviera-mobile-display: clamp(2.625rem, 11vw, 4.5rem);
+  }
+
+  html { overflow-x: clip; scroll-padding-top: calc(var(--header-height, 64px) + env(safe-area-inset-top)); }
+  body { min-width: 0; overflow-wrap: break-word; }
+  .container,
+  .container--full,
+  .container--narrow { width: 100%; max-width: 100%; padding-inline: var(--caviera-mobile-gutter); }
+  .caviera-section { padding-block: var(--caviera-mobile-space-lg); }
+  .heading-h1 { font-size: var(--caviera-mobile-display); line-height: 0.98; }
+  .heading-h2 { font-size: var(--caviera-mobile-heading); line-height: 1.02; }
+  .heading-h3 { font-size: clamp(1.65rem, 7vw, 2.25rem); }
+  .body-text,
+  .body-text--wide { font-size: clamp(0.9375rem, 4vw, 1.0625rem); line-height: 1.65; }
+  .eyebrow,
+  .label { font-size: clamp(0.625rem, 2.7vw, 0.75rem); letter-spacing: 0.14em; }
+
+  a,
+  button,
+  input,
+  select,
+  textarea { touch-action: manipulation; }
+  .btn,
+  .link-underline,
+  .caviera-link-editorial { min-height: 44px; display: inline-flex; align-items: center; }
+
+  /* Header/navigation: safe-area aware, stable three-part bar and full touch targets. */
+  .caviera-header__bar { min-height: 60px; gap: 12px; padding-inline: var(--caviera-mobile-gutter); }
+  .caviera-header__menu-toggle,
+  .caviera-header__actions > a,
+  .caviera-header__actions > button { min-width: 44px; min-height: 44px; justify-content: center; }
+  .caviera-header__logo { max-width: min(46vw, 180px); }
+  .caviera-mobile-nav { min-height: 100vh; min-height: 100dvh; overscroll-behavior: contain; }
+  .caviera-mobile-nav__primary-link,
+  .caviera-mobile-nav__submenu a,
+  .caviera-mobile-nav__secondary a { min-height: 44px; display: flex; align-items: center; }
+
+  /* Hero: one safe viewport, restrained movement, readable lower-third composition. */
+  .caviera-hero,
+  .caviera-hero__scroll,
+  .caviera-hero__field { min-height: 100vh; min-height: 100svh; }
+  .caviera-hero__content { padding-inline: var(--caviera-mobile-gutter); padding-bottom: max(48px, calc(28px + env(safe-area-inset-bottom))); }
+  .caviera-hero__heading { font-size: var(--caviera-mobile-display); max-width: 10ch; }
+  .caviera-hero__media img { object-position: 56% center; }
+  .caviera-hero__scroll-cue { min-width: 44px; min-height: 44px; }
+  .caviera-hero [data-reveal] { --mobile-reveal-distance: 12px; }
+
+  /* House statement: confident type and a deliberate hand-off into Three Worlds. */
+  .caviera-statement { padding-block: clamp(72px, 22vw, 104px); }
+  .caviera-statement__inner { gap: var(--caviera-mobile-space-md); }
+  .caviera-statement__heading { max-width: 11ch; text-wrap: balance; }
+
+  /* Three Worlds: mobile remains deterministic; no WebGL/video renderer or hover dependency. */
+  .c3w-webgl-stage,
+  .c3w-threshold-video { display: none !important; }
+  .c3w-world { min-height: auto; overflow: clip; }
+  .c3w-world__inner { padding-inline: var(--caviera-mobile-gutter); }
+  .c3w-threshold__stage { min-height: 100vh; min-height: 100svh; }
+  .c3w-threshold__heading,
+  .c3w-constant__title,
+  .c3w-editions__title,
+  .c3w-private__title { font-size: var(--caviera-mobile-display); line-height: 0.94; }
+  .c3w-threshold__cta,
+  .c3w-private__cta { min-height: 44px; display: inline-flex; align-items: center; }
+  .c3w-orientation { inset: auto var(--caviera-mobile-gutter) max(12px, env(safe-area-inset-bottom)) auto; gap: 2px; }
+  .c3w-orientation__item { width: 44px; height: 44px; display: grid; place-items: center; }
+  .c3w-constant__provenance,
+  .c3w-constant__detail,
+  .c3w-editions__detail,
+  .c3w-private__detail { width: min(88vw, 430px); max-width: calc(100vw - 2 * var(--caviera-mobile-gutter)); }
+  .c3w-constant__provenance-el,
+  .c3w-constant__detail-el,
+  .c3w-editions__detail-el,
+  .c3w-private__detail-el { width: 100%; height: auto; object-fit: contain; }
+  .c3w-private__detail-label,
+  .c3w-private__detail-caption,
+  .c3w-editions__detail-label,
+  .c3w-editions__detail-caption { color: var(--caviera-bone); text-shadow: 0 1px 12px rgba(17, 16, 18, 0.55); }
+
+  /* House Principles: readable image-led chapters with bounded sticky ranges. */
+  .caviera-house-codes__panel { min-height: 78svh; }
+  .caviera-house-codes__local-label { padding: var(--caviera-mobile-gutter); }
+  .caviera-house-codes__overlay-title { font-size: var(--caviera-mobile-heading); }
+  .caviera-house-codes__overlay-copy { max-width: 30ch; font-size: 1rem; line-height: 1.6; }
+
+  /* Edition I: mobile editorial stack, never a shrunken desktop collage. */
+  .caviera-edition-teaser { min-height: auto; padding-block: var(--caviera-mobile-space-lg); }
+  .caviera-edition-teaser__inner { display: flex; flex-direction: column; gap: var(--caviera-mobile-space-md); }
+  .caviera-edition-teaser__copy { order: 1; }
+  .caviera-edition-teaser__media { order: 2; min-height: 72svh; width: 100%; }
+  .caviera-edition-teaser__heading { font-size: var(--caviera-mobile-heading); }
+  .caviera-edition-teaser__media-primary { width: min(86vw, 420px); }
+  .caviera-edition-teaser__media-secondary { width: min(52vw, 250px); }
+  .caviera-edition-teaser__media-detail { width: min(42vw, 190px); }
+
+  /* Object in Focus: meaningful media, then three clearly related chapters. */
+  .caviera-object-focus { padding-block: var(--caviera-mobile-space-lg); }
+  .caviera-object-focus__grid { display: flex; flex-direction: column; gap: var(--caviera-mobile-space-md); }
+  .caviera-object-focus__media-col { position: sticky; top: calc(var(--header-height, 60px) + 12px); z-index: 1; }
+  .caviera-object-focus__media { width: 100%; max-height: 58svh; }
+  .caviera-object-focus__chapters { display: grid; gap: var(--caviera-mobile-space-md); }
+  .caviera-object-focus__chapter { min-height: 44svh; padding-block: var(--caviera-mobile-space-md); }
+
+  /* Material Truth: contained video and clean sequential chapters. */
+  .caviera-craftsmanship { padding-block: var(--caviera-mobile-space-lg); }
+  .caviera-craftsmanship__stage { height: auto; min-height: 0; }
+  .caviera-craftsmanship__stage-inner { position: static; height: auto; }
+  .caviera-craftsmanship__film { width: 100%; padding-inline: 0; }
+  .caviera-craftsmanship__film-video { width: 100%; max-height: 64svh; object-fit: cover; }
+  .caviera-craftsmanship__list,
+  .caviera-craftsmanship__story-list { display: grid; gap: var(--caviera-mobile-space-md); }
+  .caviera-craftsmanship__row { display: grid; gap: var(--caviera-mobile-space-sm); }
+  .caviera-craftsmanship__image img { width: 100%; height: auto; max-height: 64svh; object-fit: cover; }
+
+  /* Maker's Mark: narrative order is copy → photograph → archival authentication. */
+  .caviera-editorial[data-makers-mark] { padding-block: clamp(72px, 20vw, 96px); }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__stage { height: auto; min-height: 0; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--caviera-mobile-space-md);
+    padding-inline: var(--caviera-mobile-gutter);
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__text { display: contents; }
+  .caviera-editorial[data-makers-mark] .eyebrow,
+  .caviera-editorial[data-makers-mark] .heading-h2,
+  .caviera-editorial[data-makers-mark] .body-text { grid-column: 1; }
+  .caviera-editorial[data-makers-mark] .eyebrow { order: 1; }
+  .caviera-editorial[data-makers-mark] .heading-h2 { order: 2; max-width: 10ch; }
+  .caviera-editorial[data-makers-mark] .body-text { order: 3; margin: 0; max-width: 34ch; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__media {
+    order: 4;
+    width: min(90vw, 520px);
+    padding: 0;
+    margin-inline: auto;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail {
+    width: min(90vw, 520px);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail img {
+    width: min(90vw, 520px);
+    max-width: 520px;
+    height: auto;
+    object-fit: contain;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance { order: 5; margin-top: 0; padding-top: var(--caviera-mobile-space-sm); }
+
+  /* Packaging ritual: large in-flow visuals and immediately related copy. */
+  .caviera-ritual { padding-block: var(--caviera-mobile-space-lg); }
+  .caviera-ritual__body { display: block; }
+  .caviera-ritual__stage-col { display: none; }
+  .caviera-ritual__rail { width: 100%; }
+  .caviera-ritual__steps { display: grid; gap: var(--caviera-mobile-space-lg); }
+  .caviera-ritual__step { min-height: auto; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--caviera-mobile-space-sm); }
+  .caviera-ritual__step-media { display: block; width: 100%; margin-block: var(--caviera-mobile-space-sm); }
+  .caviera-ritual__step-media img { display: block; width: 100%; height: auto; max-height: 68svh; object-fit: cover; }
+
+  /* House, secondary invitation and service sections. */
+  .caviera-editorial:not([data-makers-mark]) .caviera-editorial__grid { display: flex; flex-direction: column; }
+  .caviera-editorial:not([data-makers-mark]) .caviera-editorial__text { order: 1; }
+  .caviera-editorial:not([data-makers-mark]) .caviera-editorial__media { order: 2; }
+  .caviera-editorial:not([data-makers-mark]) .caviera-editorial__media img { width: 100%; height: auto; max-height: 70svh; object-fit: cover; }
+  .caviera-bespoke,
+  .caviera-services { padding-block: var(--caviera-mobile-space-lg); }
+  .caviera-services__grid { gap: var(--caviera-mobile-space-md); }
+
+  /* Private Notice and footer: keyboard-safe full-width form and compact closing rhythm. */
+  .caviera-newsletter { padding-block: var(--caviera-mobile-space-lg); }
+  .caviera-newsletter__form-wrap { width: 100%; margin-top: var(--caviera-mobile-space-md); }
+  .caviera-newsletter-form__row { align-items: stretch; }
+  .caviera-newsletter-form__row input { min-height: 48px; font-size: 16px; text-align: left; }
+  .caviera-newsletter-form__submit { min-width: 120px; min-height: 48px; justify-content: center; }
+  .caviera-footer { padding-block: 40px max(28px, env(safe-area-inset-bottom)); }
+  .caviera-footer__top { padding-block: var(--caviera-mobile-space-md); }
+  .caviera-footer__columns { grid-template-columns: 1fr; gap: 8px; }
+  .caviera-footer__column-list a { min-height: 44px; display: inline-flex; align-items: center; }
+  .caviera-footer__bottom { gap: var(--caviera-mobile-space-sm); }
+}
+
+@media (max-width: 899px) and (orientation: landscape) {
+  .caviera-hero,
+  .caviera-hero__scroll,
+  .caviera-hero__field,
+  .c3w-threshold__stage { min-height: 100dvh; }
+  .caviera-hero__content { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  .caviera-object-focus__media { max-height: 72dvh; }
+}
+
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .caviera-three-worlds .c3w-world,
+  .caviera-house-codes,
+  .caviera-object-focus,
+  .caviera-ritual { height: auto !important; min-height: 0; }
+  .caviera-three-worlds [class*="__stage"],
+  .caviera-house-codes__overlay,
+  .caviera-object-focus__media-col { position: static !important; height: auto; min-height: 0; }
+  [data-reveal],
+  [data-reveal] > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+
+/* High-pass motion is progressive enhancement: these rules exist only after the mobile controller
+   proves it is active. Without JS, in Theme Editor, or with reduced motion, the readable Light-pass
+   document flow above remains unchanged and fully visible. */
+@media (max-width: 899px) and (prefers-reduced-motion: no-preference) {
+  [data-caviera-three-worlds][data-caviera-mobile-motion="ready"] .c3w-world {
+    overflow: visible;
+  }
+  [data-caviera-three-worlds][data-caviera-mobile-motion="ready"] .c3w-world > [class*="__stage"] {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  /* 00 Threshold — 170svh outer / 100svh inner; architecture never fades to black. */
+  [data-caviera-mobile-motion="ready"] .c3w-world--threshold { height: 170svh; min-height: 170svh; }
+  [data-caviera-mobile-motion="ready"] .c3w-threshold__media {
+    opacity: 1 !important;
+    transform: translate3d(0, calc(var(--caviera-mobile-progress, 0) * -12px), 0)
+      scale(calc(1 + var(--caviera-mobile-progress, 0) * 0.035));
+    transform-origin: center;
+    transition: none;
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-threshold__inner {
+    opacity: 1;
+    transition: opacity 360ms var(--ease-caviera);
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-threshold__mark,
+  [data-caviera-mobile-motion="ready"] .c3w-threshold__eyebrow,
+  [data-caviera-mobile-motion="ready"] .c3w-threshold__heading,
+  [data-caviera-mobile-motion="ready"] .c3w-threshold__cta {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 380ms var(--ease-caviera), transform 380ms var(--ease-caviera);
+  }
+  [data-mobile-phase="wordmark"] .c3w-threshold__mark,
+  [data-mobile-phase="heading"] .c3w-threshold__mark,
+  [data-mobile-phase="heading"] .c3w-threshold__eyebrow,
+  [data-mobile-phase="heading"] .c3w-threshold__heading,
+  [data-mobile-phase="enter"] .c3w-threshold__mark,
+  [data-mobile-phase="enter"] .c3w-threshold__eyebrow,
+  [data-mobile-phase="enter"] .c3w-threshold__heading,
+  [data-mobile-phase="enter"] .c3w-threshold__cta {
+    opacity: 1;
+    transform: none;
+  }
+  [data-mobile-phase="release"] .c3w-threshold__inner { opacity: 0.16; }
+
+  /* 01 Constant — 280svh; one detail/code state at a time against the master chamber. */
+  [data-caviera-mobile-motion="ready"] .c3w-world--constant { height: 280svh; min-height: 280svh; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__stage { isolation: isolate; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.72;
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__media-el { width: 100%; height: 100%; object-fit: cover; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__content { position: absolute; inset: 0; z-index: 3; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__intro { opacity: 0; transform: translateY(12px); transition: opacity 360ms var(--ease-caviera), transform 360ms var(--ease-caviera); }
+  [data-mobile-code="master"] .c3w-constant__intro { opacity: 1; transform: none; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__provenance,
+  [data-caviera-mobile-motion="ready"] .c3w-constant__detail {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    top: 50%;
+    width: min(88vw, 430px);
+    margin: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(-50%, calc(-50% + 12px), 0) scale(1.015);
+    transition: opacity 300ms var(--ease-caviera), transform 300ms var(--ease-caviera), visibility 0s linear 300ms;
+  }
+  [data-mobile-code="provenance"] .c3w-constant__provenance,
+  [data-mobile-code="material"] .c3w-constant__detail[data-detail="material"],
+  [data-mobile-code="ritual"] .c3w-constant__detail[data-detail="ritual"] {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    transition-delay: 0s;
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__provenance-frame,
+  [data-caviera-mobile-motion="ready"] .c3w-constant__detail-frame { width: 100%; height: auto; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__provenance-el,
+  [data-caviera-mobile-motion="ready"] .c3w-constant__detail-el { width: 100%; height: auto; object-fit: contain; }
+  [data-caviera-mobile-motion="ready"] .c3w-world--constant .c3w-constant__provenance-frame,
+  [data-caviera-mobile-motion="ready"] .c3w-world--constant .c3w-constant__detail-frame,
+  [data-caviera-mobile-motion="ready"] .c3w-world--constant .c3w-constant__provenance-el,
+  [data-caviera-mobile-motion="ready"] .c3w-world--constant .c3w-constant__detail-el {
+    inline-size: 100%;
+    max-inline-size: none;
+    aspect-ratio: auto;
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__seal-mark,
+  [data-caviera-mobile-motion="ready"] .c3w-constant__oryx-mark { opacity: 0; transition: opacity 300ms var(--ease-caviera); }
+  [data-mobile-code="seal"] .c3w-constant__seal-mark,
+  [data-mobile-code="oryx"] .c3w-constant__oryx-mark { opacity: 1; }
+  [data-caviera-mobile-motion="ready"] .c3w-constant__code-copy { opacity: 0; transform: translateY(8px); transition: opacity 260ms var(--ease-caviera), transform 260ms var(--ease-caviera); }
+  [data-mobile-code="seal"] .c3w-constant__code-copy[data-constant-code="seal"],
+  [data-mobile-code="oryx"] .c3w-constant__code-copy[data-constant-code="oryx"],
+  [data-mobile-code="provenance"] .c3w-constant__code-copy[data-constant-code="provenance"],
+  [data-mobile-code="material"] .c3w-constant__code-copy[data-constant-code="material"],
+  [data-mobile-code="ritual"] .c3w-constant__code-copy[data-constant-code="ritual"],
+  [data-mobile-code="permanence"] .c3w-constant__code-copy[data-constant-code="permanence"] { opacity: 1; transform: none; }
+
+  /* 02 Editions — 250svh; master breath separates the two locked detail stills. */
+  [data-caviera-mobile-motion="ready"] .c3w-world--editions { height: 250svh; min-height: 250svh; }
+  [data-caviera-mobile-motion="ready"] .c3w-editions__media { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.82; }
+  [data-caviera-mobile-motion="ready"] .c3w-editions__media-el { width: 100%; height: 100%; object-fit: cover; }
+  [data-caviera-mobile-motion="ready"] .c3w-editions__content { position: absolute; inset: 0; z-index: 3; opacity: 0.25; transition: opacity 320ms var(--ease-caviera); }
+  [data-mobile-edition-phase="intro"] .c3w-editions__content,
+  [data-mobile-edition-phase="final"] .c3w-editions__content { opacity: 1; }
+  [data-caviera-mobile-motion="ready"] .c3w-editions__detail {
+    position: absolute;
+    z-index: 4;
+    left: 50%; top: 50%;
+    width: min(88vw, 430px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(-50%, calc(-50% + 12px), 0) scale(1.015);
+    transition: opacity 300ms var(--ease-caviera), transform 300ms var(--ease-caviera), visibility 0s linear 300ms;
+  }
+  [data-mobile-edition-phase="light-study"] .c3w-editions__detail[data-editions-detail="light-study"],
+  [data-mobile-edition-phase="reveal-stage"] .c3w-editions__detail[data-editions-detail="reveal-stage"] {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    transition-delay: 0s;
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-editions__detail-el { width: 100%; height: auto; object-fit: contain; }
+  [data-caviera-mobile-motion="ready"] .c3w-world--editions .c3w-editions__detail-frame,
+  [data-caviera-mobile-motion="ready"] .c3w-world--editions .c3w-editions__detail-el {
+    inline-size: 100%;
+    max-inline-size: none;
+    aspect-ratio: auto;
+  }
+
+  /* 03 Private — 320svh; Presentation receives the longest hold before final release. */
+  [data-caviera-mobile-motion="ready"] .c3w-world--commissions { height: 320svh; min-height: 320svh; }
+  [data-caviera-mobile-motion="ready"] .c3w-private__media { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 1; }
+  [data-caviera-mobile-motion="ready"] .c3w-private__media-el { width: 100%; height: 100%; object-fit: cover; }
+  [data-caviera-mobile-motion="ready"] .c3w-private__content { position: absolute; inset: 0; z-index: 3; color: var(--caviera-bone); }
+  [data-caviera-mobile-motion="ready"] .c3w-private__content > :not(.c3w-private__final) { opacity: 0.18; transition: opacity 300ms var(--ease-caviera); }
+  [data-mobile-private-phase="intro"] .c3w-private__content > :not(.c3w-private__final) { opacity: 1; }
+  [data-caviera-mobile-motion="ready"] .c3w-private__final { opacity: 0; transform: translateY(12px); transition: opacity 320ms var(--ease-caviera), transform 320ms var(--ease-caviera); }
+  [data-mobile-private-phase="final"] .c3w-private__final { opacity: 1; transform: none; }
+  [data-caviera-mobile-motion="ready"] .c3w-private__detail {
+    position: absolute;
+    z-index: 4;
+    left: 50%; top: 50%;
+    width: min(90vw, 440px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(-50%, calc(-50% + 12px), 0) scale(1.015);
+    transition: opacity 300ms var(--ease-caviera), transform 300ms var(--ease-caviera), visibility 0s linear 300ms;
+  }
+  [data-mobile-private-phase="stone"] .c3w-private__detail[data-private-detail="stone"],
+  [data-mobile-private-phase="design"] .c3w-private__detail[data-private-detail="design"],
+  [data-mobile-private-phase="making"] .c3w-private__detail[data-private-detail="making"],
+  [data-mobile-private-phase="authentication"] .c3w-private__detail[data-private-detail="authentication"],
+  [data-mobile-private-phase="presentation"] .c3w-private__detail[data-private-detail="presentation"] {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    transition-delay: 0s;
+  }
+  [data-caviera-mobile-motion="ready"] .c3w-private__detail-el { width: 100%; height: auto; object-fit: contain; }
+  [data-caviera-mobile-motion="ready"] .c3w-world--commissions .c3w-private__detail-frame,
+  [data-caviera-mobile-motion="ready"] .c3w-world--commissions .c3w-private__detail-el {
+    inline-size: 100%;
+    max-inline-size: none;
+    aspect-ratio: auto;
+  }
+
+  /* Later homepage chapters share one observer and small, bounded motion. */
+  [data-caviera-mobile-observed-motion="ready"] .caviera-house-codes__panel .caviera-house-codes__local-label,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-edition-teaser__copy,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-edition-teaser__media-primary,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-edition-teaser__media-secondary,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-edition-teaser__media-detail,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-object-focus__chapter,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__row,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__story,
+  [data-caviera-mobile-observed-motion="ready"] [data-makers-mark] .caviera-editorial__maker-detail,
+  [data-caviera-mobile-observed-motion="ready"] [data-makers-mark] .caviera-editorial__provenance,
+  [data-caviera-mobile-observed-motion="ready"] .caviera-ritual__step {
+    opacity: 0.28;
+    transform: translateY(16px);
+    transition: opacity 480ms var(--ease-caviera), transform 480ms var(--ease-caviera);
+  }
+  [data-caviera-mobile-observed-motion="ready"] [data-mobile-active="true"] {
+    opacity: 1;
+    transform: none;
+  }
+  [data-caviera-mobile-observed-motion="ready"] .caviera-object-focus__chapter:not([data-mobile-active="true"]),
+  [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__row:not([data-mobile-active="true"]),
+  [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__story:not([data-mobile-active="true"]) { opacity: 0.42; }
+  [data-caviera-mobile-observed-motion="ready"] [data-makers-mark] .caviera-editorial__provenance { transition-delay: 120ms; }
+  [data-caviera-mobile-observed-motion="ready"] .caviera-ritual__step[data-mobile-active="true"] .caviera-ritual__step-media {
+    clip-path: inset(0 0 0 0);
+  }
+  [data-caviera-mobile-observed-motion="ready"] .caviera-ritual__step .caviera-ritual__step-media {
+    clip-path: inset(0 0 8% 0);
+    transition: clip-path 520ms var(--ease-caviera);
+  }
+}

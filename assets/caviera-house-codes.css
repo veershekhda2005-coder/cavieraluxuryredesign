@@ -96,6 +96,12 @@
   pointer-events: none;
 }
 
+/* Rarity's pale stone sits directly behind the centred copy; a slightly deeper tonal veil keeps
+   that one title legible while preserving the photograph and the other three approved panels. */
+.caviera-house-codes__panel[data-house-code-index="0"] .caviera-house-codes__scrim {
+  background: rgba(17, 16, 18, 0.34);
+}
+
 /* Local label — real, always-visible content in the DOM (never a screen-reader-only duplicate).
    Visually stepped aside in favour of the sticky overlay only once .is-ready + 900px width both
    apply (see the media query below) — until then (no JS, JS still loading, JS failed, mobile,

@@ -1,5 +1,5 @@
 {%- comment -%}
-  2026-08-17 — DESKTOP REDESIGN ("Edition I — The First Mark"): everything from here down through
+  2026-08-17 — DESKTOP REDESIGN ("Edition I — The First Light"): everything from here down through
   the matching `</section>` a little further down is the ORIGINAL section, UNCHANGED, and is now
   exclusively the <900px (mobile/tablet) experience — see assets/caviera-home.css, `@media
   (min-width: 900px) { .caviera-edition-teaser { display: none; } }`. A second, new `<section
@@ -121,6 +121,7 @@
             <span class="caviera-edition-teaser__year">{{ section.settings.year_label }}</span>
           {%- endif -%}
         </h2>
+        <p class="caviera-edition-teaser__name">THE FIRST LIGHT</p>
       {%- endif -%}
       {%- if section.settings.body != blank -%}
         <p class="body-text caviera-edition-teaser__body">{{ section.settings.body }}</p>
@@ -218,7 +219,7 @@
 </section>
 
 {%- comment -%}
-  ---- EDITION I — THE FIRST MARK: 900px+ desktop composition ----
+  ---- EDITION I — THE FIRST LIGHT: 900px+ desktop composition ----
   LEFT: an archival House release notice (number/status, heading, closed-series statement, a
   FORMAT/MARK/STATUS fact row, a real Shopify customer-form email capture — kept as its own
   contact[tags] value, separate from the Private Notice/newsletter section's list, so the two can
@@ -271,6 +272,7 @@
         <div class="caviera-edition-mark__heading-mask">
           <h2 class="caviera-edition-mark__heading">{{ section.settings.heading }}</h2>
         </div>
+        <p class="caviera-edition-mark__name">THE FIRST LIGHT</p>
       {%- endif -%}
       {%- if section.settings.year_label != blank -%}
         <p class="caviera-edition-mark__year">{{ section.settings.year_label }}</p>
@@ -383,7 +385,7 @@
 
 {% schema %}
 {
-  "name": "Edition I — First Mark",
+  "name": "Edition I — First Light",
   "settings": [
     {
       "type": "select", "id": "color_scheme", "label": "Colour", "default": "obsidian",
@@ -424,7 +426,7 @@
     { "type": "image_picker", "id": "mark_detail_left_image", "label": "Small image — lower left", "info": "Falls back to assets/edition1-house-seal-ring.png when left blank." },
     { "type": "image_picker", "id": "mark_detail_right_image", "label": "Small image — lower right", "info": "Falls back to assets/edition1-ring-cluster-red.png when left blank." }
   ],
-  "presets": [{ "name": "Edition I — First Mark" }],
+  "presets": [{ "name": "Edition I — First Light" }],
   "enabled_on": {
     "templates": ["index"]
   }

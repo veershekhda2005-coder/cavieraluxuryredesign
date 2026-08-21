@@ -1,0 +1,1896 @@
+/*
+  CAVIERA — THREE WORLDS — complete four-world scroll experience (local review build)
+
+  ISOLATION: every selector in this file is scoped under .c3w-* / .caviera-three-worlds — nothing
+  here targets a bare tag, #MainContent, .shopify-section, or any existing CAVIERA class, so this
+  file cannot affect any other section regardless of load order. It is loaded by
+  sections/caviera-three-worlds.liquid, currently wired into the local homepage template
+  (templates/index.json) for review, and also reachable in isolation via
+  templates/page.caviera-three-worlds.json for scoped debugging.
+
+  TOKENS: deliberately reuses the SAME global custom properties already defined once, sitewide, in
+  layout/theme.liquid's own inline <style> block — --caviera-obsidian / --caviera-bone / --caviera-
+  cinnabar / --caviera-rhodium, --font-display / --font-body, --gutter-desktop / --gutter-mobile,
+  --ease-caviera. Nothing is redefined or forked here, so a real brand colour/typography change
+  made once, sitewide, is automatically correct here too — exactly the brief's "use existing house
+  colours/typography only".
+
+  STATUS: all four worlds carry final approved imagery, copy, and motion (see the per-world
+  sections below for each phase's own notes). No card styling anywhere, per brief.
+*/
+
+.caviera-three-worlds {
+  position: relative;
+  /* Isolates this experience's own stacking/box context from the rest of the page it's embedded
+     in (relevant only for local preview via an existing page's template — see the liquid file's
+     own isolation note) without needing any change to that host page. */
+  isolation: isolate;
+}
+
+/* ---- World wrapper — shared by all four worlds ----
+   Full-viewport by default (min-height, not height, so a world's own content is never clipped if
+   it ever needs to run slightly taller than one screen) — real pinned/cinematic behaviour is a
+   later phase; Phase 1 stays in plain, stable document flow (no position: sticky, no tall pin
+   wrappers) exactly as briefed ("lightweight and stable"). */
+.c3w-world {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding-block: clamp(48px, 8vh, 96px);
+  padding-inline: var(--gutter-desktop, 64px);
+  box-sizing: border-box;
+  text-align: center;
+}
+@media (max-width: 899px) {
+  /* MOBILE SAFE FALLBACK ONLY, per brief — desktop-first, no final mobile art direction yet.
+     100dvh (not svh) here specifically because these are plain stacked full-height screens a
+     visitor scrolls through one at a time, closer to the hero's own dynamic-viewport reasoning
+     than a sticky/pinned box's — avoids a jump as mobile browser chrome shows/hides between
+     worlds. Padding drops to the sitewide mobile gutter; nothing else about layout changes. */
+  .c3w-world { min-height: 100dvh; padding-inline: var(--gutter-mobile, 20px); }
+}
+
+/* ---- Threshold stage/sticky-inner ----
+   Threshold needs real scroll DISTANCE for its progress-driven reveal to scrub across
+   continuously — see the liquid file's own comment on this exact element for the measured bug
+   this fixes. Same "tall in-flow ancestor + sticky pinned inner" shape as sections/caviera-
+   editorial-media.liquid's own .caviera-editorial__stage/-inner, and later mirrored by Constant,
+   Editions, and Private Commissions each in their own sections below.
+   overflow: visible here is REQUIRED, not optional — the shared .c3w-world rule above sets
+   overflow: hidden, and a sticky descendant never sticks inside an ancestor whose overflow isn't
+   visible; the stage below supplies its own overflow: hidden instead, once it's the one actually
+   clipping content (the scaled-up media, the masked heading lines). */
+.c3w-world--threshold {
+  min-height: 230vh;
+  overflow: visible;
+  display: block;
+  padding: 0;
+}
+.c3w-threshold__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: clamp(48px, 8vh, 96px);
+  padding-inline: var(--gutter-desktop, 64px);
+  box-sizing: border-box;
+  text-align: center;
+}
+@media (max-width: 899px) {
+  .c3w-world--threshold { min-height: 100dvh; overflow: hidden; }
+  .c3w-threshold__stage {
+    position: relative;
+    height: 100dvh;
+    padding-inline: var(--gutter-mobile, 20px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Reduced motion still needs SOME scroll distance to reach The Constant (this is a real in-flow
+     element, not a modal) but the sticky "hold and reveal" behaviour itself is exactly the kind of
+     scroll-driven motion this media query exists to skip — collapses back to one plain, static,
+     non-sticky viewport, fully composed immediately (see updateThreshold's own early return and
+     each reveal property's CSS var(..., composed-value) fallback). */
+  .c3w-world--threshold { min-height: 100vh; min-height: 100svh; overflow: hidden; }
+  .c3w-threshold__stage { position: static; height: auto; min-height: 100%; }
+}
+
+.c3w-world__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* House colours only, per brief — restrained, no gradients, Cinnabar used for exactly one of the
+   four worlds (The Editions — this theme's own established convention already ties Cinnabar to
+   Edition moments elsewhere, e.g. the homepage Edition I panel), never overused across all four. */
+.c3w-world--threshold,
+.c3w-world--constant { background: var(--caviera-obsidian); color: var(--caviera-bone); }
+.c3w-world--editions { background: var(--caviera-cinnabar); color: var(--caviera-bone); }
+.c3w-world--commissions { background: var(--caviera-bone); color: var(--caviera-obsidian); }
+
+.c3w-world__index {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+  margin-bottom: 20px;
+}
+.c3w-world__heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+  line-height: 1.05;
+  margin: 0;
+}
+.c3w-world__tagline {
+  margin-top: 18px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.c3w-world__concept {
+  margin-top: 24px;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  opacity: 0.85;
+  max-width: 46ch;
+  margin-inline: auto;
+}
+
+/* ---- 00 — The Threshold ---- */
+
+/* Media layer (Phase 2b) — the approved master still, full-bleed behind the world's own content.
+   z-index: 0 vs. .c3w-world__inner's own z-index: 1 (set on the shared .c3w-world__inner rule
+   above) keeps it strictly behind the typography; .c3w-world__foreground's z-index: 2 stays above
+   both, exactly the media → content → foreground layering Step 3 asked for. */
+.c3w-threshold__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.c3w-threshold__media-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Centred per brief — the approved still's own corridor/vanishing-point axis is already centred
+     in the source (1672x941, 16:9), so a plain centre crop keeps that axis centred regardless of
+     viewport aspect ratio; verified visually at 1366/1440/1600/1920 before settling on this. */
+  object-position: center center;
+  /* Entry-settle opacity/scale (0.65→1 / 1.015→1) and the late exit dim (→0.35), both computed
+     together in assets/caviera-three-worlds.js's updateThreshold — see that function's own comment
+     for why a single composed value, not two separately-applied effects. Fallbacks (1 / 1) are the
+     fully composed, non-exited state — correct for reduced motion and for the very first paint
+     before any JS has run. No CSS transition: this tracks scroll position directly, 1:1, exactly
+     like every other scroll-progress-driven property in this theme. */
+  opacity: var(--threshold-environment-opacity, 1);
+  transform: scale(var(--threshold-environment-scale, 1));
+  /* Optional texture breathing (Phase 2c) — brightness(.97 → 1.00), tied to the SAME entry-settle
+     progress as the opacity/scale above (see updateThreshold's own comment); never exceeds this
+     range, never animated on its own. Fallback 1 = fully composed, matching every other property
+     on this element. */
+  filter: brightness(var(--threshold-environment-brightness, 1));
+}
+
+/* ---- Living-light layers (Phase 2c) ----
+   The architecture itself never moves after its one approved entry settle — per brief, "the
+   visitor should perceive still monumental architecture + barely perceptible living light", not an
+   animated photograph. Both layers are opacity-only radial gradients, positioned over real features
+   already present in the approved still (the distant Warm Bone doorway; the warm floor reflection
+   beneath it) — never a new light source, never a glow/halo/neon effect. Both sit inside
+   .c3w-threshold__media (z-index: 0, same stacking context as the photograph, strictly behind the
+   typography's own z-index: 1) and are purely decorative (aria-hidden, pointer-events: none) so
+   they can never intercept the ENTER THE HOUSE click sitting on top of them. No CSS transition on
+   either — like every other Threshold reveal property, these track scroll position directly. */
+.c3w-threshold__light,
+.c3w-threshold__light-secondary {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.c3w-threshold__light {
+  /* Centred on the approved still's own distant doorway (~50% across, ~56% down — located by
+     visual inspection of the source photograph, not guessed) — Warm Bone, never white, kept to the
+     brief's suggested max intensity band (opacity peaks at .13, well under a consciously-noticeable
+     level). Fallback .12 is the reduced-motion / pre-JS "settled and present" static state. */
+  background: radial-gradient(
+    ellipse 42% 40% at 50% 56%,
+    color-mix(in srgb, var(--caviera-bone) 85%, transparent) 0%,
+    transparent 72%
+  );
+  opacity: var(--threshold-light-primary-opacity, 0.12);
+}
+.c3w-threshold__light-secondary {
+  /* Lower centre — the existing warm floor light/reflection zone. Wider and flatter than the
+     primary layer (a floor glow reads differently from a doorway glow), lower intensity ceiling
+     per brief (.08 max). Fallback .06 mirrors the primary layer's own reduced-motion convention. */
+  background: radial-gradient(
+    ellipse 55% 22% at 50% 84%,
+    color-mix(in srgb, var(--caviera-bone) 80%, transparent) 0%,
+    transparent 78%
+  );
+  opacity: var(--threshold-light-secondary-opacity, 0.06);
+}
+
+.c3w-threshold__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Whole-group exit fade as Threshold recedes toward The Constant — see updateThreshold's own
+     comment for why fading this one parent is the entire typography exit effect. */
+  opacity: var(--threshold-typography-opacity, 1);
+}
+.c3w-threshold__mark {
+  max-width: 220px;
+  margin-bottom: clamp(28px, 6vh, 56px);
+  opacity: var(--threshold-wordmark-opacity, 1);
+  transform: translateY(var(--threshold-wordmark-y, 0px));
+}
+.c3w-threshold__eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0 0 28px;
+}
+.c3w-threshold__heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: clamp(2rem, 1.3rem + 3.2vw, 3.75rem);
+  line-height: 1.15;
+  margin: 0;
+}
+/* Masked vertical reveal (per brief, preferred over a generic fade-up) — the outer span clips
+   (overflow: hidden), the inner span carries the actual translateY, so each line appears to rise
+   into view from behind the line below it rather than simply fading in place. */
+.c3w-threshold__heading-line {
+  display: block;
+  overflow: hidden;
+}
+.c3w-threshold__heading-line > span {
+  display: block;
+  transform: translateY(var(--threshold-heading-y, 0%));
+}
+.c3w-threshold__cta {
+  margin-top: clamp(40px, 7vh, 72px);
+  background: none;
+  border: none;
+  padding: 10px 0;
+  color: inherit;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: var(--threshold-cta-opacity, 1);
+  transform: translateY(var(--threshold-cta-y, 0px));
+}
+.c3w-threshold__cta span {
+  display: inline-block;
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--caviera-bone) 45%, transparent);
+  transition: opacity 200ms var(--ease-caviera, ease), border-color 200ms var(--ease-caviera, ease);
+}
+@media (hover: hover) {
+  .c3w-threshold__cta:hover span { opacity: 0.7; border-bottom-color: var(--caviera-bone); }
+}
+.c3w-threshold__cta:focus-visible { outline: 1px solid var(--caviera-bone); outline-offset: 6px; }
+
+/* ---- 01 — The Constant (Phase 3b: final visual implementation) ----
+   Same "tall in-flow ancestor + sticky pinned inner" shape as the Threshold, with a 440vh outer
+   canvas for the approved introduction, six codes, three photography holds and final chamber. */
+.c3w-world--constant {
+  min-height: 440vh;
+  overflow: visible;
+  display: block;
+  padding: 0;
+}
+.c3w-constant__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  /* Left-anchored, NOT centred like the Threshold — per brief, chosen from the master image's own
+     architecture: the central archive monolith and the distant Cinnabar recess both sit centre/
+     right of frame, so the upper-left is the one clearly negative-space zone that never covers
+     either. */
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-block: clamp(48px, 8vh, 96px);
+  padding-inline: var(--gutter-desktop, 64px);
+  box-sizing: border-box;
+  text-align: left;
+}
+@media (max-width: 899px) {
+  .c3w-constant__stage { height: 100dvh; padding-inline: var(--gutter-mobile, 20px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Phase 3c FIX: this originally collapsed to a fixed one-viewport floor with overflow: hidden
+     (fine in Phase 3a/3b, when reduced-motion content was short enough to fit one screen) — now
+     that Provenance/Material/Ritual all stack in-flow here too, a fixed 100vh + hidden overflow
+     would CLIP them; min-height: auto + visible lets the section match its real, taller content
+     height instead, exactly like the mobile fallback below already does for the same reason. */
+  .c3w-world--constant { min-height: auto; overflow: visible; }
+  .c3w-constant__stage {
+    /* relative (not static) — the media/environment/emphasis layers are position: absolute and
+       need a positioned ancestor to stay contained here rather than escaping to .c3w-world above. */
+    position: relative;
+    height: auto;
+    min-height: 100%;
+    /* REQUIRED once the seal/oryx marks, Provenance and the two new details all become position:
+       relative in-flow below — the stage is display: flex with the desktop rule's implicit
+       flex-direction: row, which would otherwise lay every one of them out SIDE BY SIDE instead of
+       stacked (the same bug class already found and fixed for the mobile breakpoint). */
+    flex-direction: column;
+  }
+}
+
+/* Master environment (Phase 3b, FINAL — approved asset, see the liquid file's own comment). Same
+   entry-settle opacity/scale treatment as the Threshold's own media (--c3w-constant-media-opacity/
+   -scale, computed in updateConstant), plus a modest additional dip while Provenance is the active
+   code — "master environment remains visible but recedes/dims slightly" per brief; never below
+   ~0.85, never fully hidden. */
+.c3w-constant__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.c3w-constant__media-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  opacity: var(--c3w-constant-media-opacity, 1);
+  transform: translate3d(var(--c3w-constant-media-x, 0), var(--c3w-constant-media-y, 0), 0)
+    scale(var(--c3w-constant-media-scale, 1));
+}
+/* Living light — positioned over the master image's own existing warm-lit stone wall behind the
+   monolith (~60% across, ~45% down, located by inspection). Brief's own max intensity band
+   (0.08–0.14); fallback 0.10 is the reduced-motion / pre-JS "settled and present" static state. */
+.c3w-constant__environment {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 46% 42% at 60% 45%,
+    color-mix(in srgb, var(--caviera-bone) 80%, transparent) 0%,
+    transparent 74%
+  );
+  opacity: var(--c3w-constant-light, 0.1);
+}
+/* MATERIAL's own emphasis — brightens the same stone/brass wall a touch further while MATERIAL is
+   the active code, receding again once it passes (see updateConstant's detailEnvelope). A light/focus
+   change, never a blur, never a filter over the whole scene. */
+.c3w-constant__material-emphasis {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 40% 50% at 66% 40%,
+    color-mix(in srgb, var(--caviera-bone) 85%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: var(--c3w-constant-material-opacity, 0);
+}
+/* RITUAL's own emphasis — the central archive monolith itself is the ritual object; this brightens
+   the monolith's own area while RITUAL is active. No hands, no literal ceremony — light only. */
+.c3w-constant__ritual-emphasis {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 44% 30% at 46% 76%,
+    color-mix(in srgb, var(--caviera-bone) 85%, transparent) 0%,
+    transparent 72%
+  );
+  opacity: var(--c3w-constant-ritual-opacity, 0);
+}
+
+/* ---- CODE 01/02 — small official-artwork marks (Phase 3b) ----
+   Both z-index: 0 (same stacking context as the media/light layers, strictly behind the typography's
+   own z-index: 1), aria-hidden, pointer-events: none — purely visual, never interactive, never able
+   to sit on top of or intercept anything. Binary show/hide (not the past/future dimming used for
+   text) — a supplementary visual per code, not part of the persistent index ladder. */
+.c3w-constant__seal-mark,
+.c3w-constant__oryx-mark {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms var(--ease-caviera, ease);
+}
+.c3w-constant__seal-mark[data-code-state="active"],
+.c3w-constant__oryx-mark[data-code-state="active"] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__seal-mark,
+  .c3w-constant__oryx-mark { transition: none; }
+}
+/* Positioned over the monolith's own existing small circular brass inset (~50%/72% of the master
+   image — measured directly against a rendered screenshot, not guessed from the raw source alone).
+   translate(-50%,-50%) centres the mark ON that point rather than at its own top-left corner. */
+.c3w-constant__seal-mark {
+  left: 50%;
+  top: 72%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+}
+/* Beside the master image's own paired tall vertical ribs (~63% across). Vertically centred in the
+   stage rather than pinned to one exact point — the ribs run the image's full height, so any
+   reasonable vertical position still reads as "beside" them. */
+.c3w-constant__oryx-mark {
+  left: 63%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 110px;
+}
+
+/* ---- CODE 03 — Provenance detail (Phase 3b) ----
+   A large controlled vertical detail frame, NOT a centred ecommerce card — offset right-of-centre
+   in the stage per brief. Native 4:5 ratio preserved via aspect-ratio (never stretched); height
+   clamped to the brief's own 52–68vh range. Sharp edges (no border-radius), a very subtle shadow
+   only (per brief, "unless extremely subtle and necessary" — separating it from the environment
+   behind it is necessary at this scale). */
+.c3w-constant__provenance {
+  position: absolute;
+  right: clamp(24px, 6vw, 96px);
+  top: 50%;
+  transform: translateY(calc(-50% + var(--c3w-constant-provenance-y, 14px))) scale(var(--c3w-constant-provenance-scale, 0.988));
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: var(--c3w-constant-provenance-opacity, 0);
+  transition: none;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__provenance { transition: none; }
+}
+.c3w-constant__provenance-frame {
+  position: relative;
+  height: 60vh;
+  height: 60svh;
+  aspect-ratio: 1122 / 1402;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -24px rgba(10, 6, 4, 0.4);
+}
+.c3w-constant__provenance-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* Centre-point alignment only, at the recess's own centre (~71%/43% of the detail image — located
+   by inspection) — NOT stretched to fill the recess's own wider, shallower oval shape, which would
+   distort the official mark's real proportions. Precise across every viewport because the frame
+   above has a FIXED aspect-ratio (object-fit: contain never crops independently per axis the way a
+   cover image would), verified visually after implementation rather than assumed. */
+.c3w-constant__provenance-seal {
+  position: absolute;
+  left: 71%;
+  top: 43%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  opacity: 0.92;
+}
+.c3w-constant__provenance-caption {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin: 0;
+}
+@media (max-width: 1023px) {
+  /* Narrower desktop widths: keep the frame from crowding the left-anchored title column — see the
+     Responsive section below for the full mobile fallback. */
+  .c3w-constant__provenance-frame { height: 48vh; height: 48svh; }
+}
+
+/* ---- CODE 04/05 — Material + Ritual details (Phase 3c) ----
+   Shared architecture — per brief, "extend cleanly, avoid three separate fragile systems" — but
+   deliberately a SEPARATE class from Provenance's own (.c3w-constant__provenance*, above, untouched)
+   rather than a merge, so nothing about Provenance's already-locked implementation is touched or
+   put at risk. Same visual language as Provenance: sharp edges, no border-radius, a very restrained
+   shadow only, native 4:5 ratio preserved via aspect-ratio, never stretched. z-index: 1, same
+   stacking position as Provenance — above the media/light/emphasis layers (z-index: 0), below the
+   typography and the fixed orientation indicator (never able to cover either).
+   Motion is driven directly by the shared detailEnvelope: restrained entry, a long completely
+   still full-opacity hold, and a restrained exit. */
+.c3w-constant__detail {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: var(--c3w-constant-detail-opacity, 0);
+  transform: translateY(var(--c3w-constant-detail-y, 14px)) scale(var(--c3w-constant-detail-scale, 0.988));
+  transition: none;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__detail { transition: none; }
+}
+.c3w-constant__detail-frame {
+  position: relative;
+  height: 55vh;
+  height: 55svh;
+  aspect-ratio: 1122 / 1402;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -24px rgba(10, 6, 4, 0.4);
+}
+.c3w-constant__detail-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.c3w-constant__detail-caption {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin: 0;
+  max-width: 26ch;
+  text-align: center;
+}
+/* MATERIAL — left-of-centre, bottom-anchored. Clear of the left text column (max-width: 460px +
+   64px padding-inline ≈ 524px from the left edge) at every required desktop width; verified
+   visually, not assumed. Deliberately not the same slot Provenance occupies. */
+.c3w-constant__detail[data-detail="material"] {
+  left: clamp(560px, 44vw, 700px);
+  bottom: clamp(40px, 8vh, 88px);
+  opacity: var(--c3w-constant-material-detail-opacity, 0);
+  transform: translateY(var(--c3w-constant-material-detail-y, 14px)) scale(var(--c3w-constant-material-detail-scale, 0.988));
+}
+/* RITUAL — same right-hand edge as Provenance (both read as the room's own right-side archive
+   wall) but bottom-anchored rather than vertically centred, so the two details never feel like one
+   picture-frame slot cycling content, per brief. */
+.c3w-constant__detail[data-detail="ritual"] {
+  right: clamp(24px, 6vw, 96px);
+  bottom: clamp(40px, 8vh, 88px);
+  opacity: var(--c3w-constant-ritual-detail-opacity, 0);
+  transform: translateY(var(--c3w-constant-ritual-detail-y, 14px)) scale(var(--c3w-constant-ritual-detail-scale, 0.988));
+}
+@media (max-width: 1023px) {
+  .c3w-constant__detail-frame { height: 44vh; height: 44svh; }
+}
+
+.c3w-constant__content {
+  /* Partial settle only as Constant prepares to release toward Editions (1 → 0.7) — see
+     updateConstant's own comment for why this never goes fully to 0 like Threshold's own exit. */
+  opacity: var(--c3w-constant-content-opacity, 1);
+  /* Left-anchored per brief — overrides the shared .c3w-world__inner rule's own margin-inline:
+     auto (which centres it) and its max-width: 720px (too wide for a left column meant to leave
+     the monolith/recess clear). */
+  margin-inline: 0;
+  max-width: 460px;
+  position: relative;
+  z-index: 1;
+}
+.c3w-constant__intro {
+  /* Recedes to a quieter, still-legible state once the code narrative begins — per brief, "does
+     not need to remain giant throughout... allow it to become smaller/quieter... the world
+     identity must remain understandable" (never fades further than ~0.5, never disappears). */
+  opacity: var(--c3w-constant-intro-opacity, 1);
+  transform: scale(var(--c3w-constant-intro-scale, 1));
+  transform-origin: top left;
+  transition: opacity 500ms var(--ease-caviera, ease), transform 500ms var(--ease-caviera, ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__intro { transition: none; }
+}
+.c3w-constant__index {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 20px;
+  opacity: var(--c3w-constant-index-opacity, 1);
+}
+.c3w-constant__title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+  line-height: 1.05;
+  margin: 0;
+}
+/* Masked vertical reveal — same TECHNIQUE as the Threshold's own heading (outer span clips, inner
+   span carries the translateY), a separate/independent progress window, not copied timing. */
+.c3w-constant__title-line {
+  display: block;
+  overflow: hidden;
+}
+.c3w-constant__title-line > span {
+  display: block;
+  transform: translateY(var(--c3w-constant-title-y, 0%));
+}
+.c3w-constant__statement {
+  margin-top: 18px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: var(--c3w-constant-statement-opacity, 0.85);
+  transform: translateY(var(--c3w-constant-statement-y, 0px));
+}
+.c3w-constant__supporting {
+  margin-top: 24px;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  max-width: 46ch;
+  opacity: var(--c3w-constant-supporting-opacity, 0.85);
+}
+
+/* ---- Six permanent-code markers (Phase 3b, FINAL) ----
+   NOT a menu of six always-visible labels — per brief, "the visitor should experience ONE CODE AT
+   A TIME". Two distinct pieces:
+   1) A quiet, ALWAYS-visible six-number ladder (the only thing resembling Phase 3a's old row) —
+      still uses the exact same active/past/future opacities from that phase (1 / 0.28 / 0.16), so
+      it reads as a discreet progress cue, never a label menu (numbers only, no code names).
+   2) A label+line pair per code, CSS Grid-stacked into the same single cell (every child sharing
+      grid-row: 1 / grid-column: 1) so exactly one is ever legible (opacity 1 while active, 0
+      otherwise) without any layout jump as the active one changes — the copy for a shorter or
+      longer line never shifts anything else on the page. */
+.c3w-constant__code-ladder {
+  display: flex;
+  gap: clamp(16px, 2.4vw, 32px);
+  margin-top: clamp(32px, 5vh, 56px);
+}
+.c3w-constant__code-tick {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  transition: opacity 400ms var(--ease-caviera, ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__code-tick { transition: none; }
+}
+.c3w-constant__code-tick[data-code-state="active"] { opacity: 1; }
+.c3w-constant__code-tick[data-code-state="past"] { opacity: 0.28; }
+.c3w-constant__code-tick[data-code-state="future"] { opacity: 0.16; }
+
+.c3w-constant__code-copy-stack {
+  display: grid;
+  margin-top: clamp(20px, 3vh, 36px);
+}
+.c3w-constant__code-copy {
+  grid-area: 1 / 1;
+  align-self: start;
+  opacity: 0;
+  transition: opacity 500ms var(--ease-caviera, ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__code-copy { transition: none; }
+}
+.c3w-constant__code-copy[data-code-state="active"] { opacity: 1; }
+.c3w-constant__code-label {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+  margin: 0;
+}
+.c3w-constant__code-line {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.75;
+  max-width: 32ch;
+}
+/* Reduced motion / no-JS: every code fully legible, no active/past/future distinction to require a
+   scrub — per brief, "show all six codes in a readable static treatment... no scrub dependency
+   required". This intentionally turns the "one at a time" grid-stack into a plain readable list
+   (position: static overrides the stacking) since scrubbing is exactly what's being removed. */
+@media (prefers-reduced-motion: reduce) {
+  .c3w-constant__code-tick[data-code-state="past"],
+  .c3w-constant__code-tick[data-code-state="future"] { opacity: 1; }
+  .c3w-constant__code-copy-stack { display: block; }
+  .c3w-constant__code-copy { position: static; opacity: 1; margin-top: 20px; }
+  .c3w-constant__seal-mark,
+  .c3w-constant__oryx-mark,
+  .c3w-constant__provenance,
+  .c3w-constant__detail,
+  .c3w-constant__detail[data-detail="material"],
+  .c3w-constant__detail[data-detail="ritual"] { opacity: 1; transform: none; }
+  /* Phase 3c FIX: every one of these four elements is position: absolute by default (each pinned
+     to its own precise architectural point on the master image), so opacity: 1 alone makes ALL of
+     them visible AT ONCE, stacked directly on top of each other at their original coordinates —
+     confirmed visually via screenshot, not assumed. Each needs its OWN position reset to flow
+     normally in sequence instead; margin-top staggered slightly per element only so consecutive
+     items don't touch, matching the "readable static sequence" brief asked for. */
+  .c3w-constant__seal-mark,
+  .c3w-constant__oryx-mark,
+  .c3w-constant__provenance,
+  .c3w-constant__detail,
+  .c3w-constant__detail[data-detail="material"],
+  .c3w-constant__detail[data-detail="ritual"] {
+    position: relative;
+    left: auto; right: auto; top: auto; bottom: auto;
+    margin-top: 24px;
+  }
+}
+.no-js .c3w-constant__code-tick { opacity: 1; }
+.no-js .c3w-constant__code-copy-stack { display: block; }
+.no-js .c3w-constant__code-copy { position: static; opacity: 1; margin-top: 20px; }
+.no-js .c3w-constant__seal-mark,
+.no-js .c3w-constant__oryx-mark,
+.no-js .c3w-constant__provenance,
+.no-js .c3w-constant__detail,
+.no-js .c3w-constant__detail[data-detail="material"],
+.no-js .c3w-constant__detail[data-detail="ritual"] {
+  opacity: 1;
+  transform: none;
+  position: relative;
+  left: auto; right: auto; top: auto; bottom: auto;
+  margin-top: 24px;
+}
+
+@media (max-width: 899px) {
+  /* Mobile safe fallback ONLY, per brief — no final art direction. The sticky-scrub mechanism
+     itself is abandoned here (same collapse as the prefers-reduced-motion rule above, just also
+     triggered by viewport width) — a fixed-height, overflow: hidden, position: sticky stage cannot
+     safely hold extra stacked-in-flow content (the seal/oryx marks, the provenance frame) without
+     clipping or overlapping it, which is exactly the bug this block fixes; simply changing the
+     CHILDREN to position: static was not enough on its own while the stage itself stayed a clipped
+     100dvh box. Master image, title and all six codes now read top-to-bottom in plain document
+     flow — "codes in readable sequence... provenance detail normally stacked", no fragile absolute
+     overlay, per brief. */
+  /* The OUTER section also needs collapsing here (not just the reduced-motion rule above) — it is
+     otherwise still 440vh tall regardless of viewport width, and once the stage below stops being
+     sticky/fixed-height, that would leave a large empty gap between the now-shorter, auto-height
+     stage and House Principles below. min-height: auto lets it match its own content exactly. */
+  .c3w-world--constant { min-height: auto; overflow: visible; }
+  .c3w-constant__stage {
+    /* relative, not static — an absolutely positioned child (the media/environment/emphasis
+       layers below) needs a positioned ancestor to stay CONTAINED here; position: static would let
+       them escape upward to the next positioned ancestor (.c3w-world, still 440vh-tall-turned-auto
+       above) instead of sizing to this element's own real content height. */
+    position: relative;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    align-items: flex-start;
+    /* REQUIRED once the seal/oryx marks and the Provenance frame become position: static below —
+       the stage is display: flex with the desktop rule's implicit flex-direction: row, which would
+       otherwise lay all of these newly in-flow children out SIDE BY SIDE (the actual cause of a
+       real horizontal-overflow bug found via direct measurement, not the mobile nav drawer's own
+       unrelated pre-existing off-canvas one). Column stacks them vertically instead. */
+    flex-direction: column;
+  }
+  .c3w-constant__content { max-width: 100%; position: relative; z-index: 1; }
+  .c3w-constant__code-tick[data-code-state="past"],
+  .c3w-constant__code-tick[data-code-state="future"] { opacity: 1; }
+  .c3w-constant__code-copy-stack { display: block; }
+  .c3w-constant__code-copy { position: static; opacity: 1; margin-top: 20px; }
+  .c3w-constant__seal-mark,
+  .c3w-constant__oryx-mark {
+    position: static;
+    transform: none;
+    margin-top: 16px;
+    opacity: 1;
+    transition: none;
+  }
+  .c3w-constant__provenance {
+    position: static;
+    right: auto; top: auto; transform: none;
+    opacity: 1; transition: none;
+    margin-top: clamp(24px, 6vh, 48px);
+    align-items: flex-start;
+  }
+  .c3w-constant__provenance-frame { height: 42vh; height: 42svh; }
+  /* Material/Ritual — same "stack normally, always visible" treatment as Provenance above, per
+     brief ("appear as normal stacked editorial images associated with their labels... no fragile
+     absolute overlay"). */
+  .c3w-constant__detail,
+  .c3w-constant__detail[data-detail="material"],
+  .c3w-constant__detail[data-detail="ritual"] {
+    position: static;
+    left: auto; right: auto; top: auto; bottom: auto; transform: none;
+    opacity: 1; transition: none;
+    margin-top: clamp(24px, 6vh, 48px);
+    align-items: flex-start;
+  }
+  .c3w-constant__detail-frame { height: 38vh; height: 38svh; }
+}
+
+/* ---- 02 — The Editions (Phase 4: final visual implementation) ----
+   Same proven "tall in-flow ancestor + sticky pinned inner" shape as Threshold/Constant — 360vh
+   outer / 100svh sticky stage, giving both approved details a true full-opacity hold. */
+.c3w-world--editions {
+  min-height: 360vh;
+  overflow: visible;
+  display: block;
+  padding: 0;
+}
+.c3w-editions__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  /* flex-direction: column set explicitly from the start (learned from the Constant build): once
+     the two detail images become position: static under reduced motion/mobile below, a default
+     row direction would lay them out side by side instead of stacked — declaring it here rather
+     than only in those overrides removes the ambiguity entirely. */
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-block: clamp(48px, 8vh, 96px);
+  padding-inline: var(--gutter-desktop, 64px);
+  box-sizing: border-box;
+  text-align: left;
+}
+@media (max-width: 899px) {
+  .c3w-editions__stage { height: 100dvh; padding-inline: var(--gutter-mobile, 20px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-world--editions { min-height: auto; overflow: visible; }
+  .c3w-editions__stage { position: relative; height: auto; min-height: 100%; }
+}
+
+/* Master environment — approved asset, entry-settle only (opacity 0.9→1, scale 1.01→1, same shape
+   as Constant's own). Living "First Light" emphasis sits above it, both z-index: 0, strictly behind
+   the typography's own z-index: 1. */
+.c3w-editions__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.c3w-editions__media-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  opacity: var(--c3w-editions-media-opacity, 1);
+  transform: scale(var(--c3w-editions-media-scale, 1));
+}
+/* First Light emphasis — a single restrained diagonal gradient at roughly the same angle as the
+   approved still's own existing beam (measured by inspection: the beam travels from the upper-left
+   down toward centre-right, roughly 53° off horizontal), NOT a second obvious beam. Brief's own max
+   band (0.06–0.12); fallback 0.08 is the reduced-motion / pre-JS static state. */
+.c3w-editions__first-light {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    212deg,
+    transparent 32%,
+    color-mix(in srgb, var(--caviera-bone) 65%, transparent) 46%,
+    transparent 58%
+  );
+  opacity: var(--c3w-editions-light-opacity, 0.08);
+}
+/* Exit scrim — see the liquid file's own comment for why this exists rather than just fading the
+   media out. Plain Obsidian, rises only in the final 0.94-1.00 window; fallback 0 means it is
+   entirely invisible everywhere else (including reduced motion / pre-JS), never a permanent tint. */
+.c3w-editions__exit-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--caviera-obsidian);
+  opacity: var(--c3w-editions-exit-opacity, 0);
+}
+
+.c3w-editions__content {
+  opacity: var(--c3w-editions-content-opacity, 1);
+  margin-inline: 0;
+  max-width: 460px;
+  position: relative;
+  z-index: 1;
+}
+.c3w-editions__index {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 20px;
+  opacity: var(--c3w-editions-index-opacity, 1);
+}
+.c3w-editions__title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+  line-height: 1.05;
+  margin: 0;
+}
+.c3w-editions__title-line {
+  display: block;
+  overflow: hidden;
+}
+.c3w-editions__title-line > span {
+  display: block;
+  transform: translateY(var(--c3w-editions-title-y, 0%));
+}
+.c3w-editions__statement {
+  margin-top: 18px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: var(--c3w-editions-statement-opacity, 0.85);
+  transform: translateY(var(--c3w-editions-statement-y, 0px));
+}
+/* The current Edition's own identity — deliberately smaller and more precise than the world title
+   above ("campaign-style", per brief), not a second giant headline. A thin rule above it (matching
+   this theme's own "quiet threshold marker" convention used elsewhere) separates the world identity
+   from the specific-Edition identity without a card or box. */
+.c3w-editions__edition {
+  margin-top: clamp(32px, 5vh, 56px);
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  opacity: var(--c3w-editions-edition-opacity, 1);
+  transform: translateY(var(--c3w-editions-edition-y, 0px));
+}
+.c3w-editions__edition-number {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.c3w-editions__edition-name {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  font-size: clamp(1.125rem, 0.9rem + 1vw, 1.5rem);
+  opacity: var(--c3w-editions-edition-name-opacity, 1);
+}
+
+/* ---- Editions details (Phase 4) — Light Study + Reveal Stage ----
+   Same architectural PRINCIPLE as .c3w-constant__detail (reuse the proven pattern per brief) but a
+   separate class so nothing about Constant's own already-locked implementation is touched. Sharp
+   edges, no border-radius, restrained shadow only, native 4:5 ratio preserved via aspect-ratio.
+   Motion: opacity 0→1→0 (both recede fully once past — this world's platform must read as EMPTY
+   again the moment Reveal Stage's own window ends, not linger), translateY 16px→0, scale 0.985→1 —
+   the exact numbers brief requested, same mechanism as Constant's own details (data-code-state
+   already generalised there; here driven by simple data-editions-detail + a matching JS opacity
+   var, since Editions has no six-way code selection to reuse). */
+.c3w-editions__detail {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  /* Continuous JS-computed opacity/translate/scale (assets/caviera-three-worlds.js), NOT a
+     data-state gate — each detail's own rise→hold→recede envelope is already 0 outside its window,
+     so applying the var directly is the entire "0→1→0" behaviour brief asked for, with no separate
+     active/inactive attribute needed (unlike Constant's six-way code selection,
+     which genuinely needs one). No CSS transition on opacity itself — the JS values already move
+     smoothly with scroll; a transition here would only ever fight that. */
+  opacity: 0;
+  transform: translateY(16px) scale(0.985);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-editions__detail { transition: none; }
+}
+.c3w-editions__detail-frame {
+  position: relative;
+  height: 50vh;
+  height: 50svh;
+  aspect-ratio: 1122 / 1402;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -24px rgba(10, 6, 4, 0.4);
+}
+.c3w-editions__detail-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.c3w-editions__detail-label {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(1.0625rem, 0.9rem + 0.8vw, 1.375rem);
+  margin: 0;
+  text-align: center;
+}
+.c3w-editions__detail-caption {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin: 0;
+  text-align: center;
+}
+/* LIGHT STUDY — right-of-centre, top-anchored: distinct from every one of Constant's three detail
+   positions and from Reveal Stage below. */
+.c3w-editions__detail[data-editions-detail="light-study"] {
+  right: clamp(24px, 6vw, 96px);
+  top: clamp(48px, 10vh, 96px);
+  opacity: var(--c3w-editions-light-study-opacity, 1);
+  transform: translateY(var(--c3w-editions-light-study-y, 0px)) scale(var(--c3w-editions-light-study-scale, 1));
+}
+/* REVEAL STAGE — centre-right, bottom-anchored, and a taller frame so it reads as more dominant
+   than Light Study, per brief. NOT left-of-centre — measured against the text column's own real
+   footprint (max-width 460px + 64px padding ≈ 524px from the left edge at every required desktop
+   width) and confirmed via screenshot that an earlier left-anchored position overlapped it; this
+   value keeps clearance the same way Constant's own Material detail does. */
+.c3w-editions__detail--reveal-stage {
+  left: clamp(560px, 42vw, 680px);
+  bottom: clamp(40px, 8vh, 88px);
+  opacity: var(--c3w-editions-reveal-stage-opacity, 1);
+  transform: translateY(var(--c3w-editions-reveal-stage-y, 0px)) scale(var(--c3w-editions-reveal-stage-scale, 1));
+}
+.c3w-editions__detail--reveal-stage .c3w-editions__detail-frame {
+  height: 62vh;
+  height: 62svh;
+}
+@media (max-width: 1279px) {
+  /* Narrower desktop widths: keep both details clear of the left-anchored text column. */
+  .c3w-editions__detail-frame { height: 42vh; height: 42svh; }
+  .c3w-editions__detail--reveal-stage .c3w-editions__detail-frame { height: 50vh; height: 50svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Same "readable static sequence" treatment as Constant's own details — every element fully
+     legible, no active/inactive distinction to require a scrub, per brief ("Do not require scroll
+     scrub to understand the story"). Position reset to flow normally (see the flex-direction:
+     column rule above for why this is safe) rather than sitting at fixed absolute coordinates.
+     The position-specific selectors ([data-editions-detail="light-study"], --reveal-stage) are
+     listed explicitly here, not just the bare .c3w-editions__detail class — those two have HIGHER
+     specificity (an attribute selector / a second class) than a plain reduced-motion override of
+     the base class alone, so without repeating them their own right/top/left/bottom offsets would
+     still apply on top of position: relative, visually shifting the element instead of letting it
+     flow — confirmed by direct specificity check, not assumed. */
+  .c3w-editions__detail,
+  .c3w-editions__detail[data-editions-detail="light-study"],
+  .c3w-editions__detail--reveal-stage {
+    opacity: 1;
+    transform: none;
+    position: relative;
+    left: auto; right: auto; top: auto; bottom: auto;
+    margin-top: 24px;
+  }
+  .c3w-editions__detail-frame,
+  .c3w-editions__detail--reveal-stage .c3w-editions__detail-frame { height: 42vh; height: 42svh; }
+}
+.no-js .c3w-editions__detail,
+.no-js .c3w-editions__detail[data-editions-detail="light-study"],
+.no-js .c3w-editions__detail--reveal-stage {
+  opacity: 1;
+  transform: none;
+  position: relative;
+  left: auto; right: auto; top: auto; bottom: auto;
+  margin-top: 24px;
+}
+
+@media (max-width: 899px) {
+  /* Mobile safe fallback ONLY, per brief — master environment visible, title readable, both details
+     stacked normally in flow, no fragile absolute overlay. Same collapse pattern as Constant's own
+     mobile block (outer section to auto height, stage to relative/auto/column). Same specificity
+     note as the reduced-motion block above applies here too. */
+  .c3w-world--editions { min-height: auto; overflow: visible; }
+  .c3w-editions__stage {
+    position: relative;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    align-items: flex-start;
+  }
+  .c3w-editions__content { max-width: 100%; }
+  .c3w-editions__detail,
+  .c3w-editions__detail[data-editions-detail="light-study"],
+  .c3w-editions__detail--reveal-stage {
+    position: relative;
+    left: auto; right: auto; top: auto; bottom: auto;
+    opacity: 1;
+    transform: none;
+    transition: none;
+    margin-top: clamp(24px, 6vh, 48px);
+  }
+  .c3w-editions__detail-frame,
+  .c3w-editions__detail--reveal-stage .c3w-editions__detail-frame { height: 38vh; height: 38svh; }
+}
+
+/* ---- 03 — Private Commissions (Phase 5: final visual implementation) ----
+   Same proven "tall in-flow ancestor + sticky pinned inner" shape as every other world — 500vh
+   outer / 100svh sticky stage for five observed detail stages plus the final composed CTA. */
+.c3w-world--commissions {
+  min-height: 500vh;
+  overflow: visible;
+  display: block;
+  padding: 0;
+}
+.c3w-private__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  /* flex-direction: column declared from the start — same lesson learned building Constant and
+     Editions: once the five details become position: static under reduced motion/mobile, a default
+     row direction would lay them out side by side instead of stacked. */
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-block: clamp(48px, 8vh, 96px);
+  padding-inline: var(--gutter-desktop, 64px);
+  box-sizing: border-box;
+  text-align: left;
+}
+@media (max-width: 899px) {
+  .c3w-private__stage { height: 100dvh; padding-inline: var(--gutter-mobile, 20px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-world--commissions { min-height: auto; overflow: visible; }
+  .c3w-private__stage { position: relative; height: auto; min-height: 100%; }
+}
+
+/* Master environment — approved asset, entry-settle only (opacity 0.9→1, scale 1.01→1, same shape
+   as every other world's own). The Warm Bone chamber sits on this world's existing base colour
+   (--caviera-bone, unchanged from Phase 1 — Private Commissions was always the one light-field
+   world, matching the approved still's own tone). */
+.c3w-private__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.c3w-private__media-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  opacity: var(--c3w-private-media-opacity, 1);
+  transform: scale(var(--c3w-private-media-scale, 1));
+}
+/* Entry scrim — see the liquid file's own comment for why this exists (the Editions→Private
+   transition, implemented entirely from this side). Plain Obsidian, present at entry and receding
+   as the environment establishes; fallback 0 means invisible everywhere else, including reduced
+   motion / pre-JS. */
+.c3w-private__entry-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--caviera-obsidian);
+  opacity: var(--c3w-private-entry-scrim-opacity, 0);
+}
+/* Private light — over the master image's own existing warm pool of light above the work surface
+   (~52% across, ~40% down, located by inspection). Brief's own max band (0.05–0.10); fallback 0.07
+   is the reduced-motion / pre-JS static state. */
+.c3w-private__light {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 38% 34% at 52% 40%,
+    color-mix(in srgb, var(--caviera-bone) 75%, transparent) 0%,
+    transparent 72%
+  );
+  opacity: var(--c3w-private-light-opacity, 0.07);
+}
+
+.c3w-private__content {
+  opacity: var(--c3w-private-content-opacity, 1);
+  margin-inline: 0;
+  max-width: 460px;
+  position: relative;
+  z-index: 1;
+}
+.c3w-private__index {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 20px;
+  opacity: var(--c3w-private-index-opacity, 1);
+}
+.c3w-private__title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+  line-height: 1.05;
+  margin: 0;
+  opacity: var(--c3w-private-title-opacity, 1);
+}
+.c3w-private__title-line {
+  display: block;
+  overflow: hidden;
+}
+.c3w-private__title-line > span {
+  display: block;
+  transform: translateY(var(--c3w-private-title-y, 0%));
+}
+.c3w-private__statement {
+  margin-top: 18px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: var(--c3w-private-statement-opacity, 0.85);
+  transform: translateY(var(--c3w-private-statement-y, 0px));
+}
+.c3w-private__supporting {
+  margin-top: 24px;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  opacity: var(--c3w-private-supporting-opacity, 0.85);
+}
+/* Final state — per brief, "quiet final statement... then a restrained CTA". Shares the content
+   column but only reveals after 0.90, once Presentation has fully receded.
+   Restrained thin rule above it, same "quiet threshold marker" convention as Editions' own Edition
+   identity block. */
+.c3w-private__final {
+  margin-top: clamp(32px, 5vh, 56px);
+  padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  opacity: var(--c3w-private-final-opacity, 0);
+  transform: translateY(var(--c3w-private-final-y, 12px));
+}
+.c3w-private__final-statement {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  font-size: clamp(1.0625rem, 0.9rem + 0.8vw, 1.375rem);
+}
+.c3w-private__cta {
+  display: inline-block;
+  margin-top: 16px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ---- Private Commissions details (Phase 5) — five narrative stages ----
+   Same architectural PRINCIPLE as Constant's/Editions' own .c3w-*__detail (sharp edges, no
+   border-radius, restrained shadow only, native aspect ratio preserved) but this world's own
+   separate class, so nothing about either already-locked implementation is touched. Continuous
+   JS-computed opacity/translate/scale (0→1→0, per brief's exact numbers), NOT Constant's six-code
+   ladder/active-past-future system — per brief's own explicit rule here ("Do NOT add 01–05
+   progress bars... the process is experienced through the space"), a persistent index ladder would
+   read exactly like the prohibited progress bar, so this world has none. */
+.c3w-private__detail {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(16px) scale(0.985);
+  pointer-events: none;
+}
+.c3w-private__detail-frame {
+  position: relative;
+  height: 50vh;
+  height: 50svh;
+  aspect-ratio: 1122 / 1402;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -24px rgba(10, 6, 4, 0.4);
+}
+.c3w-private__detail-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.c3w-private__detail-label {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(1.0625rem, 0.9rem + 0.8vw, 1.375rem);
+  margin: 0;
+  text-align: center;
+}
+.c3w-private__detail-caption {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin: 0;
+  text-align: center;
+}
+/* STONE — right, upper. */
+.c3w-private__detail[data-private-detail="stone"] {
+  right: clamp(24px, 6vw, 96px);
+  top: clamp(48px, 10vh, 96px);
+  opacity: var(--c3w-private-stone-opacity, 1);
+  transform: translateY(var(--c3w-private-stone-y, 0px)) scale(var(--c3w-private-stone-scale, 1));
+}
+/* DESIGN — left, lower. Bottom-anchored, but with its OWN smaller frame height (40vh, not the
+   default 50vh) — measured via screenshot at 1440px that the default height put its top edge only
+   ~2px below the text column's own real bottom edge, an overlap that appeared the moment the
+   supporting line wrapped to two visible lines ("Created once." / "For one client."); this smaller
+   height plus the existing bottom offset gives real, re-verified clearance instead. */
+.c3w-private__detail[data-private-detail="design"] {
+  left: clamp(24px, 6vw, 96px);
+  bottom: clamp(40px, 8vh, 88px);
+  opacity: var(--c3w-private-design-opacity, 1);
+  transform: translateY(var(--c3w-private-design-y, 0px)) scale(var(--c3w-private-design-scale, 1));
+}
+.c3w-private__detail[data-private-detail="design"] .c3w-private__detail-frame {
+  height: 38vh;
+  height: 38svh;
+}
+/* MAKING — centre-right, lower, and a taller frame ("slightly larger or more visually focused",
+   per brief). Measured clear of the text column the same way Constant's/Editions' own centred
+   details were. */
+.c3w-private__detail--making {
+  left: clamp(560px, 42vw, 680px);
+  bottom: clamp(40px, 8vh, 88px);
+  opacity: var(--c3w-private-making-opacity, 1);
+  transform: translateY(var(--c3w-private-making-y, 0px)) scale(var(--c3w-private-making-scale, 1));
+}
+.c3w-private__detail--making .c3w-private__detail-frame {
+  height: 56vh;
+  height: 56svh;
+}
+/* AUTHENTICATION — right, vertically centred: more intimate/contained than the other four, per
+   brief, and a different combination from Stone (right/top). */
+.c3w-private__detail--authentication {
+  right: clamp(24px, 6vw, 96px);
+  top: 50%;
+  transform: translateY(calc(-50% + var(--c3w-private-authentication-y, 0px))) scale(var(--c3w-private-authentication-scale, 1));
+  opacity: var(--c3w-private-authentication-opacity, 1);
+}
+/* Centre-point alignment only, at the recess's own centre (~38%/64% of the detail image — located
+   by inspection) — NOT stretched to fill the recess's own wider, shallower oval shape, which would
+   distort the official mark's real proportions. Same proven technique as Constant's own Provenance
+   seal overlay: precise across every viewport because the frame has a FIXED aspect-ratio
+   (object-fit: contain never crops independently per axis), verified visually, not assumed. */
+.c3w-private__detail-seal {
+  position: absolute;
+  left: 38%;
+  top: 64%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  opacity: 0.92;
+}
+/* PRESENTATION — large, centred, lower-middle: the largest and most dominant of the five, per
+   brief. */
+.c3w-private__detail--presentation {
+  left: 50%;
+  bottom: clamp(32px, 6vh, 72px);
+  transform: translateX(-50%) translateY(var(--c3w-private-presentation-y, 0px)) scale(var(--c3w-private-presentation-scale, 1));
+  opacity: var(--c3w-private-presentation-opacity, 1);
+}
+.c3w-private__detail--presentation .c3w-private__detail-frame {
+  height: 60vh;
+  height: 60svh;
+}
+
+/* Desktop Private composition polish. The approved master chamber remains the world; each detail
+   is a discovered close plane with no card chrome. Mobile/reduced-motion keep their existing
+   stacked rules below. */
+@media (min-width: 900px) {
+  .c3w-world--commissions,
+  .c3w-private__content,
+  .c3w-private__final {
+    color: #f3eee5;
+  }
+
+  .c3w-private__content { max-width: 620px; }
+
+  .c3w-private__media-el {
+    filter: brightness(1.10) contrast(1.03);
+  }
+
+  .c3w-private__index { color: var(--caviera-cinnabar); }
+  .c3w-private__title { color: #f3eee5; }
+  .c3w-private__statement { color: #f3eee5; }
+  .c3w-private__supporting { color: #f3eee5; }
+
+  .c3w-private__detail {
+    gap: 0;
+    color: #f3eee5;
+  }
+  .c3w-private__detail-frame {
+    background: transparent;
+    box-shadow: none;
+  }
+  .c3w-private__detail-el {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  .c3w-private__detail-label {
+    color: #f3eee5;
+    margin-top: 12px;
+    opacity: 0.96;
+  }
+  .c3w-private__detail-caption {
+    color: #f3eee5;
+    margin-top: 6px;
+    max-width: 28ch;
+    opacity: 0.64;
+  }
+
+  .c3w-private__detail[data-private-detail="stone"] {
+    right: clamp(68px, 6vw, 112px);
+    top: clamp(138px, 20vh, 220px);
+    align-items: flex-end;
+  }
+  .c3w-private__detail[data-private-detail="stone"] .c3w-private__detail-frame {
+    height: 48vh;
+    height: 48svh;
+  }
+  .c3w-private__detail[data-private-detail="stone"] .c3w-private__detail-label,
+  .c3w-private__detail[data-private-detail="stone"] .c3w-private__detail-caption {
+    text-align: right;
+  }
+
+  .c3w-private__detail[data-private-detail="design"] {
+    left: clamp(68px, 6vw, 112px);
+    top: auto;
+    bottom: clamp(32px, 4vh, 48px);
+    align-items: flex-start;
+  }
+  .c3w-private__detail[data-private-detail="design"] .c3w-private__detail-frame {
+    height: 48vh;
+    height: 48svh;
+  }
+  .c3w-private__detail[data-private-detail="design"] .c3w-private__detail-label,
+  .c3w-private__detail[data-private-detail="design"] .c3w-private__detail-caption {
+    text-align: left;
+  }
+
+  .c3w-private__detail--making {
+    left: clamp(560px, 42vw, 680px);
+    bottom: clamp(48px, 7vh, 84px);
+  }
+  .c3w-private__detail--making .c3w-private__detail-frame {
+    height: 52vh;
+    height: 52svh;
+  }
+
+  .c3w-private__detail--authentication {
+    right: clamp(68px, 6vw, 112px);
+    align-items: flex-end;
+  }
+  .c3w-private__detail--authentication .c3w-private__detail-frame {
+    height: 50vh;
+    height: 50svh;
+  }
+  .c3w-private__detail--authentication .c3w-private__detail-label,
+  .c3w-private__detail--authentication .c3w-private__detail-caption {
+    text-align: right;
+  }
+
+  .c3w-private__detail--presentation {
+    bottom: clamp(40px, 6vh, 72px);
+  }
+  .c3w-private__detail--presentation .c3w-private__detail-frame {
+    height: 58vh;
+    height: 58svh;
+  }
+  .c3w-private__detail--presentation .c3w-private__detail-label { opacity: 0.94; }
+  .c3w-private__detail--presentation .c3w-private__detail-caption { opacity: 0.62; }
+}
+@media (max-width: 1279px) {
+  /* Narrower desktop widths: keep every detail clear of the left-anchored text column. */
+  .c3w-private__detail-frame { height: 42vh; height: 42svh; }
+  .c3w-private__detail--making .c3w-private__detail-frame { height: 46vh; height: 46svh; }
+  .c3w-private__detail--presentation .c3w-private__detail-frame { height: 48vh; height: 48svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Same "readable static sequence" treatment as every other world's own details — every element
+     fully legible, no scrub required, per brief. Position-specific selectors are repeated here
+     explicitly (not just the bare .c3w-private__detail class) because several of them (the
+     data-attribute selectors, the two BEM modifier classes) have HIGHER specificity than a plain
+     override of the base class alone — confirmed via the exact same specificity issue found and
+     fixed while building Editions; without repeating them their own right/top/left/bottom/transform
+     offsets would still apply on top of position: relative instead of letting the element flow. */
+  .c3w-private__detail,
+  .c3w-private__detail[data-private-detail="stone"],
+  .c3w-private__detail[data-private-detail="design"],
+  .c3w-private__detail--making,
+  .c3w-private__detail--authentication,
+  .c3w-private__detail--presentation {
+    opacity: 1;
+    transform: none;
+    position: relative;
+    left: auto; right: auto; top: auto; bottom: auto;
+    margin-top: 24px;
+  }
+  .c3w-private__detail-frame,
+  .c3w-private__detail--making .c3w-private__detail-frame,
+  .c3w-private__detail--presentation .c3w-private__detail-frame { height: 42vh; height: 42svh; }
+  .c3w-private__final { opacity: 1; transform: none; }
+}
+.no-js .c3w-private__detail,
+.no-js .c3w-private__detail[data-private-detail="stone"],
+.no-js .c3w-private__detail[data-private-detail="design"],
+.no-js .c3w-private__detail--making,
+.no-js .c3w-private__detail--authentication,
+.no-js .c3w-private__detail--presentation {
+  opacity: 1;
+  transform: none;
+  position: relative;
+  left: auto; right: auto; top: auto; bottom: auto;
+  margin-top: 24px;
+}
+.no-js .c3w-private__final { opacity: 1; transform: none; }
+
+@media (max-width: 899px) {
+  /* Mobile safe fallback ONLY, per brief — master environment visible, title readable, all five
+     details and the final CTA stacked normally in flow, no fragile absolute-positioned composition.
+     Same collapse pattern as every other world's own mobile block. */
+  .c3w-world--commissions { min-height: auto; overflow: visible; }
+  .c3w-private__stage {
+    position: relative;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    align-items: flex-start;
+  }
+  .c3w-private__content { max-width: 100%; }
+  .c3w-private__detail,
+  .c3w-private__detail[data-private-detail="stone"],
+  .c3w-private__detail[data-private-detail="design"],
+  .c3w-private__detail--making,
+  .c3w-private__detail--authentication,
+  .c3w-private__detail--presentation {
+    position: relative;
+    left: auto; right: auto; top: auto; bottom: auto;
+    opacity: 1;
+    transform: none;
+    margin-top: clamp(24px, 6vh, 48px);
+  }
+  .c3w-private__detail-frame,
+  .c3w-private__detail--making .c3w-private__detail-frame,
+  .c3w-private__detail--presentation .c3w-private__detail-frame { height: 38vh; height: 38svh; }
+  .c3w-private__final { opacity: 1; transform: none; margin-top: clamp(24px, 6vh, 48px); }
+}
+
+/* ---- Foreground layer (all four worlds) ----
+   Step 3's fourth conceptual layer (media/environment → content → foreground). Genuinely empty in
+   Phase 1 — no grain, vignette or particles exist yet — so it is given a real stacking position
+   (above the content) but no visible styling at all; it renders as nothing today and costs nothing
+   to leave in place until a later phase has real foreground content to put here. */
+.c3w-world__foreground {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ---- World-to-world transition foundation (Step 6) ----
+   Rendered between each pair of worlds (see snippets/caviera-three-worlds-transition.liquid).
+   Deliberately zero-height and non-visual in Phase 1 — height: 0 with overflow hidden means this
+   exists in the DOM (a real, already-wired location for a later phase's real transition) without
+   taking any space in the page or being visible in any way today. No wipe, no mask animation, no
+   3D morph — exactly per brief ("keep them visually simple for now"). */
+.caviera-world-transition {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+}
+.caviera-world-transition__mask,
+.caviera-world-transition__surface {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---- World orientation indicator (Step 4) ----
+   Restrained, numbers-only, fixed — deliberately NOT styled like a conventional site nav (no bar,
+   no background pill, no underline-sweep animation). Right edge, vertically centred, matching this
+   theme's own quiet "small fixed numerals" convention rather than inventing a new UI pattern.
+   2026-08-20 HOMEPAGE-EMBED FIX: fixed positioning is relative to the viewport, not this section —
+   harmless on the isolated full-page test template (Three Worlds is the only content on that page,
+   so there's nothing for it to float over), but it would otherwise follow the visitor through every
+   other homepage section once Three Worlds is embedded mid-page. Hidden by default here and shown
+   only while [data-in-view="true"] on the root (set by an IntersectionObserver watching the whole
+   .caviera-three-worlds container — see assets/caviera-three-worlds.js) — invisible AND non-
+   interactive (pointer-events: none) the rest of the time, so it can never sit on top of, or steal
+   clicks from, House Statement above or House Principles below. */
+.c3w-orientation {
+  position: fixed;
+  right: clamp(16px, 2.4vw, 40px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 240ms var(--ease-caviera, ease);
+}
+.caviera-three-worlds[data-in-view="true"] .c3w-orientation {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3w-orientation { transition: none; }
+}
+.c3w-orientation__item {
+  background: none;
+  border: none;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: var(--caviera-bone);
+  opacity: 0.4;
+  transition: opacity 200ms var(--ease-caviera, ease);
+}
+.c3w-orientation__item.is-active { opacity: 1; }
+@media (hover: hover) {
+  .c3w-orientation__item:hover { opacity: 0.75; }
+}
+.c3w-orientation__item:focus-visible { outline: 1px solid var(--caviera-bone); outline-offset: 4px; opacity: 1; }
+/* The approved Private master is a dark architectural scene even though its CSS fallback field is
+   Bone. On desktop the indicator therefore stays Warm Bone: quiet inactive numerals and a legible
+   but restrained active 03. Mobile retains its existing light-field fallback treatment. */
+@media (min-width: 900px) {
+  .caviera-three-worlds[data-active-world="commissions"] .c3w-orientation__item {
+    color: #f3eee5;
+    opacity: 0.22;
+  }
+  .caviera-three-worlds[data-active-world="commissions"] .c3w-orientation__item.is-active {
+    opacity: 0.92;
+  }
+}
+@media (max-width: 899px) {
+  .caviera-three-worlds[data-active-world="commissions"] .c3w-orientation__item { color: var(--caviera-obsidian); }
+  .caviera-three-worlds[data-active-world="commissions"] .c3w-orientation__item.is-active { opacity: 1; }
+}
+@media (max-width: 899px) {
+  /* Mobile safe fallback only, per brief — keep it present (all four worlds must stay reachable)
+     but out of the way of the stacked single-column content beneath it. */
+  .c3w-orientation { right: 12px; gap: 10px; }
+  .c3w-orientation__item { font-size: 0.625rem; }
+}
+
+/* Reduced motion: nothing in Phase 1 animates yet, so there is nothing to disable — this rule is
+   a placeholder acknowledgement only, kept so a later phase adding real motion has an obvious,
+   already-wired place to add the corresponding "reduce" overrides rather than needing to
+   remember to add this media query from scratch. */
+@media (prefers-reduced-motion: reduce) {
+  .caviera-three-worlds { scroll-behavior: auto; }
+}
+
+
+/* Threshold scroll-scrub video prototype. The approved still remains visible until the JS ready
+   gate has metadata, a valid duration, a completed seek, and a decoded target frame. */
+@media (min-width: 900px) {
+  .caviera-three-worlds[data-c3w-threshold-mode="video-scrub"] .c3w-world--threshold {
+    min-height: 400vh;
+  }
+}
+.c3w-threshold-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  overflow: hidden;
+  background: var(--caviera-obsidian);
+  transition: opacity 320ms var(--ease-caviera, ease);
+}
+.c3w-threshold-video__el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+.c3w--video-ready .c3w-threshold-video { opacity: 1; }
+.c3w--video-ready .c3w-threshold__media {
+  opacity: 0;
+  transition: opacity 320ms var(--ease-caviera, ease);
+}
+.c3w--video-ready .c3w-threshold__light,
+.c3w--video-ready .c3w-threshold__light-secondary { opacity: 0; }
+
+@media (max-width: 899px) {
+  .caviera-three-worlds[data-c3w-threshold-mode="video-scrub"] .c3w-world--threshold {
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+  .c3w-threshold-video { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caviera-three-worlds[data-c3w-threshold-mode="video-scrub"] .c3w-world--threshold,
+  .caviera-three-worlds.c3w--video-disabled .c3w-world--threshold {
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+  .c3w-threshold-video { display: none; transition: none; }
+}
+.caviera-three-worlds.c3w--video-disabled .c3w-world--threshold {
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+}
+.caviera-three-worlds.c3w--video-disabled .c3w-threshold__stage {
+  position: static;
+  height: auto;
+  min-height: 100%;
+}
+.caviera-three-worlds.c3w--video-disabled .c3w-threshold-video { display: none; }
+
+/* Constant controlled cinematic 2.5D composition — desktop only. The earlier portrait treatment
+   remains the readable mobile/reduced-motion fallback; eligible desktop turns the same locked
+   stills into clipped architectural discoveries without cards, panels, radii or shadows. */
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .c3w-constant__media-el {
+    transform-origin: center center;
+    will-change: transform, opacity;
+  }
+
+  .c3w-constant__seal-mark,
+  .c3w-constant__oryx-mark {
+    z-index: 1;
+    transition: none;
+  }
+  .c3w-constant__seal-mark {
+    width: 40px;
+    opacity: var(--c3w-constant-seal-opacity, 0);
+  }
+  .c3w-constant__oryx-mark {
+    left: 69%;
+    top: 46%;
+    width: 68px;
+    opacity: var(--c3w-constant-oryx-opacity, 0);
+  }
+  .c3w-constant__seal-mark[data-code-state="active"] {
+    opacity: var(--c3w-constant-seal-opacity, 0);
+  }
+  .c3w-constant__oryx-mark[data-code-state="active"] {
+    opacity: var(--c3w-constant-oryx-opacity, 0);
+  }
+
+  .c3w-constant__provenance,
+  .c3w-constant__detail,
+  .c3w-constant__detail[data-detail="material"],
+  .c3w-constant__detail[data-detail="ritual"] {
+    position: absolute;
+    display: block;
+    z-index: 1;
+    margin: 0;
+    gap: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transition: none;
+    will-change: clip-path, transform, opacity;
+  }
+
+  .c3w-constant__provenance {
+    inset: auto 0 0 auto;
+    width: auto;
+    height: 80svh;
+    aspect-ratio: 1122 / 1402;
+    opacity: var(--c3w-constant-provenance-opacity, 0);
+    transform: translate3d(0, var(--c3w-constant-provenance-y, 8px), 0)
+      scale(var(--c3w-constant-provenance-scale, 1.01));
+    transform-origin: right center;
+    clip-path: inset(0 0 0 var(--c3w-constant-provenance-clip, 100%));
+  }
+  .c3w-constant__detail[data-detail="material"] {
+    inset: auto auto 0 36vw;
+    width: auto;
+    height: 78svh;
+    aspect-ratio: 1122 / 1402;
+    opacity: var(--c3w-constant-material-detail-opacity, 0);
+    transform: translate3d(0, var(--c3w-constant-material-detail-y, 8px), 0)
+      scale(var(--c3w-constant-material-detail-scale, 1.01));
+    transform-origin: left bottom;
+    clip-path: inset(0 0 0 var(--c3w-constant-material-detail-clip, 100%));
+  }
+  .c3w-constant__detail[data-detail="ritual"] {
+    inset: auto 0 0 auto;
+    width: auto;
+    height: 76svh;
+    aspect-ratio: 1122 / 1402;
+    opacity: var(--c3w-constant-ritual-detail-opacity, 0);
+    transform: translate3d(0, var(--c3w-constant-ritual-detail-y, 8px), 0)
+      scale(var(--c3w-constant-ritual-detail-scale, 1.01));
+    transform-origin: right bottom;
+    clip-path: inset(var(--c3w-constant-ritual-detail-clip, 100%) 0 0 0);
+  }
+
+  .c3w-constant__provenance-frame,
+  .c3w-constant__detail-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .c3w-constant__provenance-el,
+  .c3w-constant__detail-el {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    filter: none;
+  }
+
+  /* The locked photography supplies its own architectural edges; no decorative frame is added. */
+  .c3w-constant__provenance-frame::after,
+  .c3w-constant__detail-frame::after {
+    content: none;
+  }
+
+  .c3w-constant__provenance-seal {
+    left: 71%;
+    top: 43%;
+    width: 34px;
+    opacity: 0.94;
+  }
+  .c3w-constant__provenance-caption,
+  .c3w-constant__detail-caption { display: none; }
+
+  /* Preserve the independently selectable legacy Constant WebGL comparison. */
+  .c3w--constant-webgl-ready .c3w-constant__provenance,
+  .c3w--constant-webgl-ready .c3w-constant__detail {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

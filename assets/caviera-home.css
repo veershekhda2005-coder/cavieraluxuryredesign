@@ -1127,6 +1127,13 @@
   letter-spacing: 0.05em;
   opacity: 0.68;
 }
+.caviera-edition-teaser__name {
+  margin: 14px 0 0;
+  color: var(--caviera-rhodium);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+}
 .caviera-edition-teaser__body { margin-top: 28px; max-width: 42ch; opacity: 0.86; }
 .caviera-edition-teaser__cta { display: inline-block; margin-top: 28px; }
 
@@ -1336,7 +1343,7 @@
 .caviera-edition-teaser__media .caviera-drag-token { z-index: 3; }
 .caviera-edition-teaser__media .caviera-drag-token.is-dragging { z-index: 4; }
 
-/* ---- EDITION I — THE FIRST MARK: 900px+ desktop composition (2026-08-17) ----
+/* ---- EDITION I — THE FIRST LIGHT: 900px+ desktop composition (2026-08-17) ----
    DESKTOP ONLY, by construction, not by convention: the two rules immediately below are the entire
    switch-over mechanism between the mobile scroll-choreography section above and this new one — no
    other rule in either section needs to change for that to hold. `display: none` on a
@@ -1390,6 +1397,13 @@
     text-transform: none;
     font-size: 0.875rem;
     letter-spacing: 0.05em;
+  }
+  .caviera-edition-mark__name {
+    margin: 14px 0 0;
+    color: var(--caviera-rhodium);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
   }
   .caviera-edition-mark__intro { margin-top: 28px; }
 
@@ -2264,6 +2278,80 @@
 @media (min-width: 900px) {
   .caviera-editorial__stage[data-caviera-editorial-progress] { height: 132svh; }
   .caviera-editorial__stage-inner { position: sticky; top: 0; height: 100svh; display: flex; align-items: center; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__stage[data-caviera-editorial-progress] { height: 180svh; }
+}
+
+/* Maker's Mark wax-seal photograph — homepage-only, opt-in via data-makers-mark. The approved
+   portrait replaces this section's prior generated seal visual without affecting House Seal or
+   Living Oryx use elsewhere. It remains a clean editorial plane: no crop, frame, radius, shadow,
+   filter, tint or blend mode. */
+.caviera-editorial[data-makers-mark] .caviera-editorial__media[data-media-source="house_seal"] {
+  width: 100%;
+  max-width: none;
+}
+.caviera-editorial__maker-detail { margin: 0; }
+.caviera-editorial__maker-detail img { display: block; width: 100%; height: auto; }
+@media (min-width: 900px) {
+  .caviera-editorial[data-makers-mark] .caviera-editorial__stage-inner,
+  .caviera-editorial[data-makers-mark] .caviera-editorial__grid {
+    width: 100%;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__grid {
+    grid-template-columns: minmax(0, min(42vw, 650px)) minmax(0, 1fr);
+    gap: clamp(40px, 3.5vw, 68px);
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__media[data-media-source="house_seal"] {
+    height: 100svh;
+    margin-inline: 0;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: clamp(40px, 5vw, 78px);
+    width: min(35vw, 53.26svh, 506px);
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%);
+    transform-origin: center;
+    transition: none;
+    pointer-events: none;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail img {
+    width: 100%;
+    height: auto;
+    max-height: 80svh;
+    aspect-ratio: auto;
+    object-fit: contain;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__text {
+    width: min(34vw, 460px);
+    max-width: none;
+    padding-inline: 0;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance { margin-top: 38px; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance-label {
+    letter-spacing: 0.14em;
+    opacity: 0.62;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance-line {
+    margin-top: 10px;
+    opacity: 0.92;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance-rule {
+    width: 64px;
+    opacity: 0.4;
+  }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance-mark {
+    letter-spacing: 0.14em;
+    opacity: 0.58;
+  }
+}
+@media (max-width: 899px) {
+  .caviera-editorial[data-makers-mark] .caviera-editorial__grid { display: flex; flex-direction: column; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__text { order: 1; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__media { order: 2; display: grid; gap: 32px; padding: 0 var(--gutter-mobile) 48px; }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail { width: min(90vw, 520px); margin-inline: auto; }
 }
 
 .caviera-editorial__media[data-media-source="house_seal"] {
@@ -2279,7 +2367,7 @@
   transform: scale(1.08);
   pointer-events: none;
 }
-.caviera-editorial__media[data-media-source="house_seal"] > :not(.caviera-editorial__media-impression) { position: relative; z-index: 1; }
+.caviera-editorial__media[data-media-source="house_seal"] > :not(.caviera-editorial__media-impression):not(.caviera-editorial__maker-house-seal):not(.caviera-editorial__maker-detail) { position: relative; z-index: 1; }
 @media (max-width: 899px) {
   .caviera-editorial__media-impression { display: none; }
 }
@@ -2370,10 +2458,14 @@
   [data-caviera-editorial-progress] .caviera-editorial__text .eyebrow,
   [data-caviera-editorial-progress] .caviera-editorial__text .body-text,
   [data-caviera-editorial-progress] .caviera-editorial__provenance,
-  [data-caviera-editorial-progress] .caviera-editorial__provenance-rule {
+  [data-caviera-editorial-progress] .caviera-editorial__provenance-rule,
+  [data-caviera-editorial-progress] .caviera-editorial__maker-detail {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+  [data-caviera-editorial-progress] .caviera-editorial__maker-detail {
+    transform: translateY(-50%);
   }
 }
 

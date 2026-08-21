@@ -25,6 +25,10 @@
         "category_transition_heading": ""
       }
     },
+    "three-worlds-home": {
+      "type": "caviera-three-worlds",
+      "settings": {}
+    },
     "house-codes": {
       "type": "caviera-house-codes",
       "settings": {}
@@ -157,6 +161,7 @@
   "order": [
     "hero",
     "statement",
+    "three-worlds-home",
     "house-codes",
     "edition-teaser",
     "category-reveal",

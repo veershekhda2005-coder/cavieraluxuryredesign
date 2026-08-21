@@ -17,9 +17,9 @@
  *     progress calculation (same technique as assets/caviera-material-truth.js) yields a smooth
  *     0-1 value across that pinned distance. Three overlapping, independently-eased channels are
  *     derived from it and written as CSS custom properties:
- *       --maker-seal-progress       (House Seal arrives + resolves,      ~0.20 - 0.65)
- *       --maker-headline-progress   (headline/eyebrow/body reach full,   ~0.45 - 0.80)
- *       --maker-provenance-progress (Edition record resolves,            ~0.65 - 1.00)
+ *       --maker-seal-progress       (House Seal arrives + resolves,      ~0.12 - 0.34)
+ *       --maker-headline-progress   (headline/eyebrow/body reach full,   ~0.24 - 0.48)
+ *       --maker-provenance-progress (Edition record resolves,            ~0.42 - 0.62)
  *   - Mobile (<900px): no sticky, no extra section height, no scroll trap — a single, lightweight
  *     entry-based reveal instead (IntersectionObserver, fires once), staggered via CSS
  *     transition-delay rather than scroll position.
@@ -35,9 +35,9 @@
   var MIN_WIDTH = 900;
 
   // Overlapping progress ranges, in the stage's own 0-1 scroll progress.
-  var SEAL_START = 0.2, SEAL_END = 0.65;
-  var HEADLINE_START = 0.45, HEADLINE_END = 0.8;
-  var PROVENANCE_START = 0.65, PROVENANCE_END = 1.0;
+  var SEAL_START = 0.12, SEAL_END = 0.34;
+  var HEADLINE_START = 0.24, HEADLINE_END = 0.48;
+  var PROVENANCE_START = 0.42, PROVENANCE_END = 0.62;
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
