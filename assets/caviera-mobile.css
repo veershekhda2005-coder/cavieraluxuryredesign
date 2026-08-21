@@ -136,24 +136,53 @@
   .caviera-editorial[data-makers-mark] .eyebrow { order: 1; }
   .caviera-editorial[data-makers-mark] .heading-h2 { order: 2; max-width: 10ch; }
   .caviera-editorial[data-makers-mark] .body-text { order: 3; margin: 0; max-width: 34ch; }
-  .caviera-editorial[data-makers-mark] .caviera-editorial__media {
+  .caviera-editorial[data-makers-mark] [data-caviera-editorial-progress] .caviera-editorial__media[data-media-source="house_seal"] {
     order: 4;
     width: min(90vw, 520px);
     padding: 0;
     margin-inline: auto;
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
   .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail {
     width: min(90vw, 520px);
     max-width: 520px;
     margin: 0 auto;
+    overflow: hidden;
+    background: #f3eee5;
   }
   .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail img {
+    display: block;
     width: min(90vw, 520px);
     max-width: 520px;
     height: auto;
     object-fit: contain;
+    transform-origin: center;
+    filter: none;
+    mix-blend-mode: normal;
   }
-  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance { order: 5; margin-top: 0; padding-top: var(--caviera-mobile-space-sm); }
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance {
+    order: 5;
+    margin-top: 0;
+    padding-top: var(--caviera-mobile-space-sm);
+  }
+  .caviera-editorial[data-makers-mark][data-mobile-maker-scrub] .caviera-editorial__maker-detail {
+    clip-path: inset(var(--maker-mobile-clip, 8%) 0 0 0);
+    transition: none;
+  }
+  .caviera-editorial[data-makers-mark][data-mobile-maker-scrub] .caviera-editorial__maker-detail img {
+    opacity: var(--maker-mobile-opacity, .25);
+    transform:
+      translateY(var(--maker-mobile-shift, 42px))
+      scale(var(--maker-mobile-scale, .965));
+    transition: none;
+  }
+  .caviera-editorial[data-makers-mark][data-mobile-maker-scrub] .caviera-editorial__provenance {
+    opacity: var(--maker-auth-progress, 0);
+    transform: translateY(var(--maker-auth-shift, 18px));
+    transition: none;
+  }
 
   /* Packaging ritual: large in-flow visuals and immediately related copy. */
   .caviera-ritual { padding-block: var(--caviera-mobile-space-lg); }
@@ -394,8 +423,6 @@
   [data-caviera-mobile-observed-motion="ready"] .caviera-object-focus__chapter,
   [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__row,
   [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__story,
-  [data-caviera-mobile-observed-motion="ready"] [data-makers-mark] .caviera-editorial__maker-detail,
-  [data-caviera-mobile-observed-motion="ready"] [data-makers-mark] .caviera-editorial__provenance,
   [data-caviera-mobile-observed-motion="ready"] .caviera-ritual__step {
     opacity: 0.28;
     transform: translateY(16px);
@@ -408,12 +435,22 @@
   [data-caviera-mobile-observed-motion="ready"] .caviera-object-focus__chapter:not([data-mobile-active="true"]),
   [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__row:not([data-mobile-active="true"]),
   [data-caviera-mobile-observed-motion="ready"] .caviera-craftsmanship__story:not([data-mobile-active="true"]) { opacity: 0.42; }
-  [data-caviera-mobile-observed-motion="ready"] [data-makers-mark] .caviera-editorial__provenance { transition-delay: 120ms; }
   [data-caviera-mobile-observed-motion="ready"] .caviera-ritual__step[data-mobile-active="true"] .caviera-ritual__step-media {
     clip-path: inset(0 0 0 0);
   }
   [data-caviera-mobile-observed-motion="ready"] .caviera-ritual__step .caviera-ritual__step-media {
     clip-path: inset(0 0 8% 0);
     transition: clip-path 520ms var(--ease-caviera);
+  }
+}
+
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail,
+  .caviera-editorial[data-makers-mark] .caviera-editorial__maker-detail img,
+  .caviera-editorial[data-makers-mark] .caviera-editorial__provenance {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
   }
 }

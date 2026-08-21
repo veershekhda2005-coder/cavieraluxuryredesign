@@ -102,8 +102,6 @@
       '.caviera-object-focus__chapter',
       '.caviera-craftsmanship__row',
       '.caviera-craftsmanship__story',
-      '[data-makers-mark] .caviera-editorial__maker-detail',
-      '[data-makers-mark] .caviera-editorial__provenance',
       '.caviera-ritual__step'
     ];
     var nodes = Array.prototype.slice.call(document.querySelectorAll(selectors.join(',')));
@@ -118,6 +116,52 @@
     }, { rootMargin: '-12% 0px -20% 0px', threshold: [0.18, 0.42] });
     nodes.forEach(function (node) { observer.observe(node); });
     cleanup.push(function () { observer.disconnect(); });
+
+  }
+
+  function initMakersMarkScroll() {
+    var section = document.querySelector('.caviera-editorial[data-makers-mark]');
+    if (!section) return;
+    var media = section.querySelector('.caviera-editorial__maker-detail');
+    var authentication = section.querySelector('.caviera-editorial__provenance');
+    if (!media || !authentication) return;
+
+    var nearViewport = false;
+    var ticking = false;
+    section.setAttribute('data-mobile-maker-scrub', 'true');
+
+    function update() {
+      ticking = false;
+      var viewport = window.innerHeight || document.documentElement.clientHeight;
+      var imageTop = media.getBoundingClientRect().top;
+      var start = viewport * 0.88;
+      var finish = viewport * 0.40;
+      var imageProgress = clamp((start - imageTop) / Math.max(1, start - finish));
+      var authenticationProgress = clamp((imageProgress - 0.72) / 0.28);
+      section.style.setProperty('--maker-mobile-progress', imageProgress.toFixed(4));
+      section.style.setProperty('--maker-auth-progress', authenticationProgress.toFixed(4));
+      section.style.setProperty('--maker-mobile-opacity', (0.25 + imageProgress * 0.75).toFixed(4));
+      section.style.setProperty('--maker-mobile-shift', ((1 - imageProgress) * 42).toFixed(2) + 'px');
+      section.style.setProperty('--maker-mobile-scale', (0.965 + imageProgress * 0.035).toFixed(4));
+      section.style.setProperty('--maker-mobile-clip', ((1 - imageProgress) * 8).toFixed(2) + '%');
+      section.style.setProperty('--maker-auth-shift', ((1 - authenticationProgress) * 18).toFixed(2) + 'px');
+    }
+
+    function requestUpdate() {
+      if (!nearViewport || ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      nearViewport = entries.some(function (entry) { return entry.isIntersecting; });
+      if (nearViewport) requestUpdate();
+    }, { rootMargin: '60% 0px 60% 0px' });
+    observer.observe(media);
+    cleanup.push(function () { observer.disconnect(); });
+    listen(window, 'scroll', requestUpdate, { passive: true });
+    listen(window, 'resize', requestUpdate, { passive: true });
+    update();
   }
 
   function teardown() {
@@ -134,12 +178,23 @@
       });
     });
     document.querySelectorAll('[data-mobile-active]').forEach(function (node) { node.removeAttribute('data-mobile-active'); });
+    document.querySelectorAll('[data-mobile-maker-scrub]').forEach(function (node) {
+      node.removeAttribute('data-mobile-maker-scrub');
+      node.style.removeProperty('--maker-mobile-progress');
+      node.style.removeProperty('--maker-auth-progress');
+      node.style.removeProperty('--maker-mobile-opacity');
+      node.style.removeProperty('--maker-mobile-shift');
+      node.style.removeProperty('--maker-mobile-scale');
+      node.style.removeProperty('--maker-mobile-clip');
+      node.style.removeProperty('--maker-auth-shift');
+    });
   }
 
   function sync() {
     teardown();
     if (!mobileQuery.matches || reducedQuery.matches || (window.Shopify && window.Shopify.designMode)) return;
     initThreeWorlds();
+    initMakersMarkScroll();
     initObservedMotion();
   }
   function scheduleSync() {
