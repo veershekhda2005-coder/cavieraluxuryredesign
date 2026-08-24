@@ -23,7 +23,8 @@
 <div
   class="caviera-three-worlds"
   data-caviera-three-worlds
-  data-c3w-threshold-mode="static"
+  data-c3w-threshold-mode="video-scrub"
+  data-threshold-video-src="{{ 'caviera-three-worlds-threshold-motion-2026.mp4' | asset_url }}"
 >
 
   {%- comment -%} ================= 00 — THE THRESHOLD ================= {%- endcomment -%}
@@ -77,6 +78,17 @@
         {%- endcomment -%}
         <div class="c3w-threshold__light" aria-hidden="true"></div>
         <div class="c3w-threshold__light-secondary" aria-hidden="true"></div>
+      </div>
+
+      <div class="c3w-threshold-video" aria-hidden="true">
+        <video
+          class="c3w-threshold-video__el"
+          data-threshold-video
+          muted
+          playsinline
+          preload="auto"
+          poster="{{ 'caviera-three-worlds-threshold-2026.png' | asset_url }}"
+        ></video>
       </div>
 
       <div class="c3w-world__inner c3w-threshold__inner">
@@ -671,6 +683,7 @@
 </div>
 
 <script src="{{ 'caviera-three-worlds.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'caviera-three-worlds-video.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {

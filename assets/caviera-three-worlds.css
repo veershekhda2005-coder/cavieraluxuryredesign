@@ -1742,10 +1742,6 @@
 .c3w--video-ready .c3w-threshold__light-secondary { opacity: 0; }
 
 @media (max-width: 899px) {
-  .caviera-three-worlds[data-c3w-threshold-mode="video-scrub"] .c3w-world--threshold {
-    min-height: 100dvh;
-    overflow: hidden;
-  }
   .c3w-threshold-video { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
